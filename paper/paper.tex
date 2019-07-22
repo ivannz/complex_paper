@@ -13,14 +13,160 @@
 
 \usepackage{lipsum}
 
+\newcommand{\important}[1]{\textbf{\color{red} #1}}
+\newcommand{\verify}{\important{verify}}
+\newcommand{\rewrite}{\important{rewrite}}
 
-\title{Sparsifying compelx-valued networks}
+\newcommand{\real}{\mathbb{R}}
+\newcommand{\cplx}{\mathbb{C}}
+
+\renewcommand{\vec}{\overrightarrow}
+
+\title{Sparsifying complex-valued networks}
 \author{Ivan Nazarov}
 
 \begin{document}
 \maketitle
 
-{\color{red} \lipsum[1-3]}
+% {\color{red} \lipsum[1-3]}
+
+\section{Related research} % (fold)
+\label{sec:realted_research}
+
+\cite{trabelsi_deep_2017} provide a set of building blocks for deep complex-valued
+networks. The core of their work is structured framework for complex-valued operations
+including re-im representation and linear layers (dense and convolutional) as well
+as complex-valued activations and complex batch-normalization and weight initialization.
+
+% section realted_research (end)
+
+\section{Complex Variational Dropout} % (fold)
+\label{sec:complex_varaitional_dropout}
+
+In this section we outline and derive the variational dropout technique for complex-%
+valued networks, which re-traces the evolution of dropout technique for real-valued
+weights.
+
+Variational dropout, which enables automatic relevnace detection by learning individual
+per-weight dropout rates, was proposed by \cite{kingma_variational_2015} as a natural
+generalization of the Gaussian Dropout \cite{srivastava_dropout_2014,wang_fast_2013},
+itself -- a generalization of the Binary (Bernoulli) Dropout technique \cite{hinton_improving_2012}.
+
+Let $W \in\real^{n\times m}$, and $b\in \real^n$ and consider the action of a linear
+layer on its input $x$: $y = W x + b$ for $y\in \real^n$, $x\in \real^m$. The key idea
+of Bernoulli dropout is to mask elements in the matrix $W$ of the layer with some given
+probability $p$: $W = \theta \odot \xi$, there $\theta$ is the learnt weight matrix,
+and is an iid Bernoulli mask $\xi \sim \mathcal{B}(\{0, \tfrac1{1-p}\}, 1-p)$. During
+training, a dropout mask $\xi$ is used to compute $W$, and during evaluation the weights
+are fixed to the expectation of $W$ which is $\theta$. The discussion and analysis in
+\cite{kingma_variational_2015}, suggest that drawing one common dropout mask for all
+data in the minibatch reduces statistical efficiency the estimator of the weights'
+gradient.
+
+Gaussian dropout works in a similar fashion, except the dropout mask $\xi$ is iid
+$\mathcal{N}(1, \alpha=\tfrac{p}{1-p})$, i.e. a multiplicative Gaussian noise is
+injected into the network.
+
+% set by step we retell the story of kingmaetal2015
+
+\cite{kingma_variational_2015} also propose the \textit{local reparameterization trick},
+which improves efficiency stochastic gradient variational inference by translating
+the uncertainty from the weights into local output noise of each linear layer. Without
+this it would have been necessary to draw new set of random weights per each element
+in a minibatch.
+
+$$
+  \mathcal{N}(\theta_{ij}, \alpha \theta^2_{ij})
+  \overset{\mathcal{D}}{\sim}
+  \theta_{ij} \mathcal{N}(1, \alpha)
+  \,, $$
+
+\cite{molchanov_variational_2017} propose additional step in the local reparametrization,
+which further reduces the variance of the gradient estimator for each dropped out
+weight. Their simple formal change of variables $(\theta, \alpha) \to (\theta, \sigma^2)$
+decouples the stochastic component from the weights \rewrite:
+$$
+  w_{ij} = \theta_{ij} + \theta_{ij} \sqrt{\alpha} \varepsilon_{ij}
+  \,\to\,
+  w_{ij} = \theta_{ij} + \sigma^2_{ij} \varepsilon_{ij}
+  \,, $$
+with the appropriate change of variables in the Kullback-Leibler divergence.
+($\alpha_{ij} = \tfrac{\sigma_{ij}^2}{\lvert \theta_{ij}\rvert^2}$).
+
+To recap the derivation in \cite{kingma_variational_2015}, let $W$ be a random martrix
+with independently distributed elements, each according to $\mathcal{N}(\theta_{ij}, \sigma^2_{ij})$.
+Then the action of a linear layer on $x$ is described as 
+$$
+  y = W x + b = I W x + b
+    = (I \otimes x^\top) \vec{W} + b
+  \,, $$
+where $\vec{\cdot}$ denotes flattening in lexicographic order of indices (row-major),
+for which we have the identity $\vec{A B C} = (A \otimes C^\top) \vec{B}$, \cite{cookbook2012}.
+% It follows from the definition of the Kronecker product of $A$ and $C^\top$ and the
+% row-major order vectorization.
+Next, from $\vec{W}\sim \mathcal{N}_{[n\times m]}(\vec{\theta}, \mathop{diag}\Sigma)$
+we get the following distribution for the output:
+$$
+  y \sim \mathcal{N}_{n}
+    \bigl(
+      \theta x + b,
+      \sum_{i} e_i e_i^\top \sum_j \sigma^2_{ij} x_j^2
+    \bigr)
+  \,, $$
+where the variance follows from the identity $(A\otimes B)(C\otimes D) = AC\otimes BD$,
+\cite{cookbook2012}:
+$$
+  % (I \otimes x^\top) \mathop{diag}{\vec{\Sigma}} (I \otimes x^\top)^\top
+  \ldots
+    % = \sum_{ij} (I \otimes x^\top) e_i \otimes e_j
+    %   \sigma^2_{ij} (e_i \otimes e_j)^\top (I \otimes x^\top)^\top
+    = \sum_{ij} e_i (x^\top e_j) \sigma^2_{ij} (x^\top e_j) e_i^\top
+    = \sum_{i} e_i e_i^\top \sum_j \sigma^2_{ij} x_j^2
+  \,, $$
+with $e_i$ being the $i$-th unit vector of dimensionality conforming to the expression
+is is involved with.
+
+Criticism of \cite{gale_state_2019} implies that $\ell_0$-variational dropout,
+proposed by \cite{louizos_learning_2017} and based on the concrete binary distribution
+of \cite{maddison_concrete_2016}, works consistently better than the variational
+Gaussian dropout.
+
+Maths and related results \cite{pav_moments_2015,taubock_complex-valued_2012},
+and \cite{karseras_caution:_nodate}
+
+% section complex_varaitional_dropout (end)
+
+\section{Experiments} % (fold)
+\label{sec:Experiments}
+
+I this section we will compare the complex variational dropout techniques, discussed
+above, on the tasks and datasets, that were studied in prior research on complex-%
+valued networks.
+
+\subsection{Tasks and datasets} % (fold)
+\label{sub:tasks_and_datasets}
+
+\cite{trabelsi_deep_2017} studies the applicability of complex-valued networks to
+image classification (CIFAR-10, CIFAR-100, reduced train of SVHN), music-transcription
+(MusicNet), and Speech Spectrum prediction (TIMIT).
+\begin{itemize}
+  \item 
+\end{itemize}
+
+
+\cite{monning_evaluation_2018}
+\cite{jankowski_complex-valued_1996}
+\cite{amin_complex-valued_nodate}
+\cite{sarroff_complex_nodate}
+
+% subsection tasks_and_datasets (end)
+
+\subsection{Results and Discussion} % (fold)
+\label{sub:results_and_discussion}
+
+% subsection results_and_discussion (end)
+
+% section Experiments (end)
 
 \clearpage
 
