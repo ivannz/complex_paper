@@ -22,13 +22,59 @@
 
 \renewcommand{\vec}{\overrightarrow}
 
-\title{Sparsifying complex-valued networks}
+\title{Sparsifying $\cplx$-valued networks}
 \author{Ivan Nazarov}
 
 \begin{document}
 \maketitle
 
 % {\color{red} \lipsum[1-3]}
+
+\section{Introduction} % (fold)
+\label{sec:introduction}
+
+Why spartsity matters, why $\cplx$ networks?
+
+Where are $\cplx$-networks used? and do these applications warrant saprsity?
+
+% section introduction (end)
+
+\section{$\cplx$-valued networks} % (fold)
+\label{sec:c_valued_networks}
+
+In this section i remind the reader what the complex-valued networks are, how
+they are implemented and how much of $\cplx$-ness they have.
+
+I will describe the linear layers (dense, masked, and convolutions) and
+activations borrowed strainght from the $\real$-values networks. Then i shall
+mention that this has been tried before and list papers that one way or another
+address $\cplx$-data processing with neural networks.
+\cite{trabelsi_deep_2017}
+
+The $\cplx$-network is essentially a $\real$-network with double the layers' widths
+to accommodate real and imaginary parts and constraints on its parametrs that make
+layers repsect $\cplx$ operations. A dense layer (and a convolution for that matter)
+$$
+  \begin{pmatrix}
+    \Re y \\ \Im y
+  \end{pmatrix}
+    = \begin{pmatrix}
+      W_{rr} & W_{ri} \\ 
+      W_{ir} & W_{ii}
+    \end{pmatrix}
+    \begin{pmatrix}
+      \Re x \\ \Im x
+    \end{pmatrix}
+    + \begin{pmatrix}
+      \Re b \\ \Im b
+    \end{pmatrix}
+  \,, $$
+should have $W_{ri} = - W_{ir}$ and $W_{rr} = W_{ii}$.
+
+Extra operations that might be used in a networks are also designed in such a way
+as to obey $\cplx$-field algebra.
+
+% section c_valued_networks (end)
 
 \section{Related research} % (fold)
 \label{sec:realted_research}
@@ -158,6 +204,7 @@ image classification (CIFAR-10, CIFAR-100, reduced train of SVHN), music-transcr
 \cite{jankowski_complex-valued_1996}
 \cite{amin_complex-valued_nodate}
 \cite{sarroff_complex_nodate}
+\cite{lapidoth_capacity_2003}
 
 % subsection tasks_and_datasets (end)
 
