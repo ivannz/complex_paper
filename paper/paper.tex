@@ -69,8 +69,8 @@ autograd libraries.
 
 In particular, common linear layers, such as dense layers and convolutions,
 $
-L \colon \cplx^{\mathrm{[in]}}
-  \to \cplx^{\mathrm{[out]}}
+  L \colon \cplx^{\mathrm{[in]}}
+    \to \cplx^{\mathrm{[out]}}
 $ act upon their inputs thus:
 $$
 \real^{\mathrm{[in]} \times 2}
@@ -82,9 +82,9 @@ $$
     \Bigr)
   \,, $$
 where $
-L_r, L_i
-  \colon \real^{\mathrm{[in]}}
-    \to \real^{\mathrm{[out]}}
+  L_r, L_i
+    \colon \real^{\mathrm{[in]}}
+      \to \real^{\mathrm{[out]}}
 $ are the unique $\real$-linear operators that make up $L = L_r + j L_i$ the overall
 effect of the layer. For instance, to respect $\cplx$-arithmetic a linear layer acting
 on $x$ should have $W_{ri} = - W_{ir}$ and $W_{rr} = W_{ii}$ in
@@ -103,10 +103,13 @@ $$
       b_r \\ b_i
     \end{pmatrix}
   \,. $$
+Other algebraic operations that might be used in a networks are also designed in such a way as
+to honour $\cplx$-operations. It is worth pointing out that the key advantage of the $\cplx$-%
+constraints is that they permit use of Strassen's $3$M multiplication algorithm, potentially
+saving up to $25\%$ on floating point multiplications.
 
-As far as non-linearities are concerned, \cite{trabelsi_deep_2017} consider a few truly
-complex-valued ones, that are nevertheless not $\cplx$-differentiable: the most frequently
-used activations are the common $\real$-valued non-linearities applied to real and
+As far as non-linearities are concerned, \cite{trabelsi_deep_2017} consider a few truly complex-%
+valued ones, that are nevertheless not $\cplx$-differentiable: the most frequently used activations are the common $\real$-valued non-linearities applied to real and
 imaginary components independently.
 
 \todo{something about activations}
@@ -122,30 +125,104 @@ $
   \colon r e^{i \phi} \mapsto e^{i \phi} (r - \theta)_+
 $
 
-Other operations that might be used in a networks are also designed in such a way as to obey
-$\cplx$-field algebra, e.g. summing or multiplying outputs of layers is carried out .
+\todo{finish activations}
 
-The question of differentiability of complex-valued networks is tricky. Since they include
-non-differentiable non-linearities, they are strictly speaking, not differentiable at all.
-Moreover, since we typically consider real-valued losses in practical problems, even if the
-network itself were $\cplx$-differentiable (holomorphic), the fact that the loss is purely
-$\real$ and non-constant violates the Cauchy-Riemann conditions, making it not $\cplx$-%
-differentiable. However as \cite{trabelsi_deep_2017} suggests, it is possible to use and
-apply the rules of $\real$-calculus to the network represented in double-$\real$ fashion
-and use $\real$-valued backpropagation.
+\subsection{Backprop through $\cplx$-networks} % (fold)
+\label{sub:backprop_through_c_networks}
 
-Such non-holomorphic approach to differentiation in $\cplx$-valued networks is also known
-as Wirtinger calculus, \cite{adali_complex-valued_2011}. Essentially, derivatives are taken
-with respect to real and imaginary parts as if they were independent variables.
-\todo{recap Wirtinger calculus here in three sentences}
+The question of differentiability of complex-valued networks is tricky, since they include
+usually non-differentiable non-linearities. However, a more severe problem stems from the loss
+objective begin real-valued. Indeed, if $f\colon \cplx \to \cplx$ were $\cplx$-differentiable
+(holomorphic), the composition of $f$ with a non-trivial $h \colon \cplx\to \real$ makes it
+not $\cplx$-differentiable with respect parameters, since $h$ violates Cauchy-Riemann conditions.
+This problem is commonly dealt with by using Wirtinger, or $\cplx\real$ calculus, which subsumes
+$\cplx$-calculus, but is also applicable to non-analytic (non-holomorphic) functions of
+$\cplx$-argument, \cite{adali_complex-valued_2011} and \cite{trabelsi_deep_2017}. In essence,
+this approach views $f$ as a function of two independent variables $z$ and its conjugate $z^\hop$
+and extends the derivatives appropriately. This can be directly reformulated in terms of
+derivatives with respect to real and imaginary parts, making it possible to use and apply the
+rules of $\real$-calculus to the network represented in double-$\real$ fashion and use existing
+$\real$-valued backpropagation in autograd software.
 
-Cauchy-Riemann impose a rigid structure on real and imaginary parts of the function $
-F(u, v) = f(z)\vert_{z=u+iv}
-$, namely $
-\tfrac{\partial F_{\Re }}{\partial u} = \tfrac{\partial F_{\Im }}{\partial v}
+Take $f\colon \cplx \to \cplx$ and identify it with $F\colon \real^2 \to \cplx$ function
+via $F(u, v) = f(z)\vert_{z=u + j v}$. Wirtinger calculus introduces two formal derivative
+operators
+$
+  \tfrac\partial{\partial z}
+    = \tfrac12 \bigl(
+      \tfrac\partial{\partial u}
+      - j \tfrac\partial{\partial v}
+    \bigr)
 $ and $
-\tfrac{\partial F_{\Re }}{\partial v} = - \tfrac{\partial F_{\Im }}{\partial u}
-$.
+  \tfrac\partial{\partial z^\hop}
+    = \tfrac12 \bigl(
+      \tfrac\partial{\partial u}
+      + j \tfrac\partial{\partial v}
+    \bigr)
+$, defines $dz = du + j dv$, $dz^\hop = du - j dv$, and the differential of $f$ as
+$$
+df = \tfrac{\partial f}{\partial z} dz
+    + \tfrac{\partial f}{\partial z^\hop} dz^\hop
+   % = \tfrac12\bigl(
+   %    \tfrac\partial{\partial u}
+   %    - j \tfrac\partial{\partial v}
+   % \bigr) F (du - j dv)
+   % + \tfrac12\bigl(
+   %    \tfrac\partial{\partial u}
+   %    + j \tfrac\partial{\partial v}
+   % \bigr) F (du - j dv)
+   % = \tfrac12 \bigl(
+   %    \tfrac{\partial F}{\partial u} du - j \tfrac{\partial F}{\partial v} du
+   %    + j \tfrac{\partial F}{\partial u} dv + \tfrac{\partial F}{\partial v} dv
+   % \bigr)
+   % + \tfrac12 \bigl(
+   %    \tfrac{\partial F}{\partial u} du + j \tfrac{\partial F}{\partial v} du
+   %    - j \tfrac{\partial F}{\partial u} dv + \tfrac{\partial F}{\partial v} dv
+   % \bigr)
+   = \tfrac{\partial F}{\partial u} du
+     + \tfrac{\partial F}{\partial v} dv
+  \,. $$
+Thus the complex value and its conjugate are treated as independent variables. In this notation
+Cauchy-Riemann conditions are expressed as $
+  \tfrac{\partial f}{\partial z^\hop} = 0
+$, or $
+  -j\tfrac{\partial F}{\partial v} = \tfrac{\partial F}{\partial v}
+$. Cauchy-Riemann impose a rigid structure on real and imaginary parts of $F(u, v)$, namely $
+  \tfrac{\partial F_{\Re }}{\partial u} = \tfrac{\partial F_{\Im }}{\partial v}
+$ and $
+  \tfrac{\partial F_{\Re }}{\partial v} = - \tfrac{\partial F_{\Im }}{\partial u}
+$. Thus Wirtinger calculus subsumes the usual $\cplx$-calculus, when $
+  \tfrac{\partial f}{\partial z^\hop} = 0
+$, i.e. $
+  f(z) = g(z, z^\hop) = F(\tfrac12 (z + z^\hop), \tfrac1{j 2} (z - z^\hop))
+$ does not depend on $z^\hop$.
+
+\todo{The chain rule}
+
+For a real-valued $f\colon \cplx \to \real$ we have $f^\hop = f$, whence $
+  \tfrac{\partial f}{\partial z^\hop}
+    = \tfrac{\partial f^\hop}{\partial z^\hop}
+    = \bigl(\tfrac{\partial f}{\partial z} \bigr)^\hop
+$. Hence
+$$
+df
+  = \tfrac{\partial f}{\partial z} dz
+    + \tfrac{\partial f}{\partial z^\hop} dz^\hop
+  % = \bigl(
+  %   \tfrac{\partial f^\hop}{\partial z^\hop}
+  % \bigr)^\hop dz
+  % + \bigl(
+  %   \bigl( \tfrac{\partial f}{\partial z^\hop} \bigr)^\hop dz
+  % \bigr)^\hop
+  = 2 \Re \bigl( \tfrac{\partial f}{\partial z^\hop} \bigr)^\hop dz
+  \,. $$
+Hence the gradient of $f$ at $z$ is given by $
+  \tfrac{\partial f}{\partial z^\hop}
+    = \tfrac{\partial F}{\partial u}
+      + j \tfrac{\partial F}{\partial v}
+$. Thus it can be seen, that under Wirtinger calculus it is possible to reuse $\real$-backpropagation.
+
+% subsection backprop_through_c_networks (end)
 
 % section c_valued_networks (end)
 
