@@ -108,6 +108,45 @@ to honour $\cplx$-operations. It is worth pointing out that the key advantage of
 constraints is that they permit use of Strassen's $3$M multiplication algorithm, potentially
 saving up to $25\%$ on floating point multiplications.
 
+% proof that such operators exist and are unique (well this is an obvious statement)
+Consider $L\colon \cplx^m \to \cplx^n$ -- linear in $\cplx$. Then $
+  L(u + jv) = L u + j L v
+$ for any $u, v \in \real^m$, which implies that the effect of $L$ as $\cplx$-linear
+operator is determined by its restriction onto $\real^n$. Let $
+  F = L\vert_{\real^m}
+  \colon \real^m \to \cplx^n
+$ and observe that $F_r = \Re \circ F$ and $F_i = \Im \circ F$ are $\real$-linear operators
+such that $F = F_r + j F_i$ (pointwise). Indeed,
+$$
+  F_r(a + \lambda b)
+  % = \Re F(a + \lambda b)
+  = \Re L(a + \lambda b)
+  % = \Re \bigl( L a + \lambda L b \bigr)
+  = \Re L a + \lambda \Re L b
+  % = \Re F a + \lambda \Re F b
+  = F_r a + \lambda F_r b
+  \,. $$
+Therefore for any $\cplx$-linear operator $L$ there exist $\real$-linear operators $U, V$
+such that
+$$
+L z 
+  = (U + j V) (\Re z + j \Im z)
+  % = (U + j V) \Re z + j (U + j V) \Im z
+  % = U \Re z + j V \Re z + j \bigl(U \Im z + j V \Im z \bigr)
+  = U \Re z - V \Im z + j \bigl( V \Re z + U \Im z \bigr)
+  % = (U + j V) z
+  \,. $$
+
+Are these operators unique? Yes. Indeed, for $z$ with $\Im z = 0$ 
+$$
+U_1 \Re z + j V_1 \Re z
+  = U_1 \Re z - V_1 \Im z + j \bigl( V_1 \Re z + U_1 \Im z \bigr)
+  = L z
+  = U_2 \Re z - V_2 \Im z + j \bigl( V_2 \Re z + U_2 \Im z \bigr)
+  = U_2 \Re z + j V_2 \Re z
+  \,, $$
+implies that $U_1 = U_2$ and $V_1 = V_2$ pointwise.
+
 As far as non-linearities are concerned, \cite{trabelsi_deep_2017} consider a few truly complex-%
 valued ones, that are nevertheless not $\cplx$-differentiable: the most frequently used activations are the common $\real$-valued non-linearities applied to real and
 imaginary components independently.
@@ -139,10 +178,11 @@ This problem is commonly dealt with by using Wirtinger, or $\cplx\real$ calculus
 $\cplx$-calculus, but is also applicable to non-analytic (non-holomorphic) functions of
 $\cplx$-argument, \cite{adali_complex-valued_2011} and \cite{trabelsi_deep_2017}. In essence,
 this approach views $f$ as a function of two independent variables $z$ and its conjugate $z^\hop$
-and extends the derivatives appropriately. This can be directly reformulated in terms of
-derivatives with respect to real and imaginary parts, making it possible to use and apply the
-rules of $\real$-calculus to the network represented in double-$\real$ fashion and use existing
-$\real$-valued backpropagation in autograd software.
+and extends the derivatives appropriately. This approach nautrally extends the chain rule to
+nonanalytic functions and can be directly reformulated in terms of derivatives with respect
+to real and imaginary parts, making it possible to use and apply the rules of $\real$-calculus
+to the network represented in double-$\real$ fashion and use existing $\real$-valued
+backpropagation in autograd software.
 
 Take $f\colon \cplx \to \cplx$ and identify it with $F\colon \real^2 \to \cplx$ function
 via $F(u, v) = f(z)\vert_{z=u + j v}$. Wirtinger calculus introduces two formal derivative
@@ -181,6 +221,7 @@ df = \tfrac{\partial f}{\partial z} dz
    % \bigr)
    = \tfrac{\partial F}{\partial u} du
      + \tfrac{\partial F}{\partial v} dv
+   = dF
   \,. $$
 Thus the complex value and its conjugate are treated as independent variables. In this notation
 Cauchy-Riemann conditions are expressed as $
@@ -196,8 +237,6 @@ $. Thus Wirtinger calculus subsumes the usual $\cplx$-calculus, when $
 $, i.e. $
   f(z) = g(z, z^\hop) = F(\tfrac12 (z + z^\hop), \tfrac1{j 2} (z - z^\hop))
 $ does not depend on $z^\hop$.
-
-\todo{The chain rule}
 
 For a real-valued $f\colon \cplx \to \real$ we have $f^\hop = f$, whence $
   \tfrac{\partial f}{\partial z^\hop}
@@ -222,6 +261,19 @@ Hence the gradient of $f$ at $z$ is given by $
       + j \tfrac{\partial F}{\partial v}
 $. Thus it can be seen, that under Wirtinger calculus it is possible to reuse $\real$-backpropagation.
 
+% Show that $dh(z) = df(g(z)) dg(z)$.
+% $h(z) = f(g(z)) = F(G_r(u, v), G_i(u, v)) = H(u, v)$
+% $$
+% dH
+%   = \tfrac{\partial F}{\partial x} \tfrac{\partial G_r}{\partial u} du
+%   + \tfrac{\partial F}{\partial x} \tfrac{\partial G_r}{\partial v} dv
+%   + \tfrac{\partial F}{\partial y} \tfrac{\partial G_i}{\partial u} du
+%   + \tfrac{\partial F}{\partial y} \tfrac{\partial G_i}{\partial v} dv
+%   = \tfrac{\partial F}{\partial r} d\Re g(z)
+%   + \tfrac{\partial F}{\partial i} d\Im g(z)
+%   = df(\Re g(z) + j\Im g(z)) d g(z)
+%   = df(g(z)) d g(z)
+%   \,. $$
 % subsection backprop_through_c_networks (end)
 
 % section c_valued_networks (end)
