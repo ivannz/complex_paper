@@ -11,7 +11,7 @@
 
 \usepackage{booktabs}
 
-\usepackage{lipsum}
+% \usepackage{lipsum}
 
 \newcommand{\important}[1]{\textbf{\color{red} #1}}
 \newcommand{\verify}{\important{verify}}
@@ -20,6 +20,7 @@
 \newcommand{\todo}{\important}  % alias
 
 \newcommand{\real}{\mathbb{R}}
+\newcommand{\hop}{\dagger}
 \newcommand{\cplx}{\mathbb{C}}
 
 \renewcommand{\vec}{\overrightarrow}
@@ -188,28 +189,28 @@ Take $f\colon \cplx \to \cplx$ and identify it with $F\colon \real^2 \to \cplx$ 
 via $F(u, v) = f(z)\vert_{z=u + j v}$. Wirtinger calculus introduces two formal derivative
 operators
 $
-  \tfrac\partial{\partial z}
+  \tfrac{\partial}{\partial z}
     = \tfrac12 \bigl(
-      \tfrac\partial{\partial u}
-      - j \tfrac\partial{\partial v}
+      \tfrac{\partial}{\partial u}
+      - j \tfrac{\partial}{\partial v}
     \bigr)
 $ and $
-  \tfrac\partial{\partial z^\hop}
+  \tfrac{\partial}{\partial z^\hop}
     = \tfrac12 \bigl(
-      \tfrac\partial{\partial u}
-      + j \tfrac\partial{\partial v}
+      \tfrac{\partial}{\partial u}
+      + j \tfrac{\partial}{\partial v}
     \bigr)
 $, defines $dz = du + j dv$, $dz^\hop = du - j dv$, and the differential of $f$ as
 $$
 df = \tfrac{\partial f}{\partial z} dz
     + \tfrac{\partial f}{\partial z^\hop} dz^\hop
    % = \tfrac12\bigl(
-   %    \tfrac\partial{\partial u}
-   %    - j \tfrac\partial{\partial v}
+   %    \tfrac{\partial}{\partial u}
+   %    - j \tfrac{\partial}{\partial v}
    % \bigr) F (du - j dv)
    % + \tfrac12\bigl(
-   %    \tfrac\partial{\partial u}
-   %    + j \tfrac\partial{\partial v}
+   %    \tfrac{\partial}{\partial u}
+   %    + j \tfrac{\partial}{\partial v}
    % \bigr) F (du - j dv)
    % = \tfrac12 \bigl(
    %    \tfrac{\partial F}{\partial u} du - j \tfrac{\partial F}{\partial v} du
@@ -281,6 +282,19 @@ $. Thus it can be seen, that under Wirtinger calculus it is possible to reuse $\
 \section{Related research} % (fold)
 \label{sec:realted_research}
 
+\subsection{On DPD} % (fold)
+\label{sub:on_dpd}
+
+Physical Radio Frequency power amplifiers, being electronic devices, have imperfections
+such as parasitic inductance and capacitance, which make their gain respond non-linearly
+to the input modulated signal. Although these effects are minimized by careful circuit
+design, they cannot be eliminated entirely. Digital signal predistortion aims at rectifying
+non-linear
+
+ A non-linear block generating the reverse transfer
+    function to compensate for the non-linearities
+
+% subsection on_dpd (end)
 
 % section realted_research (end)
 
