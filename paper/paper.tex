@@ -305,32 +305,87 @@ In this section we outline and derive the variational dropout technique for comp
 valued networks, which re-traces the evolution of dropout technique for real-valued
 weights.
 
-Variational dropout, which enables automatic relevance detection by learning individual
-per-weight dropout rates, was proposed by \cite{kingma_variational_2015} as a natural
-generalization of the Gaussian Dropout \cite{srivastava_dropout_2014,wang_fast_2013},
-itself -- a generalization of the Binary (Bernoulli) Dropout technique \cite{hinton_improving_2012}.
+Variational dropout proposed by \cite{kingma_variational_2015} enables automatic relevance
+detection by learning individual per-weight dropout rates. This is a nautral generalization
+of the Gaussian Dropout \cite{srivastava_dropout_2014,wang_fast_2013}, which is itself a
+generalization of the Binary (Bernoulli) Dropout technique \cite{hinton_improving_2012},
+that regularizes the model by decorrelating inputs.
 
-Let $W \in\real^{n\times m}$, and $b\in \real^n$ and consider the action of a linear
-layer on its input $x$: $y = W x + b$ for $y\in \real^n$, $x\in \real^m$. The key idea
-of Bernoulli dropout is to mask elements in the matrix $W$ of the layer with some given
-probability $p$: $W = \theta \odot \xi$, there $\theta$ is the learnt weight matrix,
-and is an iid Bernoulli mask $\xi \sim \mathcal{B}(\{0, \tfrac1{1-p}\}, 1-p)$. During
-training, a dropout mask $\xi$ is used to compute $W$, and during evaluation the weights
-are fixed to the expectation of $W$ which is $\theta$. The discussion and analysis in
-\cite{kingma_variational_2015}, suggest that drawing one common dropout mask for all
-data in the minibatch reduces statistical efficiency the estimator of the weights'
-gradient.
+Let $W \in\real^{n\times m}$, $b\in \real^n$ and consider the action of a linear layer
+on its input $x\in \real^m$: $
+  y = W x + b$ for $y\in \real^n
+$. The key idea of Bernoulli dropout is to mask elements in the matrix $W$ of the layer
+with some given probability $p$: $W = \theta \odot \xi$ with $\theta$ being the learnt
+weight matrix, and $
+  \xi \sim \mathcal{B}(\{0, \tfrac1{1-p}\}, 1-p)
+$ -- an iid Bernoulli mask. During training, a dropout mask $\xi$ is used to compute $W$,
+and during evaluation the weights are fixed to the expectation of $W$ which is $\theta$.
+The discussion and analysis in \cite{kingma_variational_2015}, suggest that drawing one
+common dropout mask for all data in the minibatch reduces statistical efficiency the estimator
+of the weights' gradient in the sotchasit approximation of the evidence lower bound. 
 
 Gaussian dropout works in a similar fashion, except the dropout mask $\xi$ is iid
 $\mathcal{N}(1, \alpha=\tfrac{p}{1-p})$, i.e. a multiplicative Gaussian noise is
 injected into the network.
 
+The key idea of Varaitional Dropout is to assume a Gaussian Mean field variational
+approxumation of the posterior distribution of linear layer's weights (or convolutional
+kernels, with a caveat\footnote).  \footnotetext{
+  at each spatial patch of input data the kenrel is independently redarwn form the
+  VI distribution. This again helps with gradient variance reduction.
+}
+Weight $W$ are assumed to have independently distributed elements with $
+  w_{ij} \sim \mathcal{N}(\theta_{ij}, \sigma^2_{ij})
+$.
+
+In fact mutliplicative Gaussian dropout on weights $W$ is in fact itself a variational
+approximation with variance $\sigma^2_{ij} = \theta_{ij}^2 \tfrac{p}{1-p}$ determined
+by the dropout rate.
+
 % set by step we retell the story of kingmaetal2015
 
-\cite{kingma_variational_2015} also propose the \textit{local reparameterization trick},
-which improves efficiency stochastic gradient variational inference by translating
-the uncertainty from the weights into local output noise of each linear layer. Without
-this it would have been necessary to draw new set of random weights per each element
+Gaussian variational approximation enabled \cite{kingma_variational_2015} propose a
+\textit{local reparameterization trick}, which reduces the variance of the gradients
+in SGVB and does not resample $W$ per element of a minibatch. It relies on the \verify{stability}
+of Gaussians under linear transformations. Indeed, if $W$ is a Gaussian martrix with
+independently distributed $
+  W_{ij} \sim \mathcal{N}(\theta_{ij}, \sigma^2_{ij})
+$, then we have
+$$
+y = W x + b
+  = I W x + b
+  = (I \otimes x^\top) \vec{W} + b
+  \,, $$
+where $\vec{\cdot}$ denotes flattening in lexicographic order of indices (row-major),
+for which we have the identity $\vec{A B C} = (A \otimes C^\top) \vec{B}$, \cite{cookbook2012}.
+% It follows from the definition of the Kronecker product of $A$ and $C^\top$ and the
+% row-major order vectorization.
+From $\vec{W} \sim \mathcal{N}_{[n\times m]}(\vec{\theta}, \mathop{diag}\Sigma)$ we get
+the following distribution
+$$
+y \sim \mathcal{N}_{n}
+  \bigl(
+    \theta x + b,
+    \sum_{i} e_i e_i^\top \sum_j \sigma^2_{ij} x_j^2
+  \bigr)
+  \,, $$
+where the variance follows from the identity $(A\otimes B) (C\otimes D) = AC\otimes BD$,
+\cite{cookbook2012}:
+$$
+% (I \otimes x^\top) \mathop{diag}{\vec{\Sigma}} (I \otimes x^\top)^\top
+\ldots
+  % = \sum_{ij} (I \otimes x^\top) e_i \otimes e_j
+  %   \sigma^2_{ij} (e_i \otimes e_j)^\top (I \otimes x^\top)^\top
+  = \sum_{ij} e_i (x^\top e_j) \sigma^2_{ij} (x^\top e_j) e_i^\top
+  = \sum_{i} e_i e_i^\top \sum_j \sigma^2_{ij} x_j^2
+  \,, $$
+with $e_i$ being the $i$-th unit vector of dimensionality conforming to the expression
+is is involved with.
+
+
+and instead
+translating the uncertainty from the weights into local output noise of each linear layer.
+Without this it would have been necessary to draw new set of random weights per each element
 in a mini-batch.
 
 $$
@@ -350,39 +405,6 @@ $$
   \,, $$
 with the appropriate change of variables in the Kullback-Leibler divergence.
 ($\alpha_{ij} = \tfrac{\sigma_{ij}^2}{\lvert \theta_{ij}\rvert^2}$).
-
-To recap the derivation in \cite{kingma_variational_2015}, let $W$ be a random martrix
-with independently distributed elements, each according to $\mathcal{N}(\theta_{ij}, \sigma^2_{ij})$.
-Then the action of a linear layer on $x$ is described as 
-$$
-  y = W x + b = I W x + b
-    = (I \otimes x^\top) \vec{W} + b
-  \,, $$
-where $\vec{\cdot}$ denotes flattening in lexicographic order of indices (row-major),
-for which we have the identity $\vec{A B C} = (A \otimes C^\top) \vec{B}$, \cite{cookbook2012}.
-% It follows from the definition of the Kronecker product of $A$ and $C^\top$ and the
-% row-major order vectorization.
-Next, from $\vec{W}\sim \mathcal{N}_{[n\times m]}(\vec{\theta}, \mathop{diag}\Sigma)$
-we get the following distribution for the output:
-$$
-  y \sim \mathcal{N}_{n}
-    \bigl(
-      \theta x + b,
-      \sum_{i} e_i e_i^\top \sum_j \sigma^2_{ij} x_j^2
-    \bigr)
-  \,, $$
-where the variance follows from the identity $(A\otimes B)(C\otimes D) = AC\otimes BD$,
-\cite{cookbook2012}:
-$$
-  % (I \otimes x^\top) \mathop{diag}{\vec{\Sigma}} (I \otimes x^\top)^\top
-  \ldots
-    % = \sum_{ij} (I \otimes x^\top) e_i \otimes e_j
-    %   \sigma^2_{ij} (e_i \otimes e_j)^\top (I \otimes x^\top)^\top
-    = \sum_{ij} e_i (x^\top e_j) \sigma^2_{ij} (x^\top e_j) e_i^\top
-    = \sum_{i} e_i e_i^\top \sum_j \sigma^2_{ij} x_j^2
-  \,, $$
-with $e_i$ being the $i$-th unit vector of dimensionality conforming to the expression
-is is involved with.
 
 Criticism of \cite{gale_state_2019} implies that $\ell_0$-variational dropout,
 proposed by \cite{louizos_learning_2017} and based on the concrete binary distribution
