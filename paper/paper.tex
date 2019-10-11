@@ -23,7 +23,7 @@
 \newcommand{\todo}[1]{{\color{blue} [TODO]} \important{#1}}
 
 \newcommand{\real}{\mathbb{R}}
-\newcommand{\hop}{\dagger}
+\newcommand{\hop}{\ast}
 \newcommand{\cplx}{\mathbb{C}}
 
 \renewcommand{\vec}{\overrightarrow}
@@ -63,7 +63,7 @@ including representation and linear layers (dense and convolutional) as well
 as $\cplx$-valued activations and complex batch-normalization and weight initialization.
 
 Following \cite{trabelsi_deep_2017} we identify $\cplx$ with $\real^2$ via $
-  z_\mathrm{r} + i z_\mathrm{i} \mapsto (z_\mathrm{r}, z_\mathrm{i})
+  z_\mathrm{r} + j z_\mathrm{i} \mapsto (z_\mathrm{r}, z_\mathrm{i})
 $, storing the real and imaginary parts in interleaved format, and emulate $\cplx$-algebra
 using $\real$-valued arithmetic. Thus a $\cplx$-network is, essentially, a $\real$-network
 with \textit{double} the layers' widths to accommodate real and imaginary parts and
@@ -108,7 +108,7 @@ $$
     \end{pmatrix}
   \,. $$
 Other algebraic operations that might be used in a networks are also designed in such a way as
-to honour $\cplx$-operations. It is worth pointing out that the key advantage of the $\cplx$-%
+to respect $\cplx$-operations. It is worth pointing out that the key advantage of the $\cplx$-%
 constraints is that they permit use of Strassen's $3$M multiplication algorithm, potentially
 saving up to $25\%$ on floating point multiplications.
 
@@ -140,19 +140,18 @@ L z
   = U \Re z - V \Im z + j \bigl( V \Re z + U \Im z \bigr)
   % = (U + j V) z
   \,. $$
-
-Are these operators unique? Yes. Indeed, for $z$ with $\Im z = 0$ 
+These operators are unique since for every $z$ with $\Im z = 0$ we have
 $$
 U_1 \Re z + j V_1 \Re z
   = U_1 \Re z - V_1 \Im z + j \bigl( V_1 \Re z + U_1 \Im z \bigr)
   = L z
   = U_2 \Re z - V_2 \Im z + j \bigl( V_2 \Re z + U_2 \Im z \bigr)
   = U_2 \Re z + j V_2 \Re z
-  \,, $$
-implies that $U_1 = U_2$ and $V_1 = V_2$ pointwise.
+  \,. $$
 
-As far as non-linearities are concerned, \cite{trabelsi_deep_2017} consider a few truly complex-%
-valued ones, that are nevertheless not $\cplx$-differentiable: the most frequently used activations are the common $\real$-valued non-linearities applied to real and
+As far as non-linearities are concerned, \cite{trabelsi_deep_2017} consider a few truly
+complex-valued ones, that are nevertheless not $\cplx$-differentiable: the most frequently
+used activations are the common $\real$-valued non-linearities applied to real and
 imaginary components independently.
 
 \todo{something about activations}
@@ -173,21 +172,22 @@ $
 \subsection{Backprop through $\cplx$-networks} % (fold)
 \label{sub:backprop_through_c_networks}
 
-The question of differentiability of complex-valued networks is tricky, since they include
-usually non-differentiable non-linearities. However, a more severe problem stems from the loss
-objective begin real-valued. Indeed, if $f\colon \cplx \to \cplx$ were $\cplx$-differentiable
+The question of differentiability of complex-valued networks is tricky, since they usually
+use non-differentiable non-linearities. However, a more severe problem stems from the loss
+objective being real-valued. Indeed, if $f\colon \cplx \to \cplx$ were $\cplx$-differentiable
 (holomorphic), the composition of $f$ with a non-trivial $h \colon \cplx\to \real$ makes it
 not $\cplx$-differentiable with respect parameters, since $h$ violates Cauchy-Riemann conditions.
 This problem is commonly dealt with by using Wirtinger, or $\cplx\real$ calculus, which subsumes
-$\cplx$-calculus, but is also applicable to non-analytic (non-holomorphic) functions of
-$\cplx$-argument, \cite{adali_complex-valued_2011} and \cite{trabelsi_deep_2017}. In essence,
-this approach views $f$ as a function of two independent variables $z$ and its conjugate $z^\hop$
-and extends the derivatives appropriately. This approach nautrally extends the chain rule to
-nonanalytic functions and can be directly reformulated in terms of derivatives with respect
-to real and imaginary parts, making it possible to use and apply the rules of $\real$-calculus
-to the network represented in double-$\real$ fashion and use existing $\real$-valued
-backpropagation in autograd software.
+$\cplx$-calculus, but is also applicable to non-holomorphic functions of $\cplx$-argument,
+\cite{adali_complex-valued_2011} and \cite{trabelsi_deep_2017}. In essence, this approach
+views $f$ as a function of two independent variables $z$ and its conjugate $z^\hop$ and
+symbolically redefines the derivatives appropriately. This approach naturally extends the
+chain rule to non-holomorphic functions and can be directly reformulated in terms of derivatives
+with respect to real and imaginary parts, making it possible to use and apply the rules of
+$\real$-calculus to the networks represented in double-$\real$ fashion and use existing
+$\real$-valued backpropagation in autograd software.
 
+% essential intro into Wirtinger calculus (CR)
 Take $f\colon \cplx \to \cplx$ and identify it with $F\colon \real^2 \to \cplx$ function
 via $F(u, v) = f(z)\vert_{z=u + j v}$. Wirtinger calculus introduces two formal derivative
 operators
@@ -239,7 +239,9 @@ $ and $
 $. Thus Wirtinger calculus subsumes the usual $\cplx$-calculus, when $
   \tfrac{\partial f}{\partial z^\hop} = 0
 $, i.e. $
-  f(z) = g(z, z^\hop) = F(\tfrac12 (z + z^\hop), \tfrac1{j 2} (z - z^\hop))
+  f(z)
+    % = g(z, z^\hop)
+    = F(\tfrac12 (z + z^\hop), \tfrac1{j 2} (z - z^\hop))
 $ does not depend on $z^\hop$.
 
 For a real-valued $f\colon \cplx \to \real$ we have $f^\hop = f$, whence $
@@ -257,13 +259,18 @@ df
   % + \bigl(
   %   \bigl( \tfrac{\partial f}{\partial z^\hop} \bigr)^\hop dz
   % \bigr)^\hop
-  = 2 \Re \bigl( \tfrac{\partial f}{\partial z^\hop} \bigr)^\hop dz
+  = 2 \Re \Bigl(
+    \bigl( \tfrac{\partial f}{\partial z^\hop} \bigr)^\hop dz
+  \Bigr)
+  = 2 \Re \bigl(
+    \tfrac{\partial f}{\partial z} dz
+  \bigr)
   \,. $$
-Hence the gradient of $f$ at $z$ is given by $
+Hence the gradient, being the direction of \rewrite{maximal growth} of $f$ at $z$ is given by $
   \tfrac{\partial f}{\partial z^\hop}
     = \tfrac{\partial F}{\partial u}
       + j \tfrac{\partial F}{\partial v}
-$. Thus it can be seen, that under Wirtinger calculus it is possible to reuse $\real$-backpropagation.
+$. Thus under Wirtinger calculus it is possible to reuse $\real$-backpropagation.
 
 % Show that $dh(z) = df(g(z)) dg(z)$.
 % $h(z) = f(g(z)) = F(G_r(u, v), G_i(u, v)) = H(u, v)$
@@ -288,14 +295,33 @@ $. Thus it can be seen, that under Wirtinger calculus it is possible to reuse $\
 \subsection{On DPD} % (fold)
 \label{sub:on_dpd}
 
-Physical Radio Frequency power amplifiers, being electronic devices, have imperfections
-such as parasitic inductance and capacitance, which make their gain respond non-linearly
-to the input modulated signal. Although these effects are minimized by careful circuit
-design, they cannot be eliminated entirely. Digital signal predistortion aims at rectifying
-non-linear
+Radio Frequency power amplifiers, being physical electronic devices, have imperfections such
+as parasitic inductance and capacitance. This coupled with them being operated in saturation,
+make their gain respond non-linearly to the input signal, adding undesirable interference and
+spectral spreading. Although these effects can be minimized by careful circuit design, they
+cannot be eliminated entirely \cite{citation_needed}. Digital signal predistortion aims at
+linearizing the amplifier, by introducing signal-dependent compensating component to the input.
+At the same time the non-linearities should be corrected on-device efficiently and with low
+latency in order to reduce cross-channel interference and enable higher bandwidth utilization
+in wireless transmitters.
 
- A non-linear block generating the reverse transfer
-    function to compensate for the non-linearities
+\cite{traverso2019} uses \rewrite{some group delay estimators of something};
+\cite{schoukens2016} develops an iterative approach to inference of the predistortion for a given
+signal \todo{unclear};
+
+\cite{traver2019} models the predistorter as a paired real dense shallow neural network and
+demonstrates viability and competitiveness of this approach against polynomial based DPD on an
+FPGA implementation.
+
+% About rfWEbLab
+The ``RFWebLab'' platform is remote RF power amplifier setup with web-based API, that feeds
+the user-submitted quadrature signal through a class AB GaN amplifier and sends-back the measured
+output \cite{dpdcompetiton2018}. It is maintained by the GHz Centre at Chalmers University of
+Technolgy and National Instruments \cite{landin_rfweblab_2015}.
+
+We use a custom-written python interface to the WebLab setup that is compatible with the MATLAB
+interface form the setup owner.
+
 
 % subsection on_dpd (end)
 
@@ -309,7 +335,7 @@ valued networks, which re-traces the evolution of dropout technique for real-val
 weights.
 
 Variational dropout proposed by \cite{kingma_variational_2015} enables automatic relevance
-detection by learning individual per-weight dropout rates. This is a nautral generalization
+detection by learning individual per-weight dropout rates. This is a natural generalization
 of the Gaussian Dropout \cite{srivastava_dropout_2014,wang_fast_2013}, which is itself a
 generalization of the Binary (Bernoulli) Dropout technique \cite{hinton_improving_2012},
 that regularizes the model by decorrelating inputs.
@@ -325,23 +351,23 @@ $ -- an iid Bernoulli mask. During training, a dropout mask $\xi$ is used to com
 and during evaluation the weights are fixed to the expectation of $W$ which is $\theta$.
 The discussion and analysis in \cite{kingma_variational_2015}, suggest that drawing one
 common dropout mask for all data in the minibatch reduces statistical efficiency the estimator
-of the weights' gradient in the sotchasit approximation of the evidence lower bound. 
+of the weights' gradient in the stochastic approximation of the evidence lower bound. 
 
-Gaussian dropout works in a similar fashion, except the dropout mask $\xi$ is iid
-$\mathcal{N}(1, \alpha=\tfrac{p}{1-p})$, i.e. a multiplicative Gaussian noise is
-injected into the network.
+Gaussian dropout works in a similar fashion, except the dropout mask $\xi$ is iid $
+  \mathcal{N}(1, \alpha=\tfrac{p}{1-p})
+$, i.e. a multiplicative Gaussian noise is injected into the network.
 
-The key idea of Varaitional Dropout is to assume a Gaussian Mean field variational
-approxumation of the posterior distribution of linear layer's weights (or convolutional
+The key idea of Variational Dropout is to assume a Gaussian Mean field variational
+approximation of the posterior distribution of linear layer's weights (or convolutional
 kernels, with a caveat\footnote).  \footnotetext{
-  at each spatial patch of input data the kenrel is independently redarwn form the
+  at each spatial patch of input data the kernel is independently redrawn form the
   VI distribution. This again helps with gradient variance reduction.
 }
 Weight $W$ are assumed to have independently distributed elements with $
   w_{ij} \sim \mathcal{N}(\theta_{ij}, \sigma^2_{ij})
 $.
 
-In fact mutliplicative Gaussian dropout on weights $W$ is in fact itself a variational
+In fact multiplicative Gaussian dropout on weights $W$ is in fact itself a variational
 approximation with variance $\sigma^2_{ij} = \theta_{ij}^2 \tfrac{p}{1-p}$ determined
 by the dropout rate.
 
@@ -349,13 +375,14 @@ by the dropout rate.
 
 Gaussian variational approximation enabled \cite{kingma_variational_2015} propose a
 \textit{local reparameterization trick}, which reduces the variance of the gradients
-in SGVB and does not resample $W$ per element of a minibatch. It relies on the \verify{stability}
-of Gaussians under linear transformations. Indeed, if $W$ is a Gaussian martrix with
-independently distributed $
+in SGVB and does not resample $W$ per element of a minibatch. It relies the closure
+of Gaussian distribution under linear transformations. Indeed, if $W$ is a Gaussian
+matrix with independently distributed $
   W_{ij} \sim \mathcal{N}(\theta_{ij}, \sigma^2_{ij})
 $, then we have
 $$
-y = W x + b
+y 
+  = W x + b
   = I W x + b
   = (I \otimes x^\top) \vec{W} + b
   \,, $$
@@ -372,11 +399,10 @@ y \sim \mathcal{N}_{n}
     \sum_{i} e_i e_i^\top \sum_j \sigma^2_{ij} x_j^2
   \bigr)
   \,, $$
-where the variance follows from the identity $(A\otimes B) (C\otimes D) = AC\otimes BD$,
-\cite{cookbook2012}:
+where the variance follows from $(A\otimes B) (C\otimes D) = AC\otimes BD$, \cite{cookbook2012}:
 $$
-% (I \otimes x^\top) \mathop{diag}{\vec{\Sigma}} (I \otimes x^\top)^\top
 \ldots
+  = (I \otimes x^\top) \mathop{diag}{\vec{\Sigma}} (I \otimes x^\top)^\top
   % = \sum_{ij} (I \otimes x^\top) e_i \otimes e_j
   %   \sigma^2_{ij} (e_i \otimes e_j)^\top (I \otimes x^\top)^\top
   = \sum_{ij} e_i (x^\top e_j) \sigma^2_{ij} (x^\top e_j) e_i^\top
