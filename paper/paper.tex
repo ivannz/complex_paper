@@ -1,5 +1,8 @@
 \documentclass[a4paper,10pt]{article}
 
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
 \usepackage{amsmath}
 \usepackage{amssymb}
 
@@ -14,10 +17,10 @@
 % \usepackage{lipsum}
 
 \newcommand{\important}[1]{\textbf{\color{red} #1}}
-\newcommand{\verify}{\important{verify}}
-\newcommand{\rewrite}{\important{rewrite}}
-
-\newcommand{\todo}{\important}  % alias
+\newcommand{\attn}[2]{\textbf{\color{red} #2~\textsuperscript{\textit{[#1]}}}}
+\newcommand{\verify}[1]{\attn{verify}{#1}}
+\newcommand{\rewrite}[1]{\attn{rewrite}{#1}}
+\newcommand{\todo}[1]{{\color{blue} [TODO]} \important{#1}}
 
 \newcommand{\real}{\mathbb{R}}
 \newcommand{\hop}{\dagger}
