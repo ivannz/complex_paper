@@ -328,16 +328,76 @@ In this section we outline and derive the variational dropout technique for comp
 valued networks, which re-traces the evolution of dropout technique for real-valued
 weights.
 
-Variational dropout proposed by \cite{kingma_variational_2015} enables automatic relevance
-detection by learning individual per-weight dropout rates. This is a natural generalization
-of the Gaussian Dropout \cite{srivastava_dropout_2014,wang_fast_2013}, which is itself a
-generalization of the Binary (Bernoulli) Dropout technique \cite{hinton_improving_2012},
-that regularizes the model by decorrelating inputs.
+Variational dropout proposed by \cite{kingma_variational_2015} enables automatic parameter
+relevance detection by learning individual per-parameter dropout rates in Gaussian dropout,
+\cite{srivastava_dropout_2014,wang_fast_2013}, which generalizes Binary (Bernoulli) Dropout
+\cite{hinton_improving_2012}.
 
-Let $W \in\real^{n\times m}$, $b\in \real^n$ and consider the action of a linear layer
-on its input $x\in \real^m$: $
-  y = W x + b$ for $y\in \real^n
-$. The key idea of Bernoulli dropout is to mask elements in the matrix $W$ of the layer
+\begin{quote}
+% exceprts from kingmaetal2015
+Bernoulli dropout alleviates the problem of overfitting
+Gaussian dropout is in fact a variational approximation with fixed rate and thus optimizes ELBO
+Allowing per-parameter rates enables flexible posterior approximations.
+
+Bayesian posterior inference over the parameters of a network allows some control of overfitting;
+``exact inference is intractable, but efficient approximation schemes can be designed''
+
+Explore a trick that translates the uncertainty about global parameters into local noise, that
+is independent across the elements of the minibatch.
+
+Effectively regularizes by adding random noise.
+
+bayesian inference: update prior belief using model likelihood of iid data into posterior belief
+Exact psoterior -- intractable, approximations needed
+variational inference: cast posterior inference as optimization over the approximation family
+
+%sgvb
+the gradient in sgvb is unbiased estimate of the $\log$-likelihood part of the elbo
+
+in practice the performance of stochastic gradient methods depends on the variance of the gradient
+field. The variance of (the value of) the minibatch estiamte of the likelihood term has a
+non-negligible intrabatch covariance term. To ensure zero covariance we can sample a separate
+$\omega\sim q_\omega(\theta)$ for each elemnt in the minibatch, 
+
+%lrt
+whenever source of uncertainty can be translated to local noise in the intermediate states
+since the expected likelihood depends on the parameters through the activations of the layer.
+
+sampling the activations directly, without the parameter randomness gives a low cost efficient
+MC estimator (statistical efficiency).
+
+Factorized Gaussian -- closure under linear transformations -- sample the local activation noise
+from an appropriate Gaussian 
+
+% on dropout
+variational dropout: a reinterpretation of dropout with continuous noise as a variational inference
+method. allow adaptive,data dependent dropout rates.
+
+\end{quote}
+
+
+% a comment on Bernoulli dropout
+The key idea of Bernoulli dropout is to randomly mask input features of a layer during
+training with in order to learn decorrelated feature maps. In a recent study of network
+capacity for multitask learning, \cite{multitask2019}, it was shown, that associating
+each dataset (task) with a context, that masks a subset of the parameters, allows non-%
+destructive `packing' of the tasks in orthogonal on average `subsets' of a single set
+of weights, without much interference between tasks. This lends support for beneficial
+effects of Bernulli Dropout on test performance, since, in effect, the network learns
+to perform well on identical copies of the same task with different (binary) contexts
+with a single parameter set.
+
+% exposition
+To simplify exposition of the proposed technique we shall consider the linear dense layer,
+and afterwards outline the caveats for convolutional layers. We begin with $\real$-valued
+layer and later focus on $\cplx$-valued layer.
+
+, that helps with model overfitting.
+% plan
+
+A linear layer is parameterized by $W \in\real^{n \times m}$ and bias $b\in \real^n$ and
+acts on its input $x\in \real^m$ via $y = W x + b$ with $y\in \real^n$. The key idea of
+Bernoulli dropout is to mask elements in the matrix $W$ of the layer
 with some given probability $p$: $W = \theta \odot \xi$ with $\theta$ being the learnt
 weight matrix, and $
   \xi \sim \mathcal{B}(\{0, \tfrac1{1-p}\}, 1-p)
