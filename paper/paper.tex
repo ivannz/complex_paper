@@ -24,6 +24,7 @@
 
 \newcommand{\real}{\mathbb{R}}
 \newcommand{\cplx}{\mathbb{C}}
+\newcommand{\tr}[1]{\mathop{tr}{#1}}
 
 \newcommand{\hop}{{\mkern-1.5mu\dagger}}
 \newcommand{\conj}[1]{\overline{#1}}
@@ -297,11 +298,11 @@ At the same time the non-linearities should be corrected on-device efficiently a
 latency in order to reduce cross-channel interference and enable higher bandwidth utilization
 in wireless transmitters.
 
-\cite{traverso2019} uses \rewrite{some group delay estimators of something};
-\cite{schoukens2016} develops an iterative approach to inference of the predistortion for a given
+\cite{traverso_low_2019} uses \rewrite{some group delay estimators of something};
+\cite{schoukens_obtaining_2017} develops an iterative approach to inference of the predistortion for a given
 signal \todo{unclear};
 
-\cite{traver2019} models the predistorter as a paired real dense shallow neural network and
+\cite{tarver_design_2019} models the predistorter as a paired real dense shallow neural network and
 demonstrates viability and competitiveness of this approach against polynomial based DPD on an
 FPGA implementation.
 
@@ -320,7 +321,7 @@ interface form the setup owner.
 % section realted_research (end)
 
 \section{Complex Variational Dropout} % (fold)
-\label{sec:complex_varaitional_dropout}
+\label{sec:complex_variational_dropout}
 
 In this section we outline and derive the variational dropout technique for complex-%
 valued networks, which re-traces the evolution of dropout technique for real-valued
@@ -355,7 +356,7 @@ the gradient in sgvb is unbiased estimate of the $\log$-likelihood part of the e
 in practice the performance of stochastic gradient methods depends on the variance of the gradient
 field. The variance of (the value of) the minibatch estiamte of the likelihood term has a
 non-negligible intrabatch covariance term. To ensure zero covariance we can sample a separate
-$\omega\sim q_\omega(\theta)$ for each elemnt in the minibatch, 
+$\omega\sim q_\omega(\theta)$ for each element in the minibatch, 
 
 %lrt
 whenever source of uncertainty can be translated to local noise in the intermediate states
@@ -493,9 +494,9 @@ of \cite{maddison_concrete_2016}, works consistently better than the variational
 Gaussian dropout.
 
 Maths and related results \cite{pav_moments_2015,taubock_complex-valued_2012},
-and \cite{karseras_caution:_nodate}
+and \cite{karseras_caution:_2014}
 
-% section complex_varaitional_dropout (end)
+% section complex_variational_dropout (end)
 
 \section{Experiments} % (fold)
 \label{sec:Experiments}
@@ -517,8 +518,8 @@ image classification (CIFAR-10, CIFAR-100, reduced train of SVHN), music-transcr
 
 \cite{monning_evaluation_2018}
 \cite{jankowski_complex-valued_1996}
-\cite{amin_complex-valued_nodate}
-\cite{sarroff_complex_nodate}
+\cite{amin_complex-valued_2012}
+\cite{sarroff_complex_2018}
 
 % subsection tasks_and_datasets (end)
 
@@ -536,26 +537,30 @@ image classification (CIFAR-10, CIFAR-100, reduced train of SVHN), music-transcr
 \label{sub:c_gaussian_distribution}
 
 A random vector $z\in \cplx^m$ is said to have complex Gaussian distribution, if its characteristic
-function is (${\cdot}^\hop$ denotes Hermitian conjugate, i.e. $A^\hop = (\conj{A})^\top$)
+function is
 $$
-z \sim \mathcal{N}^\cplx_m(z \vert \mu, \Gamma, C)
+z \sim \mathcal{N}^{\cplx}_m(z \vert \mu, \Gamma, C)
   \Leftrightarrow
-  \mathbb{E}_{z} e^{j \Re{(t^\hop z)}}
+  \mathbb{E}_{z} e^{j \Re{(t^{\hop} z)}}
   = \exp{\{
-    j \Re{t^\hop \mu} - \tfrac14 \bigl(
-      t^\hop \Gamma t + \Re{t^\hop C \conj{t}}
+    j \Re{(t^{\hop} \mu)}
+    - \tfrac14 \bigl(
+      t^{\hop} \Gamma t + \Re{(t^{\hop} C \conj{t})}
     \bigr)
   \}}
   \,, $$
 where $\mu \in \cplx^m$ is the mean, $\Gamma, C \in \cplx^{m\times m}$ are complex covariance
-and relation matrices satisfying $C^\top = C$, $\Gamma^\hop = \Gamma$, $\Gamma \succeq 0$,
+and relation matrices satisfying $C^\top = C$, $\Gamma^{\hop} = \Gamma$, $\Gamma \succeq 0$,
 and $
-  \conj{\Gamma} \succeq C^\hop \Gamma^{-1} C
+  \conj{\Gamma} \succeq C^{\hop} \Gamma^{-1} C
 $. The matrices $\Gamma$ and $C$ correspond to $
-  \mathbb{E} (z - \mu)(z - \mu)^\hop
+  \mathbb{E} (z - \mu)(z - \mu)^{\hop}
 $ and $
   \mathbb{E} (z - \mu)(z - \mu)^\top
-$, respectively.
+$, respectively. Here ${\cdot}^{\hop}$ denotes Hermitian conjugate, i.e. $
+  A^{\hop} = (\conj{A})^\top
+$, ${\cdot}^{\top}$ -- the matrix transpose, and $\conj{\cdot}$ -- the complex conjugation
+elementwise.
 %
 % The intuition behind them is more apparent in the complex univariate case ($m=1$):
 % here $\Gamma = \sigma^2 \geq 0$, and $C$ can be represented as $\sigma^2 \rho \in \cplx$ with $
@@ -579,8 +584,8 @@ $, respectively.
 
 A characterization of a $\cplx$-Gaussian vector, more useful for the current study, is via the
 equivalence with the paired real multivariate Gaussian distribution:
-$$
-z \sim \mathcal{N}^\cplx_m(\mu, \Gamma, C)
+\begin{equation}  \label{eq:cn-paired-real-density}
+z \sim \mathcal{N}^{\cplx}_m(\mu, \Gamma, C)
   \Leftrightarrow
   \begin{pmatrix}
     \Re z \\ \Im z
@@ -595,7 +600,8 @@ z \sim \mathcal{N}^\cplx_m(\mu, \Gamma, C)
         \Im{(\Gamma + C)} &   \Re{(\Gamma - C)}
       \end{pmatrix}
     \biggr)
-  \,. $$
+  \,.
+\end{equation}
 It is possible to recover the $\cplx$ covariance and relation matrices from a block covariance
 matrix $\Sigma$ of a \textit{non-degenerate} paired real Gaussian vector through
 $$
@@ -618,14 +624,287 @@ $$
   \end{cases}
   \,. $$
 
+A $\cplx$-Gaussian random vector $z$ is called \textit{proper}, when $C = 0$, i.e.
+the relation $ $
+
 % subsection c_gaussian_distribution (end)
 
-\section{$\log$-of a non-central $\chi^2$ distribution} % (fold)
-\label{sec:log_of_a_non_central_chi_sq_distribution}
+\subsection{Entropy of a $\cplx$-gaussian} % (fold)
+\label{sub:entropy_of_a_c_gaussian}
 
-\cite{lapidoth_capacity_2003}
+The (differential) entropy of a multivariate Gaussian $
+  x \sim q(x) = \mathcal{N}_n(x \vert \mu, \Sigma)
+$ is
+$$
+- \mathbb{E}_{x\sim q(x)} \log q(x)
+  % = \tfrac12 \log \det{(2 \pi \Sigma)}
+  % + \tfrac12 \mathop{tr}{(
+  %     \Sigma^{-1}
+  %     \mathbb{E}_{x\sim q(x)}
+  %       (x - \mu) (x - \mu)^\top
+  %   )}
+  = \tfrac12 \log \det{(2 \pi e \Sigma)}
+  \,, $$
+whence follows the expression for the entropy of a general $\cplx$-Gaussian random vector
+$
+  z \sim q(z)
+    = \mathcal{N}^{\cplx}_n(z\vert \mu, \Gamma, C)
+$
+\begin{align}
+\cdots
+  &
+  % = \tfrac12 \log \det{(2 \pi e \Sigma)}
+  = \tfrac12 \log \det{\biggl(
+    2 \pi e \tfrac12
+    \begin{pmatrix}
+      \Re{(\Gamma + C)} & - \Im{(\Gamma - C)} \\
+      \Im{(\Gamma + C)} &   \Re{(\Gamma - C)}
+    \end{pmatrix}
+  \biggr)}
+  \notag \\
+  &
+  = \begin{bmatrix}
+    r_1 + j r_2 \to r_1 \\  % sufficient for C=0 case
+    j r_1 + r_2 \to r_2     % j conj of transformation for r1, det x 2
+  \end{bmatrix}
+  = \tfrac12 \log \det{\biggl(
+    % \det{[I & j I \\ j I & I]} = \det{I} \det{I - jI I^{-1} jI} = \det{2 I}
+    % left apply : thus dividing by \sqrt{2}
+    \tfrac1{\sqrt{2}} 2 \pi e \tfrac12
+    \begin{pmatrix}
+      \Gamma + C & j (\Gamma - C) \\
+      j (\conj{\Gamma} + \conj{C}) & \conj{\Gamma} - \conj{C}
+    \end{pmatrix}
+  \biggr)}
+  \notag \\
+  &
+  = \begin{bmatrix}
+    c_1 - j c_2 \to c_1 \\  % -j conj of transformation for c2
+    c_2 - j c_1 \to c_2     % sufficient for C=0 case
+  \end{bmatrix}
+  = \tfrac12 \log \det{\biggl(
+    % \det{[I & - j I \\ - j I & I]} = \det{I} \det{I - (-j)I I^{-1} (-j)I} = \det{2 I}
+    % right apply : thus dividing by \sqrt{2}
+    \tfrac12 2 \pi e \tfrac12
+    \begin{pmatrix}
+      2 \Gamma     & - 2 j C \\
+      2 j \conj{C} & 2 \conj{\Gamma}
+    \end{pmatrix}
+  \biggr)}
+  \notag \\
+  &
+  = \begin{bmatrix}
+    r_2 - j \conj{C} \Gamma^{-1} r_1 \to r_2
+  \end{bmatrix}
+  = \tfrac12 \log \det{\biggl(
+    % \det{[I & 0 \\ - j \conj{C} \Gamma^{-1} & I]} = \det{I} = 1
+    \pi e
+    \begin{pmatrix}
+      \Gamma & - j C \\
+      0 & \conj{\Gamma} - \conj{C} \Gamma^{-1} C
+    \end{pmatrix}
+  \biggr)}
+  \notag \\
+  &
+  = \tfrac12 \log \det{(\pi e \Gamma)} \det{(\pi e (\conj{\Gamma} - \conj{C} \Gamma^{-1} C))}
+  \,,
+\end{align}
+implicitly using the fact that for a non-singular $\Omega$ we have $
+  \det{A}
+    = \tfrac{\det{(\Omega A)}}{\det{\Omega}}
+    = \tfrac{\det{(A \Omega)}}{\det{\Omega}}
+$. The entropy of a proper $\cplx$-Gaussian random vector ($C = 0$) is thus 
+\begin{equation}  \label{eq:cn-proper-entropy}
+\cdots
+  % = \tfrac12 \log \det{(\pi e \Gamma)} \det{(\pi e (\conj{\Gamma} - \conj{C} \Gamma^{-1} C))}
+  = \tfrac12 \log \det{(\pi e \Gamma)} \det{(\pi e \conj{\Gamma})}
+  % = \tfrac12 \log \det{(\pi e \Gamma)} \conj{\det{(\pi e \Gamma)}}
+  = \tfrac12 \log \bigl\lvert \det{(\pi e \Gamma)} \bigr\rvert^2
+  = \log \bigl\lvert \det{(\pi e \Gamma)} \bigr\rvert
+  \,,
+\end{equation}
+since $\det$ is a multilinear operator and commutes with complex conjugation.
 
-% section log_of_a_non_central_chi_sq_distribution (end)
+% subsection entropy_of_a_c_gaussian (end)
+
+\subsection{Kulback-Leibler divergence} % (fold)
+\label{sub:kulback_leibler_divergence}
+
+Recall that we use mean field variational approximation for the parameters: $
+  W \sim q(W)
+    = \bigotimes_{ij} q(\omega_{ij})
+$ with proper complex Gaussian distributions of each element $
+  q(\omega_{ij})
+    = \mathcal{N}^{\cplx}\bigl(
+      \omega_{ij} \big\vert
+      \mu_{ij}, \sigma^2_{ij}, 0
+    \bigr)
+$. Assuming factorized prior belief $\pi(W)$ on the parameters $W$, the KL-divergence
+term in ELBO \eqref{eq:elbo} is
+\begin{equation}  \label{eq:elbo-general-kl-div}
+KL(q(W) \| \pi(W))
+  % = \mathbb{E}_{W \sim q(W)} \log \tfrac{q(W)}{\pi(W)}
+  % = \sum_{ij} \mathbb{E}_{\omega_{ij} \sim q(\omega_{ij})}
+  %   \log \tfrac{q(\omega_{ij})}{\pi(\omega_{ij})}
+  = \sum_{ij} KL\bigl(
+    q(\omega_{ij}) \| \pi(\omega_{ij})
+  \bigr)
+  \,.
+\end{equation}
+In the derivations in the sections to come we shall omit the subscripts for brevity.
+
+\todo{why this is better than a general $\cplx$-gaussian? Three parameters?}
+
+\subsubsection{Variational dropout} % (fold){}
+\label{ssub:variational_dropout}
+
+Let's get the divergence term for the improper prior, that most closely recovers the variational
+dropout penalty term in \cite{kingma_variational_2015} and \cite{molchanov_variational_2017}.
+
+If we assume $
+  \pi(\omega) \propto \tfrac1{\lvert \omega \rvert^\beta}
+$ for some $\beta > 1$, then we get the following KL-divergence term (up to an unknown, or
+non-existent constant):
+\begin{equation}  \label{eq:var-do-kl-div-raw}
+KL(q\| \pi)
+  \propto
+  %   \mathbb{E}_{\omega \sim q(\omega)} \log q(\omega)
+  %   + \tfrac{\beta}2 \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
+  % =
+  %   - \log \lvert \det{(\pi e \sigma^2)} \rvert
+  %   + \tfrac{\beta}2 \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
+  % =
+    - \log{\sigma^2}
+    + \tfrac{\beta}2 \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
+  \,,
+\end{equation}
+where we have used \eqref{eq:cn-proper-entropy} with $\Gamma = \sigma^2 \geq 0$. Note
+that for $\mu \neq 0$, we have $\omega \sim q(\omega)$ equal in distribution to $\mu \xi$
+with $\xi \sim \mathcal{N}^{\cplx}(\xi \vert 1, \alpha, 0)$, whence
+\begin{equation}  \label{eq:expect-improper-term}
+\mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
+  % = \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 1, \alpha, 0)}
+  %   \log \lvert \mu \xi \rvert^2
+  % = \log \lvert \mu \rvert^2
+  %   + \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 1, \alpha, 0)}
+  %       \log \lvert \xi \rvert^2
+  = \log \alpha \lvert \mu \rvert^2
+    + \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 0, 1, 0)}
+        \log{\bigl\lvert \tfrac1{\sqrt{\alpha}} + \xi \bigr\rvert^2}
+  \,.
+\end{equation}
+
+In the case of $\real$-valued variational dropout \cite{kingma_variational_2015} approximate
+\eqref{eq:expect-improper-term} by a non-linear regression, fit to the Monte-Carlo estimates
+of the expectation for $\alpha$ varying over a logarithmic grid. This approximation was greatly
+refined in \cite{molchanov_variational_2017} -- an improvement that enabled doing away with
+the clipping of the dropout rate (relevance score) $\alpha$. In fact in the real case the analogue
+of the last term in \eqref{eq:expect-improper-term} is half the log-moment of a non-central
+$\chi^2$ distribution with shape $1$ and non-centrality $\lambda = \tfrac1{\alpha}$. Unfortunately,
+there is no known expression (even involving special functions) for this expectation for
+$\chi^2_m$ with odd shape parameter $m$ (degrees of freedom) \verify{this}. Quite fortunately
+there is one for even degrees of freedom.
+
+Let $(\mu_i)_{i=1}^m \in \cplx$ and $
+  (z_i)_{i=1}^m \sim \mathcal{N}^{\cplx}(0, 1, 0)
+$ iid. Then $W = \sum_i \lvert \theta_i + z_i \rvert^2$ has a non-central $\chi^2_{2m}$
+distribution with non-centrality parameter $s^2 = \sum_i \lvert \theta_i \rvert^2$. The
+log-moments of $W$ for general integer $m \geq1$ are given in
+\cite[p.~2248]{lapidoth_capacity_2003}.  % in fact Appendix X, Lemma 10.1
+In particular, for $m=1$ and $\theta\in \cplx$ we have
+\begin{equation}  \label{eq:log-moment-for-chi-2}
+\mathbb{E}_{z \sim \mathcal{N}^{\cplx}(0, 1, 0)}
+  \log \lvert \theta + z \rvert^2
+  = \log \lvert \theta \rvert^2 - \mathop{Ei}( - \lvert \theta \rvert^2)
+  \,,
+\end{equation}
+where $\mathop{Ei}(x) = \int^x_{-\infty} t^{-1} e^t dt$ for $x < 0$ is the exponential integral
+function. Note that the limiting value of \eqref{eq:log-moment-for-chi-2} as $
+  \lvert \theta \rvert \longleftarrow 0
+$ is $- \gamma$, $\gamma$ denotes Euler's constant. Therefore after cancellation the expression
+of the KL-divergence in \eqref{eq:var-do-kl-div-raw} becomes
+\begin{equation}  \label{eq:var-do-kl-div}
+KL(q\| \pi)
+  \propto
+  %   - \log \lvert \det{(\pi e \sigma^2)} \rvert
+  %   + \tfrac{\beta}2 \log \alpha \lvert \mu \rvert^2
+  %   + \tfrac{\beta}2 \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 0, 1, 0)}
+  %       \log{\bigl\lvert \tfrac1{\sqrt{\alpha}} + \xi \bigr\rvert^2}
+  % =
+  %   - \log{\sigma^2}  % - \log{\pi e}
+  %   + \tfrac{\beta}2 \log \alpha \lvert \mu \rvert^2
+  %   + \tfrac{\beta}2 \bigl(
+  %     - \log \alpha - \mathop{Ei}( -\tfrac1{\alpha})
+  %   \bigr)
+  % =
+    % \log \tfrac{\lvert \mu \rvert^\beta}{\sigma^2}
+    % \log \tfrac{\lvert \mu \rvert^\beta}{\alpha \lvert \mu \rvert^2}
+    \tfrac{\beta-2}2 \log{\lvert \mu \rvert^2}
+    + \log{\tfrac1{\alpha}}
+    - \tfrac{\beta}2 \mathop{Ei}(- \tfrac1{\alpha})
+  \,.
+\end{equation}
+
+The exponential integral is readily available in most scientific computations packages nowadays,
+and, what is especially useful for the stochastic variational Bayes purposes, has a simple
+expression for a derivative: $x \mapsto \tfrac{e^x}{x}$ for $x < 0$. This observation enables
+embedding it into autograd software by computing the term with bogus output values, yet correct
+(on device) gradient, provided no downstream computations depend on the value of the KL-divergence
+term itself. Otherwise we have to offload the values from the device to cpu, compute the special
+function there, and transfer back.
+
+% subsubsection variational_dropout (end)
+
+\subsubsection{Empirical Bayes} % (fold)
+\label{ssub:empirical_bayes}
+
+For this model we use an empirical Bayes prior. We assume that our initial belief is that
+parameters are independent and each has is proper $\cplx$-Gaussian with own precision: $
+  \pi(\omega)
+    \propto \mathcal{N}^{\cplx}\bigl(
+      \omega \vert 0, \tau^{-1}, 0
+    \bigr)
+$. The per element KL-divergence term in the ELBO is computed thus:
+\begin{equation}  \label{eq:emp-bayes-kl-div}
+KL(q \| \pi_\tau)
+  = - 1 - \log{(\tau \sigma^2)}
+    + \tau \bigl(
+      \sigma^2 + \lvert \mu \rvert^2
+    \bigr)
+  \,,
+\end{equation}
+which follows from the KL-divergence expression for two multivariate Gaussians
+$$
+% \mathbb{E}_{\omega\sim q_1(\omega)} \log \tfrac{q_1(\omega)}{q_2(\omega)}
+%   =
+KL(q_1\| q_2)
+  =
+  % - \tfrac12 \log\det{(2\pi e \Sigma_1)} + \tfrac12 \log\det{(2\pi \Sigma_2)}
+  - \tfrac12 \log \det{e I}
+  + \tfrac12 \log \frac{\det{\Sigma_2}}{\det{\Sigma_1}}
+  + \tfrac12 \tr{\bigl( \Sigma_2^{-1} \Sigma_1 \bigr)}
+  + \tfrac12 (\mu_1 - \mu_2)^\top \Sigma_2^{-1} (\mu_1 - \mu_2)
+  \,. $$
+
+Somewhat counterintuitively, in empirical Bayes we optimize the hyperparameters of the
+prior on the observed dataset. Thus the lower bound \eqref{eq:elbo} is optimized w.r.t.
+$\tau$ of each weight's prior. \eqref{eq:emp-bayes-kl-div} is optimized (minimized) at
+$\tau^\ast = (\sigma^2 + \lvert \mu \rvert^2)^{-1}$, yielding the following penalty in
+ELBO:
+\begin{equation}  \label{eq:emp-bayes-opt-kl}
+KL(q \| \pi_{\tau^\ast})
+  % = - 1 - \log{({\tau^\ast} \sigma^2)}
+  %   + {\tau^\ast} \sigma^2 + {\tau^\ast} \lvert \mu \rvert^2
+  % = \log{((\sigma^2 + \lvert \mu \rvert^2) \tfrac1{\sigma^2})}
+  = \log{\bigl(1 + \tfrac{\lvert \mu \rvert^2}{\sigma^2}\bigr)}
+  % = \log{\bigl(1 + \tfrac1\alpha \bigr)}
+  \,,
+\end{equation}
+which exactly replicates \cite{kharitonov_variational_2018}.
+
+% subsubsection empirical_bayes (end)
+
+% subsection kulback_leibler_divergence (end)
 
 % section trunk (end)
 
