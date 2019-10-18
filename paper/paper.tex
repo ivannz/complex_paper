@@ -68,17 +68,17 @@ as $\cplx$-valued activations and complex batch-normalization and weight initial
 Following \cite{trabelsi_deep_2017} we identify $\cplx$ with $\real^2$ via $
   z_\mathrm{r} + j z_\mathrm{i} \mapsto (z_\mathrm{r}, z_\mathrm{i})
 $, storing the real and imaginary parts in interleaved format, and emulate $\cplx$-algebra
-using $\real$-valued arithmetic. Thus a $\cplx$-network is, essentially, a $\real$-network
-with \textit{double} the layers' widths to accommodate real and imaginary parts and
-with constraints on layers' parameters that make them respect $\cplx$-algebra. Thus
-$\cplx$-valued networks can be retrofitted into or built upon the existing $\real$-valued
-autograd libraries.
+using $\real$-valued arithmetic. Thus designed $\cplx$-network is, essentially, a
+$\real$-network with \textit{double} the layers' widths to accommodate real and imaginary
+parts and with constraints on layers' parameters that make them respect $\cplx$-algebra.
+This makes it possible to retrofit $\cplx$-valued networks into the existing $\real$-valued
+auto-differentiation libraries.
 
 In particular, common linear layers, such as dense layers and convolutions,
 $
   L \colon \cplx^{\mathrm{[in]}}
     \to \cplx^{\mathrm{[out]}}
-$ act upon their inputs thus:
+$ act upon their inputs as follows:
 $$
 \real^{\mathrm{[in]} \times 2}
   \to \real^{\mathrm{[out]} \times 2}
@@ -110,13 +110,16 @@ $$
       b_r \\ b_i
     \end{pmatrix}
   \,. $$
-Other algebraic operations that might be used in a networks are also designed in such a way as
-to respect $\cplx$-operations. It is worth pointing out that the key advantage of the $\cplx$-%
-constraints is that they permit use of Strassen's $3$M multiplication algorithm, potentially
-saving up to $25\%$ on floating point multiplications.
+Other algebraic operations that might be of use in deep networks are also designed in such
+a way as to respect $\cplx$-operations. It is worth pointing out that the key advantage of
+the $\cplx$-constraints is that they permit use of Strassen's $3$M multiplication algorithm,
+potentially \verify{saving up} to $25\%$ on floating point multiplications. \todo{
+  in contrast to what? to na{\:i}ve (obvious)? to paired-$\real$ ($2 \times 2$-$2\times 1$
+  -- 4 fmul)?
+}
 
 % proof that such operators exist and are unique (well this is an obvious statement)
-Consider $L\colon \cplx^m \to \cplx^n$ -- linear in $\cplx$. Then $
+Consider $L \colon \cplx^m \to \cplx^n$ -- linear in $\cplx$. Then $
   L(u + jv) = L u + j L v
 $ for any $u, v \in \real^m$, which implies that the effect of $L$ as $\cplx$-linear
 operator is determined by its restriction onto $\real^n$. Let $
@@ -175,19 +178,19 @@ objective being real-valued. Indeed, if $f\colon \cplx \to \cplx$ were $\cplx$-d
 (holomorphic), the composition of $f$ with a non-trivial $h \colon \cplx\to \real$ makes it
 not $\cplx$-differentiable with respect parameters, since $h$ violates Cauchy-Riemann conditions.
 This problem is commonly dealt with by using Wirtinger, or $\cplx\real$ calculus, which subsumes
-$\cplx$-calculus, but is also applicable to non-holomorphic functions of $\cplx$-argument,
+$\cplx$-calculus, but is also applicable to non-holomorphic functions of $\cplx$-argument, see
 \cite{adali_complex-valued_2011} and \cite{trabelsi_deep_2017}. In essence, this approach
-views $f$ as a function of two independent variables $z$ and its conjugate $\conj{z}$ and
+regards $f$ as a function of two independent variables $z$ and its conjugate $\conj{z}$ and
 symbolically redefines the derivatives appropriately. This approach naturally extends the
 chain rule to non-holomorphic functions and can be directly reformulated in terms of derivatives
 with respect to real and imaginary parts, making it possible to use and apply the rules of
-$\real$-calculus to the networks represented in double-$\real$ fashion and use existing
+$\real$-calculus to the networks represented in paired $\real$ fashion and use existing
 $\real$-valued backpropagation in autograd software.
 
 % essential intro into Wirtinger calculus (CR)
 Take $f\colon \cplx \to \cplx$ and identify it with $F\colon \real^2 \to \cplx$ function
 via $F(u, v) = f(z)\vert_{z=u + j v}$. Wirtinger calculus introduces two formal derivative
-operators
+operators \rewrite{(this seems to be very verbatim)}
 $
   \tfrac{\partial}{\partial z}
     = \tfrac12 \bigl(
@@ -229,7 +232,7 @@ Cauchy-Riemann conditions are expressed as $
   \tfrac{\partial f}{\partial \conj{z}} = 0
 $, or $
   -j\tfrac{\partial F}{\partial v} = \tfrac{\partial F}{\partial v}
-$. Cauchy-Riemann impose a rigid structure on real and imaginary parts of $F(u, v)$, namely $
+$. These conditions impose a rigid structure on real and imaginary parts of $F(u, v)$, namely $
   \tfrac{\partial F_{\Re }}{\partial u} = \tfrac{\partial F_{\Im }}{\partial v}
 $ and $
   \tfrac{\partial F_{\Re }}{\partial v} = - \tfrac{\partial F_{\Im }}{\partial u}
@@ -751,7 +754,7 @@ KL(q(W) \| \pi(W))
   \bigr)
   \,.
 \end{equation}
-In the derivations in the sections to come we shall omit the subscripts for brevity.
+We shall omit the subscripts for brevity in the derivations in the next section .
 
 \todo{why this is better than a general $\cplx$-gaussian? Three parameters?}
 
@@ -820,8 +823,8 @@ In particular, for $m=1$ and $\theta\in \cplx$ we have
 \end{equation}
 where $\mathop{Ei}(x) = \int^x_{-\infty} t^{-1} e^t dt$ for $x < 0$ is the exponential integral
 function. Note that the limiting value of \eqref{eq:log-moment-for-chi-2} as $
-  \lvert \theta \rvert \longleftarrow 0
-$ is $- \gamma$, $\gamma$ denotes Euler's constant. Therefore after cancellation the expression
+  \lvert \theta \rvert \to 0
+$ is $- \gamma$, i.e. negative Euler's constant. Therefore after cancellation the expression
 of the KL-divergence in \eqref{eq:var-do-kl-div-raw} becomes
 \begin{equation}  \label{eq:var-do-kl-div}
 KL(q\| \pi)
@@ -847,10 +850,13 @@ KL(q\| \pi)
 
 The exponential integral is readily available in most scientific computations packages nowadays,
 and, what is especially useful for the stochastic variational Bayes purposes, has a simple
-expression for a derivative: $x \mapsto \tfrac{e^x}{x}$ for $x < 0$. This observation enables
+expression for the derivative: $x \mapsto \tfrac{e^x}{x}$ for $x < 0$. This observation enables
 embedding it into autograd software by computing the term with bogus output values, yet correct
 (on device) gradient, provided no downstream computations depend on the value of the KL-divergence
-term itself. Otherwise we have to offload the values from the device to cpu, compute the special
+term itself.
+%
+\important{``pytorch'' specific}
+Otherwise we have to offload the values from the device to cpu, compute the special
 function there, and transfer back.
 
 % subsubsection variational_dropout (end)
@@ -859,7 +865,7 @@ function there, and transfer back.
 \label{ssub:empirical_bayes}
 
 For this model we use an empirical Bayes prior. We assume that our initial belief is that
-parameters are independent and each has is proper $\cplx$-Gaussian with own precision: $
+parameters are independent and each one is proper $\cplx$-Gaussian with its own precision: $
   \pi(\omega)
     \propto \mathcal{N}^{\cplx}\bigl(
       \omega \vert 0, \tau^{-1}, 0
@@ -900,7 +906,7 @@ KL(q \| \pi_{\tau^\ast})
   % = \log{\bigl(1 + \tfrac1\alpha \bigr)}
   \,,
 \end{equation}
-which exactly replicates \cite{kharitonov_variational_2018}.
+which exactly replicates the term, derived in \cite{kharitonov_variational_2018}.
 
 % subsubsection empirical_bayes (end)
 
