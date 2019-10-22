@@ -29,7 +29,8 @@
 \newcommand{\hop}{{\mkern-1.5mu\dagger}}
 \newcommand{\conj}[1]{\overline{#1}}
 % \renewcommand{\top}{{\mkern-1.5mu\intercal}}
-\renewcommand{\vec}{\overrightarrow}
+\renewcommand{\vec}[1]{\overrightarrow{#1}}
+\newcommand{\diag}[1]{\mathrm{diag}{#1}}
 
 \title{Sparsifying $\cplx$-valued networks}
 \author{Ivan Nazarov}
@@ -435,37 +436,8 @@ in SGVB and does not resample $W$ per element of a minibatch. It relies the clos
 of Gaussian distribution under linear transformations. Indeed, if $W$ is a Gaussian
 matrix with independently distributed $
   W_{ij} \sim \mathcal{N}(\theta_{ij}, \sigma^2_{ij})
-$, then we have
-$$
-y 
-  = W x + b
-  = I W x + b
-  = (I \otimes x^\top) \vec{W} + b
-  \,, $$
-where $\vec{\cdot}$ denotes flattening in lexicographic order of indices (row-major),
-for which we have the identity $\vec{A B C} = (A \otimes C^\top) \vec{B}$, \cite{cookbook2012}.
-% It follows from the definition of the Kronecker product of $A$ and $C^\top$ and the
-% row-major order vectorization.
-From $\vec{W} \sim \mathcal{N}_{[n\times m]}(\vec{\theta}, \mathop{diag}\Sigma)$ we get
-the following distribution
-$$
-y \sim \mathcal{N}_{n}
-  \bigl(
-    \theta x + b,
-    \sum_{i} e_i e_i^\top \sum_j \sigma^2_{ij} x_j^2
-  \bigr)
-  \,, $$
-where the variance follows from $(A\otimes B) (C\otimes D) = AC\otimes BD$, \cite{cookbook2012}:
-$$
-\ldots
-  = (I \otimes x^\top) \mathop{diag}{\vec{\Sigma}} (I \otimes x^\top)^\top
-  % = \sum_{ij} (I \otimes x^\top) e_i \otimes e_j
-  %   \sigma^2_{ij} (e_i \otimes e_j)^\top (I \otimes x^\top)^\top
-  = \sum_{ij} e_i (x^\top e_j) \sigma^2_{ij} (x^\top e_j) e_i^\top
-  = \sum_{i} e_i e_i^\top \sum_j \sigma^2_{ij} x_j^2
-  \,, $$
-with $e_i$ being the $i$-th unit vector of dimensionality conforming to the expression
-is is involved with.
+$, then we have \important{moved}.
+
 
 
 and instead
@@ -628,7 +600,23 @@ $$
   \,. $$
 
 A $\cplx$-Gaussian random vector $z$ is called \textit{proper}, when $C = 0$, i.e.
-the relation $ $
+the random vector $z$ and its conjugate $\conj{z}$ are uncorrelated. This implies
+that in the paired real representation $
+  \Sigma_{ir} = -\Sigma_{ri} = -\Sigma_{ir}^\top
+$ and $\Sigma_{rr} = \Sigma_{ii}$, i.e. real and imaginary component of the same
+random element are uncorrelated, since skew-symmetric matrices necessarily have
+zero-diagonal.
+
+The $\cplx$-Gaussian family of distrubutions is closed under affine transformations:
+if $
+  x \sim \mathcal{N}_m^{\cplx}(\mu, \Gamma, C)
+$ and $y = A x + b$, for $
+  A \in \cplx^{n\times m}
+$ and $b \in \cplx^{n}$, then$
+  y \sim \mathcal{N}_n^{\cplx}(A\mu + b, A \Gamma A^\hop, A C A^\top)
+$. This follows from the efects of the affine transformation on the characteristic
+function.
+
 
 % subsection c_gaussian_distribution (end)
 
@@ -911,6 +899,103 @@ which exactly replicates the term, derived in \cite{kharitonov_variational_2018}
 % subsubsection empirical_bayes (end)
 
 % subsection kulback_leibler_divergence (end)
+
+\subsection{Local reparameterization trick} % (fold)
+\label{sub:local_reparameterization_trick}
+
+Consider mean field complex gaussian variational approximation $q(W)$ for the weight
+parameters of the linear layer: $W \in \cplx^{n\times m}$ is a random $\cplx$-gaussian
+matrix with independent elements $
+  w_{ij} \sim \mathcal{N}^{\cplx}\bigl(
+    w_{ij}
+    \big \vert
+    \mu_{ij}, \sigma^2_{ij}, C_{ij}
+  \bigr)
+$ with $\mu_{ij}\in cplx$, $\sigma^2_{ij} \geq 0$, $C_{ij}\in \cplx$ and $
+  \lvert C_{ij} \rvert^2 \leq \sigma^2_{ij}
+$.
+
+We begin by observing that the variational approximation of $q(W)$ is a mutlivariate
+$\cplx$-gaussian distribution on $
+  \vec{W}
+    \sim \mathcal{N}^{\cplx}_{[n\times m]} \bigl(
+      \vec{\mu}, \diag{\vec{\Sigma}}, \diag{\vec{C}}
+    \bigr)
+$, where $[n\times m]$ denotes lexicographically flattened dimension and $\diag{v}$
+is a diagonal square matrix with $v_i$ on the main diagonal. Now, for any $x \in \cplx^m$
+and $b\in \cplx^n$ we have
+$$
+W x + b
+  % = I_n W x + b
+  = (I_n \otimes x^\top) \vec{W} + b
+  \,, $$
+where $\vec{\cdot}$ denotes flattening in lexicographic order of indices (row-major),
+and $\otimes$ denotes the Kronecker product, for which we have the identity $
+  \vec{P Q R} = (P \otimes R^\top) \vec{Q}
+$, \cite{petersen_matrix_2012}.
+% It follows from the definition of the Kronecker product
+% of $P$ and $R^\top$ and the row-major order vectorization.
+%
+Structure on the invloved matrices and the identiy $
+  (P \otimes R) (C \otimes S) = P Q \otimes R S
+$, \cite{petersen_matrix_2012}, imply
+\begin{align}
+(I \otimes x^\top) \diag{\vec{\Sigma}} (I \otimes x^\top)^\hop
+  % &= \sum_{ij} (I \otimes x^\top) e_i \otimes e_j
+  %   \sigma^2_{ij} (e_i \otimes e_j)^\top (I \otimes x^\top)^\hop
+  % \\
+  &
+  = \sum_{ij} (e_i \otimes x^\top e_j)
+    \sigma^2_{ij} (e_i \otimes x^\top e_j)^\hop
+  \notag \\
+  % &= \sum_{ij} (e_i \otimes x_j) \sigma^2_{ij} (e_i^\top \otimes \conj{x}_j)
+  % \\
+  &
+  = \sum_i (e_i e_i^\top) \sum_j \sigma^2_{ij} x_j \conj{x}_j
+  \,,
+\end{align}
+where $e_i$ is the $i$-th real unit vector of dimensionality conforming to the
+expression it is involved with. In a similar fashion we obtainin the expression
+for the relation matrix of the transformation:
+\begin{equation}
+(I \otimes x^\top) \diag{\vec{C}} (I \otimes x^\top)^\top
+  % = \sum_{ij} (e_i \otimes x_j) C_{ij} (e_i \otimes x_j)^\top
+  = \sum_i e_i e_i^\top \sum_j C_{ij} x_j^2
+  \,.
+\end{equation}
+The term $
+  \sum_i e_i e_i^\top (\ldots)
+$ means that the covariance and relation matrices of $y = Wx + b$ are diagonal.
+
+These observations coupled with the closure under affine transformation imply
+that the components of $y = W x + b$ are independent univariate $\cplx$-gaussain
+random variables with distributions
+$$
+y_i
+  \sim \mathcal{N}^{\cplx}
+    \bigl(
+      e_i^\top \mu x + b,
+      \, \sum_j \sigma^2_{ij} \lvert x_j \rvert^2,
+      \, \sum_j C_{ij} x_j^2
+    \bigr)
+  \,. $$
+
+Gist of the LRP (kingmaetal2015)
+translating uncertainty (randomness) from parameters to activations
+  adds noise -- helps regularization
+  emulates one draw per batch element -- decorrelates gradient within the batch
+  reduces computations (memory), leverages batched matmuls (convos)
+  decreases variance of the gradient
+
+additive noise reparameterization (molchanov\_variational\_2017) $(\mu, \alpha \mu^2)$:
+  less noisy gradient wrt $\mu$, $\alpha$ recomputed on-the-fly
+
+
+
+
+
+
+% subsection local_reparameterization_trick (end)
 
 % section trunk (end)
 
