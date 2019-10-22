@@ -903,8 +903,8 @@ which exactly replicates the term, derived in \cite{kharitonov_variational_2018}
 \subsection{Local reparameterization trick} % (fold)
 \label{sub:local_reparameterization_trick}
 
-Consider the mean field complex gaussian variational approximation $q(W)$ for the weight
-parameters of the linear layer: $W \in \cplx^{n\times m}$ is a random $\cplx$-gaussian
+Consider the mean field complex Gaussian variational approximation $q(W)$ for the weight
+parameters of the linear layer: $W \in \cplx^{n\times m}$ is a random $\cplx$-Gaussian
 matrix with independent elements $
   w_{ij} \sim \mathcal{N}^{\cplx}\bigl(
     w_{ij}
@@ -915,8 +915,8 @@ $ with $\mu_{ij}\in cplx$, $\sigma^2_{ij} \geq 0$, $C_{ij}\in \cplx$ and $
   \lvert C_{ij} \rvert^2 \leq \sigma^2_{ij}
 $.
 
-We begin by observing that the variational approximation of $q(W)$ is a mutlivariate
-$\cplx$-gaussian distribution on $
+We begin by observing that the variational approximation of $q(W)$ is a multivariate
+$\cplx$-Gaussian distribution on $
   \vec{W}
     \sim \mathcal{N}^{\cplx}_{[n\times m]} \bigl(
       \vec{\mu}, \diag{\vec{\Sigma}}, \diag{\vec{C}}
@@ -936,7 +936,7 @@ $, \cite{petersen_matrix_2012}.
 % It follows from the definition of the Kronecker product
 % of $P$ and $R^\top$ and the row-major order vectorization.
 %
-Structure on the invloved matrices and the identiy $
+Structure of the matrices, involved in this expression, and the identity $
   (P \otimes R) (C \otimes S) = P Q \otimes R S
 $, \cite{petersen_matrix_2012}, imply
 \begin{align}
@@ -955,7 +955,7 @@ $, \cite{petersen_matrix_2012}, imply
   \,,
 \end{align}
 where $e_i$ is the $i$-th real unit vector of dimensionality conforming to the
-expression it is involved with. In a similar fashion we obtainin the expression
+expression it is involved with. In a similar fashion we obtain the expression
 for the relation matrix of the transformation:
 \begin{equation}
 (I \otimes x^\top) \diag{\vec{C}} (I \otimes x^\top)^\top
@@ -968,7 +968,7 @@ The term $
 $ means that the covariance and relation matrices of $y = Wx + b$ are diagonal.
 
 These observations coupled with the closure under affine transformation imply
-that the components of $y = W x + b$ are independent univariate $\cplx$-gaussain
+that the components of $y = W x + b$ are independent univariate $\cplx$-Gaussain
 random variables with distributions
 $$
 y_i
@@ -1006,9 +1006,9 @@ Consider the following parameterization of the parameters $W$: $
 $ where $
   \xi_{ij} \sim \mathcal{N}(1, \alpha_{ij})
 $, yet $\mu \in \cplx^{n \times m}$. This case corresponds to variational inference for
-the mutliplicative mask $\xi$, distribution of which is approximated using independent
-$\real$ univariate gaussians (oridinary dropout posteriors). Here we are actually
-interested in iference regaridn the values of $\xi$ after observing the data (and
+the multiplicative mask $\xi$, distribution of which is approximated using independent
+$\real$ univariate Gaussians (ordinary dropout posteriors). Here we are actually
+interested in inference, regarding the values of $\xi$ after observing the data (and
 fitting other model parameters such as $\mu$). Essentially, in \eqref{eq:elbo}
 we have
 $$
@@ -1025,8 +1025,10 @@ of the variational approximation $q(\xi)$ from its true posterior $p(\xi\vert D)
 we run inference on the relevance factors of the parameters, rather than parameters
 themselves.
 
-The KL-divergence penalty term in this case follows form the penalty of the real-gaussian
-case with an improper prior $\pi(\xi)\propto \lvert \xi \rvert^{-\beta}$:
+The KL-divergence penalty term in this case follows form the penalty in the real variational
+dropout case with the Gaussian mean field approximation and an improper prior $
+  \pi(\xi)\propto \lvert \xi \rvert^{-\beta}
+$:
 $$
 KL(q(\xi)\| \pi(\xi))
   % = - \tfrac12 \log 2\pi e \alpha
@@ -1046,8 +1048,8 @@ W_{ij} = \mu_{ij} \odot \xi_{ij}
     \, \alpha_{ij} \mu_{ij}^2
   \bigr)
   \,, $$
-which is a degenerate $\cplx$-gaussian. The local reparameterization trick for this
-distribution implies
+which is a degenerate $\cplx$-Gaussian distribution. The local reparameterization trick for
+this distribution implies
 $$
 y_i
   \sim \mathcal{N}^{\cplx}\bigl(
@@ -1057,12 +1059,12 @@ y_i
     \,
   \bigr)
   \,. $$
-This means that it is a little bit more expensive to translate the local parameter
-noise to the immediate activation, since we need to take into consideration the covariance
-between complex outut and its conjugate. Due to this, additive noise reparameterization
-trick, \cite{molchanov_variational_2017}, cannot provide its variance reducing benefits,
-since it is \verify{not possible} to do away with dependence of the complex relation
-of the key parameter $\mu_{ij}$.
+This means that it is a little bit more expensive to translate the local parameter noise
+to the immediate activation, since we need to take into consideration the covariance between
+complex output and its conjugate. Due to this, additive noise reparameterization trick,
+\cite{molchanov_variational_2017}, cannot provide its variance reducing benefits, since
+it is \verify{not possible} to do away with dependence of the complex relation of the
+key parameter $\mu_{ij}$.
 
 % subsubsection real_scaling_dropout (end)
 
