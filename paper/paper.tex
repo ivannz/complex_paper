@@ -903,7 +903,7 @@ which exactly replicates the term, derived in \cite{kharitonov_variational_2018}
 \subsection{Local reparameterization trick} % (fold)
 \label{sub:local_reparameterization_trick}
 
-Consider mean field complex gaussian variational approximation $q(W)$ for the weight
+Consider the mean field complex gaussian variational approximation $q(W)$ for the weight
 parameters of the linear layer: $W \in \cplx^{n\times m}$ is a random $\cplx$-gaussian
 matrix with independent elements $
   w_{ij} \sim \mathcal{N}^{\cplx}\bigl(
@@ -990,12 +990,83 @@ translating uncertainty (randomness) from parameters to activations
 additive noise reparameterization (molchanov\_variational\_2017) $(\mu, \alpha \mu^2)$:
   less noisy gradient wrt $\mu$, $\alpha$ recomputed on-the-fly
 
-
-
-
-
-
 % subsection local_reparameterization_trick (end)
+
+\subsection{Alternative VI} % (fold)
+\label{sub:alternative_vi}
+
+In this section we will consider alternative variational approximations $q(W)$ for
+the posterior distribution.
+
+\subsubsection{Real scaling dropout} % (fold)
+\label{ssub:real_scaling_dropout}
+
+Consider the following parameterization of the parameters $W$: $
+  W = \mu \odot \xi
+$ where $
+  \xi_{ij} \sim \mathcal{N}(1, \alpha_{ij})
+$, yet $\mu \in \cplx^{n \times m}$. This case corresponds to variational inference for
+the mutliplicative mask $\xi$, distribution of which is approximated using independent
+$\real$ univariate gaussians (oridinary dropout posteriors). Here we are actually
+interested in iference regaridn the values of $\xi$ after observing the data (and
+fitting other model parameters such as $\mu$). Essentially, in \eqref{eq:elbo}
+we have
+$$
+\mathbb{E}_{\xi \sim q(\xi)}
+  \log p_\theta(z \vert \xi)
+  - KL(q(\xi) \| \pi(\xi))
+  \approx
+    N \hat{\mathbb{E}}_{(z, \xi) \sim B}
+      \log p_\theta(z \vert \xi)
+    - KL(q(\xi) \| \pi(\xi))
+  \,, $$
+and by running SGVB, i.e. maximizing stochastic batched ELBO, we minimize the KL-divergence
+of the variational approximation $q(\xi)$ from its true posterior $p(\xi\vert D)$. Thus
+we run inference on the relevance factors of the parameters, rather than parameters
+themselves.
+
+The KL-divergence penalty term in this case follows form the penalty of the real-gaussian
+case with an improper prior $\pi(\xi)\propto \lvert \xi \rvert^{-\beta}$:
+$$
+KL(q(\xi)\| \pi(\xi))
+  % = - \tfrac12 \log 2\pi e \alpha
+  %   + \tfrac\beta2 \log \alpha
+  %   + \tfrac\beta2 \mathbb{E}_{z\sim \mathcal{N}(0, 1)}
+  %     \log \lvert z + \tfrac1\sqrt{\alpha} \rvert^2
+  \propto \tfrac{\beta-2}2 \log \alpha
+    + \tfrac\beta2 \mathbb{E}_{z\sim \mathcal{N}(0, 1)}
+      \log \lvert z + \tfrac1{\sqrt{\alpha}} \rvert^2
+  \,. $$
+Under this parameterization \verify{we have},
+$$
+W_{ij} = \mu_{ij} \odot \xi_{ij}
+  \sim \mathcal{N}^{\cplx} \bigl(
+    \mu_{ij},
+    \, \alpha_{ij} \lvert \mu_{ij} \rvert^2,
+    \, \alpha_{ij} \mu_{ij}^2
+  \bigr)
+  \,, $$
+which is a degenerate $\cplx$-gaussian. The local reparameterization trick for this
+distribution implies
+$$
+y_i
+  \sim \mathcal{N}^{\cplx}\bigl(
+    e_i^\top \mu x + b,
+    \, \sum_j \alpha_{ij} \lvert x_{ij} \mu_{ij}\rvert^2,
+    \, \sum_j \alpha_{ij} (x_{ij} \mu_{ij})^2,
+    \,
+  \bigr)
+  \,. $$
+This means that it is a little bit more expensive to translate the local parameter
+noise to the immediate activation, since we need to take into consideration the covariance
+between complex outut and its conjugate. Due to this, additive noise reparameterization
+trick, \cite{molchanov_variational_2017}, cannot provide its variance reducing benefits,
+since it is \verify{not possible} to do away with dependence of the complex relation
+of the key parameter $\mu_{ij}$.
+
+% subsubsection real_scaling_dropout (end)
+
+% subsection alternative_vi (end)
 
 % section trunk (end)
 
