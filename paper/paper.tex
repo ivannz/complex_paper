@@ -984,7 +984,7 @@ Gist of the LRP (kingmaetal2015)
 translating uncertainty (randomness) from parameters to activations
   adds noise -- helps regularization
   emulates one draw per batch element -- decorrelates gradient within the batch
-  reduces computations (memory), leverages batched matmuls (convos)
+  reduces computations (memory), leverages batched matmuls (or convos)
   decreases variance of the gradient
 
 additive noise reparameterization (molchanov\_variational\_2017) $(\mu, \alpha \mu^2)$:
@@ -1022,7 +1022,7 @@ $$
   \,, $$
 and by running SGVB, i.e. maximizing stochastic batched ELBO, we minimize the KL-divergence
 of the variational approximation $q(\xi)$ from its true posterior $p(\xi\vert D)$. Thus
-we run inference on the relevance factors of the parameters, rather than parameters
+we run inference on the relevance factors of the parameters, rather than the parameters
 themselves.
 
 The KL-divergence penalty term in this case follows form the penalty in the real variational
@@ -1039,7 +1039,7 @@ KL(q(\xi)\| \pi(\xi))
     + \tfrac\beta2 \mathbb{E}_{z\sim \mathcal{N}(0, 1)}
       \log \lvert z + \tfrac1{\sqrt{\alpha}} \rvert^2
   \,. $$
-Under this parameterization \verify{we have},
+Under this parameterization we have
 $$
 W_{ij} = \mu_{ij} \odot \xi_{ij}
   \sim \mathcal{N}^{\cplx} \bigl(
@@ -1063,15 +1063,15 @@ This means that it is a little bit more expensive to translate the local paramet
 to the immediate activation, since we need to take into consideration the covariance between
 complex output and its conjugate. Due to this, additive noise reparameterization trick,
 \cite{molchanov_variational_2017}, cannot provide its variance reducing benefits, since
-it is \verify{not possible} to do away with dependence of the complex relation of the
+it is \verify{not possible (ok)} to do away with dependence of the complex relation of the
 key parameter $\mu_{ij}$.
 
 % subsubsection real_scaling_dropout (end)
 
 % subsection alternative_vi (end)
 
-\subsubsection{Gradinet of the KL-divergence in $\real$ case} % (fold)
-\label{ssub:gradinet_of_the_kl_divergence_in_R_case}
+\subsubsection{Gradient of the KL-divergence in $\real$ case} % (fold)
+\label{ssub:gradient_of_the_kl_divergence_in_R_case}
 
 Exact kl-div grad for $\mathbb{R}$-gaussian
 
@@ -1238,10 +1238,10 @@ $$
   \,, $$
 since
 $$
-\frac{\log{x + a + 1}}{x \log{x + a}}
-  \sim \frac{\log{x+1}}{(x-a) \log{x}}
-  \sim \frac{\log{x+1}}{x \log{x}}
-  \sim \frac{\tfrac1{x+1}}{1 + \log{x}}
+\frac{\log{(x + a + 1)}}{x \log{(x + a)}}
+  \sim \frac{\log{(x+1)}}{(x-a) \log{x}}
+  \sim \frac{\log{(x+1)}}{x \log{x}}
+  \sim \frac{\tfrac1{(x+1)}}{1 + \log{x}}
   \to 0
   \,. $$
 A theorem from calculus states, that the formal series derivative (integral)
@@ -1369,7 +1369,7 @@ we can essentially ignore it's forward pass value (level) and just compute its g
 (subgradient, normal cone) with respect the parameter of interest in sgd. (unless it is a
 part of a constraint, ie. downstream computation)
 
-% subsubsection gradinet_of_the_kl_divergence_in_R_case (end)
+% subsubsection gradient_of_the_kl_divergence_in_R_case (end)
 
 \subsubsection{MGF of a noncentral $\chi^2$} % (fold)
 \label{ssub:mgf_of_a_noncentral_chi}
