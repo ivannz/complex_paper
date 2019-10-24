@@ -336,45 +336,73 @@ relevance detection by learning individual per-parameter dropout rates in Gaussi
 \cite{srivastava_dropout_2014,wang_fast_2013}, which generalizes Binary (Bernoulli) Dropout
 \cite{hinton_improving_2012}.
 
-\begin{quote}
-% exceprts from kingmaetal2015
+Bayesian Inference is a principled framework of reasoning about uncertainty. It is a very
+rich field of research with a large body of knowledge and techniques that enable practical
+quantification of predictive, parameter, or model uncertainty and its propagation into
+solutions of the problems of interest. It is impossible to summarize Bayesian Inference in
+one sentence without misrepresenting the richness and complexity of the field, however the
+core principle is updating prior beliefs in accordance with the likelihood of given empirical
+observations into posterior belief.
+
+Bayesian inference in not safeguarded against overfitting and biases: there are quite a handful
+of assumptions made every time a Bayesian model is setup for inference. We need to have a prior
+belief, the model and its interaction with the data (the likelihood), and even the posterior:
+although the Bayes formula is explicit in how the posterior is derived, in all problems of at
+least some practical significance the exact posterior inference involves analytically intractable
+expectations, compelling the use of approximations. In addition to this, even if the likelihood
+and prior come from a conjugate families, making the posterior explicit, the questions of interest
+are usually concerned with inference using the posterior predictive distribution, which is
+factorized as the conditional predictive distribution given the model and new observation, and
+the posterior of the model after observing the data.
+
+Since inference using the exact posterior is rarely tractable, efficient and unbiased approximation
+schemes are typically used. One such scheme is Variational Inference, which casts the inference
+task into the domain of optimization problems over some appropriately chosen the posterior
+distribution approximation family.
+
+
+% on bernoulli dropout
 Bernoulli dropout alleviates the problem of overfitting
-Gaussian dropout is in fact a variational approximation with fixed rate and thus optimizes ELBO
-Allowing per-parameter rates enables flexible posterior approximations.
 
-Bayesian posterior inference over the parameters of a network allows some control of overfitting;
-``exact inference is intractable, but efficient approximation schemes can be designed''
+% on gaussian dropout
 
-Explore a trick that translates the uncertainty about global parameters into local noise, that
-is independent across the elements of the minibatch.
+% revirew of kingma and lrt
+The key contributions of \cite{kingma_variational_2015} are reinterpretation of dropout
+as a variational inference method and the analysis of the effects that the local reparameterization
+trick has on the efficiency of the gradient estimator in stochastic variational inference,
+\cite{citation_needed}.
 
-Effectively regularizes by adding random noise.
+\cite{kingmaetal2015} argue that Gaussian dropout, being a multiplicative parameter noise,
+can be interpreted as variational inference via factorized Gaussian posterior approximation
+$q(\omega)$ that optimizes the $\log$-likelihood term from the Evidence Lower Bound. In a fully
+Bayesian treatment, the dropout rate $p \in (0, 1)$, which governs the regularization strength,
+would appear in the KL-divergence term of ELBO through the corresponding odds $
+  \alpha = \tfrac{p}{1-p}
+$, which acts a variance scaling factor in the posterior approximation. Having made $\alpha$
+a learnable parameter of the variational approximation, \cite{kingmaetal2015} natuallry propose
+letting it vary on the per-parameter basis, which allows for even more flexible posterior
+approximations. % who proposed sparsification?
 
-bayesian inference: update prior belief using model likelihood of iid data into posterior belief
-Exact psoterior -- intractable, approximations needed
-variational inference: cast posterior inference as optimization over the approximation family
+The local reparameterization trick, proposed by \cite{citation_wang_menning_2013} in the context
+of Bernoulli and Gaussian dropout regularization techniques \cite{citation_needed}, translates
+the uncertainty about global parameters to noise in the local intermediate state and utilizes
+the closure of Gaussian distribution under affine transformations. Computational advantage of
+the trick is that activation noise is cheaper to sample and store for the purposes of backpropagation,
+than independently sampling parameters from the posterior approximation individually for each
+element of the minibatch. As far as Bayesian inference is concerned, \cite{kingma_variational_2015}
+have shown that trick's beneficial effects on minibatch SGD convergence come via two mechanisms
+of likelihood gradient estimator's efficiency: decorrelation within the batch (independent noise
+draws) and variance reduction through local transfer of parameter uncertainty to activation noise.
 
-%sgvb
-the gradient in sgvb is unbiased estimate of the $\log$-likelihood part of the elbo
+\begin{quote}
 
 in practice the performance of stochastic gradient methods depends on the variance of the gradient
-field. The variance of (the value of) the minibatch estiamte of the likelihood term has a
-non-negligible intrabatch covariance term. To ensure zero covariance we can sample a separate
-$\omega\sim q_\omega(\theta)$ for each element in the minibatch, 
-
-%lrt
-whenever source of uncertainty can be translated to local noise in the intermediate states
-since the expected likelihood depends on the parameters through the activations of the layer.
+field
 
 sampling the activations directly, without the parameter randomness gives a low cost efficient
 MC estimator (statistical efficiency).
 
-Factorized Gaussian -- closure under linear transformations -- sample the local activation noise
-from an appropriate Gaussian 
-
-% on dropout
-variational dropout: a reinterpretation of dropout with continuous noise as a variational inference
-method. allow adaptive,data dependent dropout rates.
+the gradient in sgvb is unbiased estimate of the $\log$-likelihood part of the elbo
 
 \end{quote}
 
@@ -1202,7 +1230,7 @@ $ is equal to $
 $.
 
 We can differentiate the series in $g_m(x)$, since the sum converges everywhere
-on $\mathbb{R}$. Indeed, it is a power series featuring nonegative coefficients,
+on $\mathbb{R}$. Indeed, it is a power series featuring nonnegative coefficients,
 which is dominated by $
   \sum_{n \geq 1} \tfrac{x^n}{n!} \log{(n+\tfrac{m}2)}
 $, because $\psi(x)\leq \log x - \tfrac1{2x}$. By the ratio test, the dominating
