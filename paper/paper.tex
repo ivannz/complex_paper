@@ -360,6 +360,224 @@ schemes are typically used. One such scheme is Variational Inference, which cast
 task into the domain of optimization problems over some appropriately chosen the posterior
 distribution approximation family.
 
+% a verbatim setion from my mlss2019 bdl notebook
+In Bayesian Inference (\textbf{BI}) we \textit{assume} that the observation data $D$ follows a
+\textit{model} $m$ with data generating distribution $p(D \mid m, \omega)$ \textit{governed by
+unknown parameters} $\omega$. The goal of \textbf{BI} is to reason about the model and/or its
+parameters, and new data given the observed data $D$ and our assumptions, i.e to seek the
+\textbf{posterior} parameter and predictive distributions:
+
+\begin{align}
+p(d \mid D, m)
+  &
+  % = \mathbb{E}_{
+  %   \omega \sim p(\omega \mid D, m)
+  % } p(d \mid D, \omega, m)
+  = \int p(d \mid D, \omega, m) p(\omega \mid D, m) d\omega
+  \,, \\
+p(\omega \mid D, m)
+  &
+  = \frac{p(D \mid \omega, m) \, \pi(\omega \mid m)}{p(D \mid m)}
+  \,,
+\end{align}
+where
+\begin{itemize}
+  \item the \textbf{prior} distribution $\pi(\omega \mid m)$ reflects our belief before
+  having made the observations
+  \item the data distribution $p(D \mid \omega, m)$ reflects our assumptions about the data
+  generating process, and determines the model \textbf{likelihood} (Gaussian, Categorical,
+  Poisson etc.)
+\end{itemize}
+Unless the distributions and likelihoods are conjugate, posterior in Bayesian inference is
+typically intractable and it is common to resort to \textbf{Variational Inference} or
+\textbf{Monte Carlo} approximations. This key idea of the former is to seek an approximation
+$q(\omega)$ to the intractable posterior $p(\omega \mid D, m)$, via a variational optimization
+problem over some parametric family of distributions $\mathcal{Q}$:
+$$
+q^*(\omega)
+    \in \arg \min_{q\in \mathcal{Q}}
+      \mathrm{KL}(q(\omega) \| p(\omega \mid D, m))
+  \,, $$
+where the Kullback-Leibler divergence between $P$ and $Q$ ($P\ll Q$) with densities $p$ and $q$,
+respectively, is given by
+$$
+\mathrm{KL}(q(\omega) \| p(\omega))
+  % = \mathbb{E}_{\omega \sim Q} \log \tfrac{dQ}{dP}(\omega)
+  = \mathbb{E}_{\omega \sim q(\omega)}
+    \log \tfrac{q(\omega)}{p(\omega)}
+  \,.
+  \tag{kl-div}
+  $$
+
+Note that the family of variational approximations $\mathcal{Q}$ can be structured
+\textbf{arbitrarily}: point-mass, products, mixture, dependent on input, having mixed hierarchical
+structure, -- any distribution, even unnormalized. Although computing the divergence w.r.t.
+the unknown posterior is still hard and intractable, it is possible to do away with it
+through the following identity, which is based on the Bayes rule.
+
+For \textbf{any} $q(\omega) \ll p(\omega \mid D; \phi)$ and any model $m$
+
+\begin{align}
+\overbrace{
+  \log p(D \mid m)
+}^{\text{evidence}}
+  &= \overbrace{
+    \mathbb{E}_{\omega \sim q} \log p(D\mid \omega, m)
+  }^{\text{expected conditional likelihood}}
+  - \overbrace{
+    \mathrm{KL}(q(\omega)\| \pi(\omega \mid m))
+  }^{\text{proximity to prior belief}}
+  \\
+  &+ \underbrace{
+    \mathrm{KL}(q(\omega)\| p(\omega \mid D, m))
+  }_{\text{posterior approximation}}
+\,.
+\tag{master-identity}
+\end{align}
+Instead of minimizing the divergence of the approximation from the posterior, we maximize the
+\textbf{Evidence Lower Bound} with respect to $q(\omega)$:
+$$
+q^* \in
+  \arg\max_{q\in Q}
+    \mathcal{L}(q)
+    = \mathbb{E}_{\omega \sim q} \log p(D\mid \omega, m)
+      - \mathrm{KL}(q(\omega)\| \pi(\omega \mid m))
+  \,.
+  \tag{max-ELBO}
+  $$
+The intuition is that the expected $\log$-likelihood favours $q$ that place their mass on
+parameters $\omega$ that explain $D$ under the specified model $m$. At the same time
+the negative KL-divergence discourages the approximation $q$ from straying too far away
+from to the prior belief $\pi$ under $m$.
+
+We usually consider the following setup (conditioning on model $m$ is omitted):
+\begin{itemize}
+  \item the likelihood factorizes $
+    p(D \mid \omega)
+        = \prod_i p(y_i, x_i \mid \omega)
+        \propto \prod_i p(y_i \mid x_i, \omega)
+  $
+  for $D = (x_i, y_i)_{i=1}^N$
+
+  \item the variational posterior approximation is parameterized by $\theta$: $q(\omega \mid \theta)$
+
+  \item the prior on $\omega$ also depends on hyper-parameters $\lambda$, that can be fixed,
+  or variable ($\pi(\omega \mid \lambda)$).
+\end{itemize}
+
+In this case the variational objective (evidence lower bound)
+$$
+\log p(D\mid \lambda )
+  \geq \mathcal{L}(\theta, \lambda)
+    = \mathbb{E}_{\omega \sim q(\omega \mid \theta)}
+      \sum_i \log p_\phi(y_i \mid x_i, \omega)
+    - KL(q(\omega \mid \theta) \| \pi(\omega \mid \lambda))
+  \,, $$
+is maximized with respect to $\theta$ (to approximate the posterior).
+
+Priors can be
+\begin{itemize}
+  \item \textit{subjective}, i.e. reflecting prior beliefs (but not arbitrary)
+  \item \textit{objective}, i.e. reflecting our lack of knowledge
+  \item \title{empirical}, i.e. learnt from the observed data (optimized over
+  hyper-parameters $\lambda$)
+\end{itemize}
+
+The stochastic variant of ELBO is formed by randomly batching
+the dataset $D$:
+$$
+\mathcal{L}(\theta, \lambda)
+  \approx \mathcal{L}_\mathrm{SGVB}(\theta, \lambda)
+  = \lvert D \rvert \biggl(
+    \tfrac1{\lvert B \rvert}
+      \sum_{b \in B} \mathbb{E}_{\omega \sim q(\omega \mid \theta)}
+        \log p(y_b \mid x_b, \omega)
+  \biggr)
+  - KL(q(\omega \mid \theta) \| \pi(\omega \mid \lambda))
+  \,. $$
+
+Stochastic optimization follows noisy unbiased gradient estimates, which are usually cheap and
+allow escaping from local optima, but optimize the objective in expectation. In order to get
+a gradient of $
+  F_\theta = \mathbb{E}_{\omega \sim q(\omega \mid \theta)} f(\omega)
+$ w.r.t $\theta$ we use either:
+\begin{itemize}
+  \item (REINFORCE) $
+    \nabla_\theta F_\theta
+      = \mathbb{E}_{\omega \sim q(\omega \mid \theta)}
+        (f(\omega) - b_\theta) \nabla_\theta \log q(\omega \mid \theta)
+  $ for some $b_\theta$ that is used to control variance
+
+  \item (reparameterization) $
+    \nabla_\theta F_\theta
+      = \nabla_\theta \mathbb{E}_{\varepsilon \sim q(\varepsilon)}
+        f(g(\theta; \varepsilon))
+      = \mathbb{E}_{\varepsilon \sim q(\varepsilon)}
+        \nabla_\theta g(\theta; \varepsilon)
+          \nabla_\omega f(\omega) \big\vert_{\omega = g(\theta; \varepsilon)}
+    $ when there are $q$ and differentiable $g$, such that sampling from $
+      q(\omega \mid \theta)
+    $ is equivalent to $
+      \omega = g(\theta; \varepsilon)
+    $ with $\varepsilon \sim q(\varepsilon)$
+\end{itemize}
+
+The variational approximation might yield high dimensional integrals, which are slow/prohibitive
+to compute. To make the computations faster without foregoing much of the precision, we may use
+Monte Carlo estimator:
+$$
+\mathbb{E}_{\omega \sim q(\omega\mid \theta)} \, f(\omega)
+  \overset{\text{MC}}{\approx}
+    \frac1{\lvert \mathcal{W}\rvert}
+      \sum_{\omega \in \mathcal{W}} f(\omega)
+  \,, $$
+where $\mathcal{W} = (\omega_b)_{b=1}^B$ is a sample of independent draws from $
+  q(\omega\mid \theta)
+$. If we also approximate the expectation wrt model parameters in the gradient of ELBO via Monte
+Carlo we get the \textbf{doubly stochastic variational objective}:
+$$
+\nabla_\theta \mathcal{L}_\mathrm{DSVB}(\theta, \lambda)
+  \approx
+    \lvert D \rvert \biggl(
+      \tfrac1{\lvert B \rvert}
+        \sum_{b \in B}
+          \mathop{gradient}(x_b, y_b)
+    \biggr)
+    - \nabla_\theta KL(q(\omega \mid \theta) \| \pi(\omega \mid \lambda))
+  \,, $$
+where `gradient` is $
+  \nabla_\theta
+    \mathbb{E}_{\omega \sim q(\omega \mid \theta)}
+      \log p(y \mid x, \omega)
+$ using one of the approaches above, typically approximated using one independent draw of $\omega$
+per $b\in B$. We can use a similar sampling approach to compute the gradient of the divergence term.
+
+We can estimate the divergence term in the ELBO with Monte Carlo, or, for example, for the
+predictive distribution we have
+\begin{align}
+\mathbb{E}_{y\sim p(y\mid x, D, m)} \, g(y)
+  &
+  \overset{\text{BI}}{=}
+    \mathbb{E}_{\omega\sim p(\omega \mid D, m)}
+      \mathbb{E}_{y\sim p(y\mid x, \omega, D, m)} \, g(y)
+  \\
+  &
+  \overset{\text{VI}}{\approx}
+    \mathbb{E}_{\omega\sim q(\omega)}
+      \mathbb{E}_{y\sim p(y\mid x, \omega, D, m)} \, g(y)
+  \\
+  &
+  \overset{\text{MC}}{\approx}
+    % \hat{\mathbb{E}}_{\omega \sim \mathcal{W}}
+    %   \mathbb{E}_{y\sim p(y\mid x, \omega, D, m)} \, g(y)
+    \frac1{\lvert \mathcal{W}\rvert} \sum_{\omega \in \mathcal{W}}
+      \mathbb{E}_{y\sim p(y\mid x, \omega, D, m)} \, g(y)
+  \,,
+\end{align}
+where $\mathcal{W} = (\omega_b)_{b=1}^B \sim q(\omega)$ -- iid samples from the variational
+approximation.
+
+\bigskip
 
 % on bernoulli dropout
 Bernoulli dropout alleviates the problem of overfitting
