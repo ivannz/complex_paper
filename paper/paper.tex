@@ -14,8 +14,6 @@
 
 \usepackage{booktabs}
 
-% \usepackage{lipsum}
-
 \newcommand{\important}[1]{\textbf{\color{red} #1}}
 \newcommand{\attn}[2]{\textbf{\color{red} #2~\textsuperscript{\textit{[#1]}}}}
 \newcommand{\verify}[1]{\attn{verify}{#1}}
@@ -28,6 +26,7 @@
 
 \newcommand{\hop}{{\mkern-1.5mu\dagger}}
 \newcommand{\conj}[1]{\overline{#1}}
+
 % \renewcommand{\top}{{\mkern-1.5mu\intercal}}
 \renewcommand{\vec}[1]{\overrightarrow{#1}}
 \newcommand{\diag}[1]{\mathrm{diag}{#1}}
@@ -38,11 +37,23 @@
 \begin{document}
 \maketitle
 
-% {\color{red} \lipsum[1-3]}
-
 \section{Introduction} % (fold)
 \label{sec:introduction}
 
+Deep neural networks are an integral part of the machine learning and data science set of
+tools for practical data-driver problem solving. Despite recent advances in generalization
+and optimization theory specific to deep networks, it is challenging to deploy the trained
+in actual embedded hardware, due to obvious storage and compute limitations. Many techniques
+exist to compress or sparsify the networks: weight pruning \cite{citation_needed}, quantization
+from IEEE754 floating point to integer-based arithmetic, and dropout. The key idea is that
+the more explicitly zero parameters the model has, the less multiplications the mode needs.
+
+Bayesian Inference is a principled framework of reasoning about uncertainty. The core
+principle is updating prior beliefs in accordance with the likelihood of given empirical
+observations into posterior belief. Under suitable modelling and prior assumptions, methods
+of variational Bayesian inference can be used towards model sparsification: variants of
+Bayesian dropout studied in \cite{kingma_variational_2015,molchanov_variational_2017}, and
+\cite{kharitonov_variational_2018}.
 
 % section introduction (end)
 
@@ -226,9 +237,11 @@ an unbiased differentiable estimator.
 
 For a particular family of variational posterior approximation, variational inference
 can be used as a regularization method \cite{kingma_variational_2015} and as model sparsification
-technique \cite{molchanov_variational_2017}. In \cite{kingma_variational_2015} the Binary (dropconnect) and
-Gaussian dropout \cite{hinton,dropconnect,srivasathva} were framed as variational inference
-by treating them as a factorized posterior approximations of the form $
+technique \cite{molchanov_variational_2017}. In \cite{kingma_variational_2015} the Binary
+dropout and DropConnect \cite{hinton_improving_2012,dropconnect}, and Gaussian dropout
+\cite{srivastava_dropout_2014,wang_fast_2013} were reframed as variational inference methods
+by treating the induced parameter distributions as a factorized posterior approximations
+of the form $
   q_\theta(\omega) = \prod_j q_{\theta}(\omega_j)
 $, where each component $q_{\theta}(\omega_j)$ is defined via $\omega_j = \mu_j \xi_j$
 with $\xi_j \sim p(\xi_j)$ iid for some $p(\xi)$. In Binary dropout with rate $p \in (0, 1)$
@@ -237,10 +250,10 @@ the mutliplicative noise $\xi$ is distributed like $
       \{0, \tfrac1{1-p}\}, 1-p
     \bigr)
 $ whereas in Gaussian dropout $\mathcal{N}(1, \alpha)$ for $\alpha = \tfrac{p}{1-p}$.
-Focusing on Gaussian dropout, \cite{kingma_variational_2015} proposed Variational Dropout technique
-for Bayesian model regularization: $\alpha$ is treated as a variational parameter, that enabled
-its optimization through SGVB. The variational approximation is a fully factorized
-Gaussian distribution with components $
+Focusing on Gaussian dropout, \cite{kingma_variational_2015} proposed Variational Dropout
+technique for Bayesian model regularization: $\alpha$ is treated as a variational parameter,
+that enabled its optimization through SGVB. The variational approximation is a fully
+factorized Gaussian distribution with components $
   q_{\theta}(\omega_j)
     = \mathcal{N}(\mu_j, \alpha_j \mu_j^2)
 $. The flexibility in specifying the dependence of $q_\theta$ on $\alpha$ allows learning
@@ -315,15 +328,6 @@ $\mathcal{N}(0, \tau^{-1}_{ij})$ with learnable precision $\tau_{ij} > 0$. This 
 the Empirical Bayes method, \cite{citation_needed}, which fits a prior distribution while
 performing variational inference. The optimal precision parameter is found in the closed form
 by minimizing the KL-divergence term holding variational parameters $\theta$ fixed.
-
-Practical performance of variational dropout techniques was studied in \cite{citation_needed}
-and \cite{citation_needed}. The most fierce critique of Bayesian approach towards model
-sparsification was voiced in \cite{state-of-sparsity}, where it was show that it yielded
-inconsistent results in text translation tasks and systematically underperformed simpler
-techniques such as norm pruning and $\ell_0$-regularization, \cite{ell-0-reg}. Despite this
-in the experimental section of this paper we consolidate evidence in support of Variational
-dropout on various complex-valued acoustic and signal datasets. The most likely explanation
-of the ``varying mileage'' is that different tasks benefit from different approaches.
 
 % This concludes the section on the foundations of Bayesian dropout techniques.
 
@@ -443,8 +447,7 @@ In this section we review the complex Gaussian distribution and discuss its prop
 we introduce factorized dropout posterior for complex-valued parameters and the relevant
 version of the local reparameterization trick. Then we move on to choosing suitable priors
 and then onward to deriving explicit expressions for the divergence penalties in \eqref{eq:elbo}
-in terms of special functions. We point out that unlike the real-valued case the gradients
-for the penalty have closed tractable form.
+in terms of special functions.
 
 \subsection{$\cplx$-Gaussian Variational Approximation} % (fold)
 \label{sub:c_gaussian_variational_approximation}
@@ -1095,6 +1098,35 @@ interface form the setup owner.
 \section{Discussion and Related Research} % (fold)
 \label{sec:discussion_and_related_research}
 
+Bayesian inference is a very rich field of research with a large body of knowledge and techniques
+that enable practical quantification of predictive, parameter, or model uncertainty and its
+propagation into solutions of the problems of interest. It is not safeguarded against overfitting
+and modelling biases: there are quite a handful of assumptions made every time a Bayesian model
+is setup for inference. We need to have a prior belief, the model and its interaction with
+the data (the likelihood), and even the posterior: although the Bayes formula is explicit in
+how the posterior is derived, in all problems of at least some practical significance the
+exact posterior inference involves analytically intractable expectations, compelling the use
+of approximations. In addition to this, even if the likelihood and prior come from conjugate
+families, making the posterior explicit, the questions of interest are usually concerned with
+inference using the posterior predictive distribution, which is factorized as the conditional
+predictive distribution given the model and new observation, and the posterior of the model
+after observing the data.
+
+Practical performance of variational dropout techniques was studied in \cite{citation_needed}
+and \cite{citation_needed}. The most fierce critique of Bayesian approach towards model
+sparsification was voiced in \cite{gale_state_2019}, where it was show that it yielded
+inconsistent results in text translation tasks and systematically underperformed simpler
+techniques such as norm pruning and $\ell_0$-regularization, \cite{louizos_learning_2017}.
+
+The latter approach introduces stochastic masks one the parameters, which have hard-concrete
+mask distribution. It is closely related to gumbel-softmax reparameterization trick,
+\cite{kingma_auto-encoding_2014,jang_categorical_2017}: the mask values are, essentially,
+$[0,1]$ clamped scaled sigmoids, that are randomly shifted relative to a learnable location
+parameter, that indicates the degree of weight's relevance. The penalty in the objective is
+the expected number of nonzero parameters, and is a smooth approximation to $\ell_0$ norm.
+This approach is related to stochastic, rather than bayesian networks: it is formulated in
+terms of empirical risk minimization of the negative $\log$-likelihood term in \eqref{eq:elbo}.
+
 % section discussion_and_related_research (end)
 
 
@@ -1671,6 +1703,7 @@ Expanding the exponential as infinite series:
 
 % section appendix (end)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \clearpage
 
@@ -1739,29 +1772,7 @@ In this section we outline and derive the variational dropout technique for comp
 valued networks, which re-traces the evolution of dropout technique for real-valued
 weights.
 
-Variational dropout proposed by \cite{kingma_variational_2015} enables automatic parameter
-relevance detection by learning individual per-parameter dropout rates in Gaussian dropout,
-\cite{srivastava_dropout_2014,wang_fast_2013}, which generalizes Binary (Bernoulli) Dropout
-\cite{hinton_improving_2012}.
 
-Bayesian Inference is a principled framework of reasoning about uncertainty. It is a very
-rich field of research with a large body of knowledge and techniques that enable practical
-quantification of predictive, parameter, or model uncertainty and its propagation into
-solutions of the problems of interest. It is impossible to summarize Bayesian Inference in
-one sentence without misrepresenting the richness and complexity of the field, however the
-core principle is updating prior beliefs in accordance with the likelihood of given empirical
-observations into posterior belief.
-
-Bayesian inference is not safeguarded against overfitting and biases: there are quite a handful
-of assumptions made every time a Bayesian model is setup for inference. We need to have a prior
-belief, the model and its interaction with the data (the likelihood), and even the posterior:
-although the Bayes formula is explicit in how the posterior is derived, in all problems of at
-least some practical significance the exact posterior inference involves analytically intractable
-expectations, compelling the use of approximations. In addition to this, even if the likelihood
-and prior come from conjugate families, making the posterior explicit, the questions of interest
-are usually concerned with inference using the posterior predictive distribution, which is
-factorized as the conditional predictive distribution given the model and new observation, and
-the posterior of the model after observing the data.
 
 % a second take on bayesian inference
 The core question of Bayesian analysis is concerned with the distribution of the data model
