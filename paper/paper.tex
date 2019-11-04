@@ -64,8 +64,30 @@ Bayesian dropout studied in \cite{kingma_variational_2015,molchanov_variational_
 \cite{kharitonov_variational_2018}.
 
 % complex nets and related stuff
-Maths and related results \cite{pav_moments_2015,taubock_complex-valued_2012}, and
-\cite{karseras_caution:_2014}
+data that is naturally complex-valued
+studies have shown a potentially richer representation of complex nets
+\cite{hirose2003,fijulamin2009}
+% [3] Akira Hirose, Complex-valued neural networks: theories and applications, vol. 5, World Scientific, 2003.
+% [4] Md Faijul Amin and Kazuyuki Murase, “Single-layered complex-valued neural network for real-valued classification problems,” Neurocomputing, vol. 72, no. 4-6, pp. 945–955, 2009.
+
+the complex version of backpropagation algorithm  was proposed because of
+its richer representational capacity.
+% Nevio Benvenuto and Francesco Piazza, “On the complex backpropagation algorithm,” IEEE Transactions on Signal Processing, vol. 40, no. 4, pp. 967–969, 1992.
+
+
+\cite{yang_complex_2019} develop complex transformer, with $\cplx$-attention and complex
+encoder-decoder, and apply it to music transcription and wireless signal classification.
+
+that interfaces the rest of
+$\cplx$-valued
+the network with complex numbers
+
+
+that operates on the Fourier transform input speech, acoustic, of radio signals.
+
+
+papers related to complex-valued distributions \cite{pav_moments_2015,taubock_complex-valued_2012},
+and \cite{karseras_caution:_2014}
 
 The use $\cplx$-valued networks in applications is not new: earliest mentions include
 \cite{citation_needed}. More recently they were applied to music transcription and speech
@@ -433,36 +455,24 @@ use non-differentiable non-linearities. However, a more severe problem stems fro
 objective being real-valued. Indeed, if $f\colon \cplx \to \cplx$ were $\cplx$-differentiable
 (holomorphic), the composition of $f$ with a non-trivial $h \colon \cplx\to \real$ makes it
 not $\cplx$-differentiable with respect parameters, since $h$ violates Cauchy-Riemann conditions.
-This problem is commonly dealt with by using Wirtinger, or $\cplx\real$ calculus, which subsumes
-$\cplx$-calculus, but is also applicable to non-holomorphic functions of $\cplx$-argument, see
-\cite{adali_complex-valued_2011} and \cite{trabelsi_deep_2017}. In essence, this approach
-regards $f$ as a function of two independent variables $z$ and its conjugate $\conj{z}$ and
-symbolically redefines the derivatives appropriately. The resulting derivative operators
-satisfy linearity, product and chain rules, and respect complex conjugation. This approach
-can be directly reformulated in terms of derivatives with respect to real and imaginary parts,
-making it possible to use and apply the rules of $\real$-calculus to the networks represented
-in paired $\real$ fashion and use existing $\real$-valued backpropagation in autograd software.
+This problem is dealt with by using Wirtinger, or $\cplx\real$ calculus, which subsumes
+$\cplx$-calculus, and is applicable to non-holomorphic functions of $\cplx$-argument,
+\cite{adali_complex-valued_2011}. As a basis for backpropagation algorithm it was considered
+in \cite{benvenuto_complex_1992} and \cite{trabelsi_deep_2017}.
 
-% criticism and discussion
-Despite this, $\cplx$-networks remain much less popular than $\real$-networks for several
-reasons. One possible reason is that a $\cplx$-layer is identical to a paired $\real$-layer,
-based on the algebraic equivalence between $2 \times 2$ real matrices and complex numbers.
-Due to this constraint $\cplx$-networks have less expressive power for the same computation
-complexity compared to a $\real$-layer with twice as many inputs and outputs.
-%
-Another one is that a $\cplx$-network is not a true complex-valued function of a complex
-argument: common non-linearities are pointwise applications of $\real$-valued activations
-\cite{trabelsi_deep_2017}.
-%
-Third conceptual issue is that a real-valued loss as a $\cplx\to\real$ function fails
-Cauchy-Riemann conditions, and so is not $\cplx$-differentiable. Since the network has to
-be trained by a gradient-based method (stochastic), this issue is overcome by $\cplx\real$,
-or Wirtinger calculus, which treats the complex argument $z$ and its conjugate $\conj{z}$
-as explicit independent variables. For non-holomorphic functions this approach makes taking
-their derivatives essentially indistinguishable from calculus on $\real^2$.
-%
-The last reason is the lack of native support by the major deep learning and auto-differentiation
-frameworks.
+Basically $\cplx\real$ calculus regard $f(z)$ as a function of two independent variables $z$ 
+and its conjugate $\conj{z}$ and symbolically defines derivative operators $
+  \tfrac{\partial}{\partial z}
+$ and $
+  \tfrac{\partial}{\partial \conj{z}}
+$, that satisfy linearity, product and chain rules, and respect complex conjugation. The important
+property is that, if we identify $f(z) = f(u + jv) = F(u, v)$, then the $\cplx\real$ calculus
+rules differential of $f$ as a $\cplx$ function coincides its differential as an $\real^2$
+function. This makes it possible to use and apply the rules of $\real$-calculus to the networks
+represented in paired $\real$ fashion and use existing $\real$-valued backpropagation in autograd
+software. The key analytic advantage is that computing derivatives is more streamlined, less
+messy, and derivative expressions involving complex variables turn out to be simpler that their
+real-imaginary analogues, \cite{adali_complex-valued_2011}.
 
 % section c_valued_networks (end)
 
@@ -1081,6 +1091,10 @@ image classification (CIFAR-10, CIFAR-100, reduced train of SVHN), music-transcr
 \end{itemize}
 
 
+test on MusicNet, (music transcription [14])
+
+complex high-dimensional time series In-phase Quadrature (IQ)
+
 \cite{monning_evaluation_2018}
 \cite{jankowski_complex-valued_1996}
 \cite{amin_complex-valued_2012}
@@ -1139,6 +1153,27 @@ families, making the posterior explicit, the questions of interest are usually c
 inference using the posterior predictive distribution, which is factorized as the conditional
 predictive distribution given the model and new observation, and the posterior of the model
 after observing the data.
+
+% criticism and discussion
+Despite this, $\cplx$-networks remain much less popular than $\real$-networks for several
+reasons. One possible reason is that a $\cplx$-layer is identical to a paired $\real$-layer,
+based on the algebraic equivalence between $2 \times 2$ real matrices and complex numbers.
+Due to this constraint $\cplx$-networks have less expressive power for the same computation
+complexity compared to a $\real$-layer with twice as many inputs and outputs.
+%
+Another one is that a $\cplx$-network is not a true complex-valued function of a complex
+argument: common non-linearities are pointwise applications of $\real$-valued activations
+\cite{trabelsi_deep_2017}.
+%
+Third conceptual issue is that a real-valued loss as a $\cplx\to\real$ function fails
+Cauchy-Riemann conditions, and so is not $\cplx$-differentiable. Since the network has to
+be trained by a gradient-based method (stochastic), this issue is overcome by $\cplx\real$,
+or Wirtinger calculus, which treats the complex argument $z$ and its conjugate $\conj{z}$
+as explicit independent variables. For non-holomorphic functions this approach makes taking
+their derivatives essentially indistinguishable from calculus on $\real^2$.
+%
+The last reason is the lack of native support by the major deep learning and auto-differentiation
+frameworks.
 
 Practical performance of variational dropout techniques was studied in \cite{citation_needed}
 and \cite{citation_needed}. The most fierce critique of Bayesian approach towards model
@@ -1494,12 +1529,16 @@ part of a constraint, ie. downstream computation)
 \subsection{Backpropagation through $\cplx$-networks} % (fold)
 \label{sub:wirtinger_calculus}
 
-TLDR: we use Wirtinger calculus!
+% TLDR: we use Wirtinger calculus!
 
 % essential intro into Wirtinger calculus (CR)
-Take $f\colon \cplx \to \cplx$ and identify it with $F\colon \real^2 \to \cplx$ function
-via $F(u, v) = f(z)\vert_{z=u + j v}$. Wirtinger calculus introduces two formal derivative
-operators \rewrite{(this seems to be very verbatim)}
+% https://math.stackexchange.com/a/444493
+Wirtinger calculus relies on the natural identification of $\cplx$ with $\real \times \real$.
+Let's consider $
+  f\colon \cplx \to \cplx
+$ and treat it as an equivalent function $\real^2 \to \cplx$ via $
+  f(z) = f(u + jv) = F(u, v)
+$. Wirtinger calculus defines two formal derivative operators
 $
   \tfrac{\partial}{\partial z}
     = \tfrac12 \bigl(
@@ -1512,47 +1551,73 @@ $ and $
       \tfrac{\partial}{\partial u}
       + j \tfrac{\partial}{\partial v}
     \bigr)
-$, defines $dz = du + j dv$, $d\conj{z} = du - j dv$, and the differential of $f$ as
+$ and the differential of $f$ at $z \in \cplx$ as
 $$
-df = \tfrac{\partial f}{\partial z} dz
-    + \tfrac{\partial f}{\partial \conj{z}} d\conj{z}
-   % = \tfrac12\bigl(
-   %    \tfrac{\partial}{\partial u}
-   %    - j \tfrac{\partial}{\partial v}
+df(z) \big\vert_{z=u + jv}
+  = \frac{\partial f}{\partial z} dz
+    + \frac{\partial f}{\partial \conj{z}} d\conj{z}
+   % = \frac12\bigl(
+   %    \frac{\partial}{\partial u}
+   %    - j \frac{\partial}{\partial v}
    % \bigr) F (du - j dv)
-   % + \tfrac12\bigl(
-   %    \tfrac{\partial}{\partial u}
-   %    + j \tfrac{\partial}{\partial v}
+   % + \frac12\bigl(
+   %    \frac{\partial}{\partial u}
+   %    + j \frac{\partial}{\partial v}
    % \bigr) F (du - j dv)
-   % = \tfrac12 \bigl(
-   %    \tfrac{\partial F}{\partial u} du - j \tfrac{\partial F}{\partial v} du
-   %    + j \tfrac{\partial F}{\partial u} dv + \tfrac{\partial F}{\partial v} dv
+   % = \frac12 \bigl(
+   %    \frac{\partial F}{\partial u} du - j \frac{\partial F}{\partial v} du
+   %    + j \frac{\partial F}{\partial u} dv + \frac{\partial F}{\partial v} dv
    % \bigr)
-   % + \tfrac12 \bigl(
-   %    \tfrac{\partial F}{\partial u} du + j \tfrac{\partial F}{\partial v} du
-   %    - j \tfrac{\partial F}{\partial u} dv + \tfrac{\partial F}{\partial v} dv
+   % + \frac12 \bigl(
+   %    \frac{\partial F}{\partial u} du + j \frac{\partial F}{\partial v} du
+   %    - j \frac{\partial F}{\partial u} dv + \frac{\partial F}{\partial v} dv
    % \bigr)
-   = \tfrac{\partial F}{\partial u} du
-     + \tfrac{\partial F}{\partial v} dv
-   = dF
-  \,. $$
-Thus the complex value and its conjugate are treated as independent variables. In this notation
-Cauchy-Riemann conditions are expressed as $
+   = \frac{\partial F}{\partial u} du
+     + \frac{\partial F}{\partial v} dv
+   = dF(u, v)
+  \,, $$
+where $dz = du + j dv$ and $d\conj{z} = du - j dv$. This implies that the complex argument
+and its conjugate are treated as independent variables. In this notation Cauchy-Riemann
+conditions are expressed as $
   \tfrac{\partial f}{\partial \conj{z}} = 0
 $, or $
-  -j\tfrac{\partial F}{\partial v} = \tfrac{\partial F}{\partial v}
+  -j \tfrac{\partial F}{\partial v} = \tfrac{\partial F}{\partial v}
 $. These conditions impose a rigid structure on real and imaginary parts of $F(u, v)$, namely $
   \tfrac{\partial F_{\Re }}{\partial u} = \tfrac{\partial F_{\Im }}{\partial v}
 $ and $
   \tfrac{\partial F_{\Re }}{\partial v} = - \tfrac{\partial F_{\Im }}{\partial u}
-$. Thus Wirtinger calculus subsumes the usual $\cplx$-calculus, when $
+$. Thus Wirtinger calculus subsumes the usual $\cplx$-calculus on holomorphic functions,
+when $
   \tfrac{\partial f}{\partial \conj{z}} = 0
 $, i.e. $
   f(z)
     % = g(z, \conj{z})
     = F(\tfrac12 (z + \conj{z}), \tfrac1{j 2} (z - \conj{z}))
-$ does not depend on $\conj{z}$.
+$ does not depend on $\conj{z}$. The usual rules of calculus, like chain and product rules,
+follow directly from the definition of the operators, e.g.
+$$
+  \frac{\partial (f\circ g)}{\partial z}
+    = \frac{\partial f(g(z))}{\partial g} \frac{\partial g(z)}{\partial z}
+    + \frac{\partial f(g(z))}{\partial \conj{g}} \frac{\partial \conj{g(z)}}{\partial z}
+    % = \nabla G \nabla F
+  \,. $$
+% Show that $dh(z) = df(g(z)) dg(z)$.
+% $h(z) = f(g(z)) = F(G_r(u, v), G_i(u, v)) = H(u, v)$
+% $$
+% dH
+%   = \tfrac{\partial F}{\partial x} \tfrac{\partial G_r}{\partial u} du
+%   + \tfrac{\partial F}{\partial x} \tfrac{\partial G_r}{\partial v} dv
+%   + \tfrac{\partial F}{\partial y} \tfrac{\partial G_i}{\partial u} du
+%   + \tfrac{\partial F}{\partial y} \tfrac{\partial G_i}{\partial v} dv
+%   = \tfrac{\partial F}{\partial r} d\Re g(z)
+%   + \tfrac{\partial F}{\partial i} d\Im g(z)
+%   = df(\Re g(z) + j\Im g(z)) d g(z)
+%   = df(g(z)) d g(z)
+%   \,. $$
 
+Since in machine learning the target loss is typically an empirical real-valued risk, which
+is minimized, and we let's derive the expression for the gradient and make sure that it is
+compatible with real-valued calculus upon which current auto-differentiation tools are built.
 For a real-valued $f\colon \cplx \to \real$ we have $\conj{f} = f$, whence $
   \tfrac{\partial f}{\partial \conj{z}}
     = \tfrac{\partial \conj{f}}{\partial \conj{z}}
@@ -1571,25 +1636,12 @@ df
     \tfrac{\partial f}{\partial z} dz
   \bigr)
   \,. $$
-Hence the gradient, being the direction of \rewrite{maximal growth} of $f$ at $z$ is given by $
+Hence the gradient of $f$ at $z$ is given by $
   \tfrac{\partial f}{\partial \conj{z}}
     = \tfrac{\partial F}{\partial u}
       + j \tfrac{\partial F}{\partial v}
-$. Thus under Wirtinger calculus it is possible to reuse $\real$-backpropagation.
-
-% Show that $dh(z) = df(g(z)) dg(z)$.
-% $h(z) = f(g(z)) = F(G_r(u, v), G_i(u, v)) = H(u, v)$
-% $$
-% dH
-%   = \tfrac{\partial F}{\partial x} \tfrac{\partial G_r}{\partial u} du
-%   + \tfrac{\partial F}{\partial x} \tfrac{\partial G_r}{\partial v} dv
-%   + \tfrac{\partial F}{\partial y} \tfrac{\partial G_i}{\partial u} du
-%   + \tfrac{\partial F}{\partial y} \tfrac{\partial G_i}{\partial v} dv
-%   = \tfrac{\partial F}{\partial r} d\Re g(z)
-%   + \tfrac{\partial F}{\partial i} d\Im g(z)
-%   = df(\Re g(z) + j\Im g(z)) d g(z)
-%   = df(g(z)) d g(z)
-%   \,. $$
+$, meaning that we can use gradients with respect ral and imaginary parts independently. Thus
+using Wirtinger calculus makes it possible to reuse $\real$-backpropagation for $\cplx$-networks.
 
 % subsection wirtinger_calculus (end)
 
