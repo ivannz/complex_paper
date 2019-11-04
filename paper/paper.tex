@@ -63,6 +63,28 @@ of variational Bayesian inference can be used towards model sparsification: vari
 Bayesian dropout studied in \cite{kingma_variational_2015,molchanov_variational_2017}, and
 \cite{kharitonov_variational_2018}.
 
+% complex nets and related stuff
+Maths and related results \cite{pav_moments_2015,taubock_complex-valued_2012}, and
+\cite{karseras_caution:_2014}
+
+The use $\cplx$-valued networks in applications is not new: earliest mentions include
+\cite{citation_needed}. More recently they were applied to music transcription and speech
+recognition \cite{trabelsi_deep_2017,yang_complex_2019}. The key motivation behind adoption
+of $\cplx$-networks is the fact that complex numbers are inherent in digital signal processing
+\cite{citation_needed}, acoustic and radio signal analysis \cite{citation_needed}, and
+quantum systems modelling \cite{citation_needed} etc. All these applications require
+compliance with algebraic operations in field of complex numbers.
+
+
+The paper is structured as follows. In sec.~\ref{sec:bayesian_dropout} we review Bayesian
+dropout techniques, and ins sec.~\ref{sec:c_valued_networks} we provide a brief summary of
+the inner working of complex-valued networks as functions of complex argument. The main
+contribution of this study is presented in sec.~\ref{sec:dropout_for_c_valued_layers},
+where we consider different variational approximations and priors, outline the tricks
+and derive expressions for the divergence term. In sec.~\ref{sec:experiments} we evaluate
+the sparsification rate and compare the resulting performance of various $\cplx$-networks
+proposed in prior work, and discuss the outcomes in sec.~\ref{sec:discussion_and_related_research}.
+
 % section introduction (end)
 
 
@@ -247,38 +269,26 @@ For a particular family of variational posterior approximation, variational infe
 can be used as a regularization method \cite{kingma_variational_2015} and as model sparsification
 technique \cite{molchanov_variational_2017}. In \cite{kingma_variational_2015} the Binary
 dropout and DropConnect \cite{hinton_improving_2012,dropconnect}, and Gaussian dropout
-\cite{srivastava_dropout_2014,wang_fast_2013} were reframed as variational inference methods
-by treating the induced parameter distributions as a factorized posterior approximations
-of the form $
+\cite{srivastava_dropout_2014,wang_fast_2013} were reinterpreted as variational inference
+methods. In that study, authors argue that dropout, being multiplicative parameter noise,
+induces parameter distribution equivalent to a fully factorized variational posterior
+approximation of the form $
   q_\theta(\omega) = \prod_j q_{\theta}(\omega_j)
 $, where each component $q_{\theta}(\omega_j)$ is defined via $\omega_j = \mu_j \xi_j$
 with $\xi_j \sim p(\xi_j)$ iid for some $p(\xi)$. In Binary dropout with rate $p \in (0, 1)$
-the mutliplicative noise $\xi$ is distributed like $
+the noise $\xi$ is binary and distributed $
   \mathcal{B}\bigl(
       \{0, \tfrac1{1-p}\}, 1-p
     \bigr)
-$ whereas in Gaussian dropout $\mathcal{N}(1, \alpha)$ for $\alpha = \tfrac{p}{1-p}$.
-Focusing on Gaussian dropout, \cite{kingma_variational_2015} proposed Variational Dropout
-technique for Bayesian model regularization: $\alpha$ is treated as a variational parameter,
-that enabled its optimization through SGVB. The variational approximation is a fully
-factorized Gaussian distribution with components $
-  q_{\theta}(\omega_j)
-    = \mathcal{N}(\mu_j, \alpha_j \mu_j^2)
-$. The flexibility in specifying the dependence of $q_\theta$ on $\alpha$ allows learning
-structured dropout rates: global per network, local per layer and even individual, i.e.
-specific to each parameter. In the case of a prior with improper log-uniform factors $
-  \pi(\omega_j) \propto \lvert \omega_j \rvert^{-1}
-$, the KL-divergence term in \eqref{eq:elbo} as computed up to a constant term as a sum of
-\begin{equation} \label{eq:improper-kl-div-real}
-  KL(q_\theta(\omega) \| \pi(\omega))
-    \propto
-      \frac12 \mathbb{E}_{\varepsilon \sim \mathcal{N}(0, 1)}
-        \log{\Bigl\lvert \tfrac1{\sqrt{\alpha}} + \varepsilon \Bigr\rvert^2}
-      % \frac12 \mathbb{E}_{\varepsilon \sim \mathcal{N}(0, 1)}
-      %   \log{\bigl\lvert 1 + \sqrt{\alpha} \varepsilon \bigr\rvert^2}
-      % - \frac12 \log{\alpha}
-  \,.
-\end{equation}
+$, whereas in Gaussian dropout $
+  \xi \sim \mathcal{N}(1, \alpha)
+$ for $\alpha = \tfrac{p}{1-p}$. In the latter case, the \textit{dropout score} $\alpha$ acts
+like a variance scaling factor, making it a natural variational parameter for the posterior
+approximation, which is optimized via SGVB \eqref{eq:elbo}. Thus \cite{kingma_variational_2015}
+propose Variational Dropout technique for Bayesian model regularization. The flexibility in
+specifying dependence of $q_\theta$ on $\alpha$ allows imposing structure on dropout: global
+rate for the whole model network, local per each component and even specific to individual
+parameter.
 
 Secondary contribution of \cite{kingma_variational_2015} has been the analysis of the local
 reparameterization trick as a gradient variance reduction technique for \eqref{eq:elbo},
@@ -292,14 +302,15 @@ gradient estimator $\nabla_\theta \mathcal{L}^{SGVB}$ is more statistically effi
 and computationally fast, when the trick is used in addition to independent per sample
 parameter draws, which reduce variance by decorrelating ELBO estimates within the minibatch.
 
-The more recent developments of Bayesian dropout technique with factorized Gaussian
-approximations are considered in \cite{molchanov_variational_2017,kharitonov_variational_2018}.
-\cite{molchanov_variational_2017}
-studies variational dropout from a model sparsification perspective, improve on the results
-of \cite{kingma_variational_2015} in two ways: the authors propose a more accurate approximation
-to the KL-divergence term, and propose additive noise parameterization for the factors of
-$q_\theta(\omega)$, $\omega = W$. Under the original $(\mu, \alpha)$ parameterization the
-stochastic output of a linear layer $
+Bayesian dropout technique with mean field Gaussian variational approximation is further
+developed in \cite{molchanov_variational_2017} and \cite{kharitonov_variational_2018}. The
+first paper studies variational dropout from a model sparsification perspective and improves
+on the results of \cite{kingma_variational_2015} in two directions: the authors propose a
+more accurate approximation to the KL-divergence term in \eqref{eq:elbo}, and introduce
+additive noise parameterization for the factors of $q_\theta(\omega)$, $\omega = W$.
+
+Under the original $(\mu, \alpha)$ parameterization the stochastic output of a linear
+layer $
   y = W^\top x + b
 $ with $
   W \in \mathbb{R}^{n\times m}
@@ -310,24 +321,39 @@ $ is equivalent in distribution to $
       \sum_j \mu_{ij} x_j + b_i,
       \sum_j \alpha_{ij} \mu_{ij}^2 x_j^2
   \Bigr)
-$. \cite{molchanov_variational_2017} argue that for the purposes of model sparsification this parameterization
-should be abandoned in favour of an equivalent $(\mu, \sigma^2)$ with $\alpha$ calculated
-using $\tfrac{\sigma^2}{\mu^2}$ when needed. This makes $\nabla_\mu \mathcal{L}^{SGVB}$,
-which is particularly important for sparsification, independent of the noise injected by
-the trick.
+$. \cite{molchanov_variational_2017} argue that for the purposes of model sparsification
+this parameterization should be abandoned in favour of an equivalent $(\mu, \sigma^2)$ with
+the score $\alpha$ calculated using $\tfrac{\sigma^2}{\mu^2}$ when needed. This makes $
+  \nabla_\mu \mathcal{L}^{SGVB}
+$, which is particularly important for sparsification, independent of the noise injected
+by the trick.
 
-The KL-divergence term \eqref{eq:expect-improper-term-cplx} is half the log-moment of a non-central
+\cite{kingma_variational_2015} and \cite{molchanov_variational_2017} consider a factorized
+prior $\pi(\omega)$ with improper log-uniform factors $
+  \pi(\omega_j) \propto \lvert \omega_j \rvert^{-1}
+$. This unravels the divergence term in \eqref{eq:elbo} into a sum of the following terms:
+\begin{equation} \label{eq:improper-kl-div-real}
+  KL(q_\theta(\omega) \| \pi(\omega))
+    \propto
+      \frac12 \mathbb{E}_{\varepsilon \sim \mathcal{N}(0, 1)}
+        \log{\Bigl\lvert \tfrac1{\sqrt{\alpha}} + \varepsilon \Bigr\rvert^2}
+      % \frac12 \mathbb{E}_{\varepsilon \sim \mathcal{N}(0, 1)}
+      %   \log{\bigl\lvert 1 + \sqrt{\alpha} \varepsilon \bigr\rvert^2}
+      % - \frac12 \log{\alpha}
+  \,.
+\end{equation}
+The expectation in \eqref{eq:expect-improper-term-cplx} is half the $\log$-moment of a non-central
 $\chi^2$ distribution with shape $1$ and non-centrality $\lambda = \tfrac1{\alpha}$. In general,
-there is no analytically tractable expression for log-moment of a $\chi^2_m$ with odd degrees of
-freedom. To circumvent this, \cite{kingma_variational_2015} approximate the expectation by a
-non-linear polynomial regression for truncated $\alpha \in (0, 1)$. This approximation was
-significantly refined in \cite{molchanov_variational_2017}, by considering regression with sigmoid
-and soft-plus basis functions fit to the Monte-Carlo estimator of \eqref{eq:improper-kl-div-real}
-for $\alpha$ varying over a logarithmic grid. This enabled doing away with the clipping of the
-dropout rate (relevance score) $\alpha$. Since gradient based methods rely on unbiased gradient
-estimates, in sec.~\ref{sub:real-chisq-grad} we compare the derivative of the approximation
-to the exact derivative of \eqref{eq:improper-kl-div-real} with respect to $\log \alpha$ and show
-that the approximation in \cite{molchanov_variational_2017} is an adequate.
+there is no analytically tractable expression for log-moment of a $\chi^2_m$ with odd degrees
+of freedom. To circumvent this, \cite{kingma_variational_2015} approximate the expectation by
+a non-linear polynomial regression for truncated $\alpha \in (0, 1)$. This approximation was
+substantially refined in \cite{molchanov_variational_2017}, both in term of the domain of scores
+$\alpha$ and accuracy. The paper considered regression with sigmoid and soft-plus basis functions
+fit to the Monte-Carlo estimator of \eqref{eq:improper-kl-div-real} for $\alpha$ varying over
+a fine logarithmic grid. In sec.~\ref{sub:real-chisq-grad} we verify the approximation and
+compare the approximate derivative to the exact derivative of \eqref{eq:improper-kl-div-real}
+with respect to $\log \alpha$.
+% Since gradient based methods rely on unbiased gradient estimates
 
 In another variant of Bayesian dropout, called Automatic Relevance Determination, is developed
 in the \cite{molchanov2018}. The key difference from Variational Dropout is the choice of
@@ -341,6 +367,7 @@ by minimizing the KL-divergence term holding variational parameters $\theta$ fix
 
 % section bayesian_dropout (end)
 
+
 \section{$\cplx$-valued networks} % (fold)
 \label{sec:c_valued_networks}
 
@@ -348,21 +375,13 @@ In this section we overview $\mathbb{C}$-valued networks, their motivation and p
 In out exposition we shall focus mostly on linear layers, keeping in mind that transferring 
 the ideas to convolutional layers is straightforward.
 
-The use $\cplx$-valued networks in applications is not new: earliest mentions include
-\cite{citation_needed}. More recently they were applied to music transcription and speech
-recognition \cite{trabelsi_deep_2017,1910.10202}. The key motivation behind adoption
-of $\cplx$-networks is the fact that complex numbers are inherent in digital signal processing
-\cite{citation_needed}, acoustic and radio signal analysis \cite{citation_needed}, and
-quantum systems modelling \cite{citation_needed} etc. All these applications require
-compliance with algebraic operations in field of complex numbers.
-
 The most recent study of complex-valued networks \cite{trabelsi_deep_2017}, provides a set
 of building blocks for deep $\cplx$-valued networks. The core of their work is structured
 framework for complex-valued operations including representation and linear layers (dense
 and convolutional) as well as $\cplx$-valued activations and complex batch-normalization
 and weight initialization.
 
-Following \cite{trabelsi_deep_2017} we identify $\cplx$ with $\real^2$ via $
+Following \cite{trabelsi_deep_2017}, we naturally identify $\cplx$ with $\real^2$ via $
   z_\mathrm{r} + j z_\mathrm{i} \mapsto (z_\mathrm{r}, z_\mathrm{i})
 $, storing the real and imaginary parts in interleaved format, and emulate $\cplx$-algebra
 using $\real$-valued arithmetic. Thus designed $\cplx$-network is, essentially, a
@@ -508,9 +527,9 @@ elementwise.
 
 A characterization of a $\cplx$-Gaussian vector, more useful for the current study, is via the
 equivalence with the paired real multivariate Gaussian distribution:
-\begin{equation}  \label{eq:cn-paired-real-density}
+\begin{multline}  \label{eq:cn-paired-real-density}
   z \sim \mathcal{N}^{\cplx}_m(\mu, \Gamma, C)
-    \Leftrightarrow
+    \\\Leftrightarrow
     \begin{pmatrix}
       \Re z \\ \Im z
     \end{pmatrix}
@@ -525,7 +544,7 @@ equivalence with the paired real multivariate Gaussian distribution:
         \end{pmatrix}
       \biggr)
     \,.
-\end{equation}
+\end{multline}
 It is possible to recover the $\cplx$ covariance and relation matrices from a block covariance
 matrix $\Sigma$ of a \textit{non-degenerate} paired real Gaussian vector through
 $$
@@ -571,7 +590,8 @@ all weight matrices of linear layers and kernels of convolutional layers, and $b
 all bias term combined. We use a fully factorized Dirac family on the biases, and mean-field
 proper $\cplx$-Gaussian variational approximation for the weights: $
   q(W) = \prod_{lij} q(W^{l}_{ij})
-$ with each parameter being an independent proper complex Gaussian
+$ with each parameter being an independent univariate proper complex Gaussian
+% (we omit the subscript $m=1$ for brevity)
 \begin{equation} \label{eq:c-gauss-vi}
   W_{ij}
     \sim \mathcal{N}^{\cplx}(\mu_{ij}, \sigma^2_{ij}, 0)
@@ -1719,6 +1739,27 @@ Expanding the exponential as infinite series:
 \section{Trunk} % (fold)
 \label{sec:trunk}
 
+
+
+In a fully Bayesian treatment, the dropout rate $p$, which governs the regularization strength,
+would appear in the KL-divergence term of ELBO \eqref{eq:elbo} through the corresponding odds 
+ratio $
+  \alpha = \tfrac{p}{1-p}
+$, which.
+
+it vary on the per-parameter basis, which allows for even more flexible posterior
+approximations.
+
+% revirew of kingma and lrt
+The key contributions of \cite{kingma_variational_2015} are reinterpretation of dropout
+as a variational inference method
+
+that optimizes the $\log$-likelihood term from the Evidence Lower Bound.
+
+ % who proposed sparsification?
+
+
+
 In the case of $\real$-valued variational dropout \cite{kingma_variational_2015} approximate
 \eqref{eq:expect-improper-term-cplx} by a non-linear regression, fit to the Monte-Carlo estimates
 of the expectation for $\alpha$ varying over a logarithmic grid. This approximation was greatly
@@ -1741,7 +1782,7 @@ Why sparsity matters, why $\cplx$ networks?
 
 Where are $\cplx$-networks used? and do these applications warrant sparsity?
 
-Gist of the LRP (kingmaetal2015)
+Gist of the LRP (\cite{kingma_variational_2015})
 translating uncertainty (randomness) from parameters to activations
   adds noise -- helps regularization
   emulates one draw per batch element -- decorrelates gradient within the batch
@@ -1773,14 +1814,12 @@ potentially \verify{saving up} to $25\%$ on floating point multiplications. \tod
 
 % subsection c_valued_networks (end)
 
-\section{Complex Variational Dropout} % (fold)
-\label{sec:complex_variational_dropout}
+\section{Bayesian methods} % (fold)
+\label{sec:bayesian_methods}
 
 In this section we outline and derive the variational dropout technique for complex-%
 valued networks, which re-traces the evolution of dropout technique for real-valued
 weights.
-
-
 
 % a second take on bayesian inference
 The core question of Bayesian analysis is concerned with the distribution of the data model
@@ -2084,24 +2123,18 @@ approximation.
 % on bernoulli dropout
 Bernoulli dropout alleviates the problem of overfitting
 
+% a comment on Bernoulli dropout
+The key idea of Bernoulli dropout is to randomly mask input features of a layer during
+training with in order to learn decorrelated feature maps. In a recent study of network
+capacity for multitask learning, \cite{multitask2019}, it was shown, that associating
+each dataset (task) with a context, that masks a subset of the parameters, allows non-%
+destructive `packing' of the tasks in orthogonal on average `subsets' of a single set
+of weights, without much interference between tasks. This lends support for beneficial
+effects of Bernulli Dropout on test performance, since, in effect, the network learns
+to perform well on identical copies of the same task with different (binary) contexts
+with a single parameter set.
+
 % on gaussian dropout
-
-% revirew of kingma and lrt
-The key contributions of \cite{kingma_variational_2015} are reinterpretation of dropout
-as a variational inference method and the analysis of the effects that the local reparameterization
-trick has on the efficiency of the gradient estimator in stochastic variational inference,
-\cite{citation_needed}.
-
-\cite{kingmaetal2015} argue that Gaussian dropout, being a multiplicative parameter noise,
-can be interpreted as variational inference via factorized Gaussian posterior approximation
-$q(\omega)$ that optimizes the $\log$-likelihood term from the Evidence Lower Bound. In a fully
-Bayesian treatment, the dropout rate $p \in (0, 1)$, which governs the regularization strength,
-would appear in the KL-divergence term of ELBO through the corresponding odds $
-  \alpha = \tfrac{p}{1-p}
-$, which acts a variance scaling factor in the posterior approximation. Having made $\alpha$
-a learnable parameter of the variational approximation, \cite{kingmaetal2015} natuallry propose
-letting it vary on the per-parameter basis, which allows for even more flexible posterior
-approximations. % who proposed sparsification?
 
 The local reparameterization trick, proposed by \cite{citation_wang_menning_2013} in the context
 of Bernoulli and Gaussian dropout regularization techniques \cite{citation_needed}, translates
@@ -2125,22 +2158,6 @@ MC estimator (statistical efficiency).
 the gradient in sgvb is unbiased estimate of the $\log$-likelihood part of the elbo
 
 \end{quote}
-
-
-% a comment on Bernoulli dropout
-The key idea of Bernoulli dropout is to randomly mask input features of a layer during
-training with in order to learn decorrelated feature maps. In a recent study of network
-capacity for multitask learning, \cite{multitask2019}, it was shown, that associating
-each dataset (task) with a context, that masks a subset of the parameters, allows non-%
-destructive `packing' of the tasks in orthogonal on average `subsets' of a single set
-of weights, without much interference between tasks. This lends support for beneficial
-effects of Bernulli Dropout on test performance, since, in effect, the network learns
-to perform well on identical copies of the same task with different (binary) contexts
-with a single parameter set.
-
-% exposition
-
-% plan
 
 A linear layer is parameterized by $W \in\real^{n \times m}$ and bias $b\in \real^n$ and
 acts on its input $x\in \real^m$ via $y = W x + b$ with $y\in \real^n$. The key idea of
@@ -2172,8 +2189,8 @@ In fact multiplicative Gaussian dropout on weights $W$ is in fact itself a varia
 approximation with variance $\sigma^2_{ij} = \theta_{ij}^2 \tfrac{p}{1-p}$ determined
 by the dropout rate.
 
-% set by step we retell the story of kingmaetal2015
 
+% set by step we retell the story of kingma_variational_2015
 Gaussian variational approximation enabled \cite{kingma_variational_2015} propose a
 \textit{local reparameterization trick}, which reduces the variance of the gradients
 in SGVB and does not resample $W$ per element of a minibatch. It relies the closure
@@ -2212,9 +2229,6 @@ proposed by \cite{louizos_learning_2017} and based on the concrete binary distri
 of \cite{maddison_concrete_2016}, works consistently better than the variational
 Gaussian dropout.
 
-Maths and related results \cite{pav_moments_2015,taubock_complex-valued_2012},
-and \cite{karseras_caution:_2014}
-
-% section complex_variational_dropout (end)
+% section bayesian_methods (end)
 
 \end{document}
