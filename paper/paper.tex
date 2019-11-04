@@ -14,12 +14,10 @@
 
 \usepackage{booktabs}
 
-\newcommand{\important}[1]{\textbf{\color{red} #1}}
-\newcommand{\attn}[2]{\textbf{\color{red} #2~\textsuperscript{\textit{[#1]}}}}
-\newcommand{\verify}[1]{\attn{verify}{#1}}
-\newcommand{\rewrite}[1]{\attn{rewrite}{#1}}
-\newcommand{\todo}[1]{{\color{blue} [TODO]} \important{#1}}
+\title{Bayesian Sparsification of $\cplx$-valued networks}
+\author{Ivan Nazarov, and Evgeny Burnaev}
 
+%% notation
 \newcommand{\real}{\mathbb{R}}
 \newcommand{\cplx}{\mathbb{C}}
 \newcommand{\tr}[1]{\mathop{tr}{#1}}
@@ -31,8 +29,18 @@
 \renewcommand{\vec}[1]{\overrightarrow{#1}}
 \newcommand{\diag}[1]{\mathrm{diag}{#1}}
 
-\title{Bayesian Sparsification of $\cplx$-valued networks}
-\author{Ivan Nazarov, and Evgeny Burnaev}
+%% drafting macro
+\newcommand{\important}[1]{\textbf{\color{red} #1}}
+\newcommand{\attn}[2]{\textbf{\color{red} #2~\textsuperscript{\textit{[#1]}}}}
+\newcommand{\verify}[1]{\attn{verify}{#1}}
+\newcommand{\rewrite}[1]{\attn{rewrite}{#1}}
+\newcommand{\todo}[1]{{\color{blue} [TODO]} \important{#1}}
+
+%% red-highlight missing citations
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\@citex}{\bfseries ?}{\colorbox{red}{\bfseries ?}}{}{}
+\makeatother
 
 \begin{document}
 \maketitle
@@ -1137,9 +1145,9 @@ terms of empirical risk minimization of the negative $\log$-likelihood term in \
 
 \clearpage
 
-\bibliographystyle{amsplain}
+\bibliographystyle{unsrt}
 \bibliography{references}
-\nocite{*}
+% \nocite{*}
 
 \clearpage
 
