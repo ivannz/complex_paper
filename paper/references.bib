@@ -400,3 +400,46 @@ It is well known and interesting that a complex-valued neuron can solve several 
 	year = {2012},
 	file = {Petersen and Pedersen - [ httpmatrixcookbook.com ].pdf:/Users/ivannazarov/Zotero/storage/7MBQC6ED/Petersen and Pedersen - [ httpmatrixcookbook.com ].pdf:application/pdf}
 }
+
+
+@article{kingma_auto-encoding_2014,
+	title = {Auto-{Encoding} {Variational} {Bayes}},
+	url = {http://arxiv.org/abs/1312.6114},
+	abstract = {How can we perform efficient inference and learning in directed probabilistic models, in the presence of continuous latent variables with intractable posterior distributions, and large datasets? We introduce a stochastic variational inference and learning algorithm that scales to large datasets and, under some mild differentiability conditions, even works in the intractable case. Our contributions is two-fold. First, we show that a reparameterization of the variational lower bound yields a lower bound estimator that can be straightforwardly optimized using standard stochastic gradient methods. Second, we show that for i.i.d. datasets with continuous latent variables per datapoint, posterior inference can be made especially efficient by fitting an approximate inference model (also called a recognition model) to the intractable posterior using the proposed lower bound estimator. Theoretical advantages are reflected in experimental results.},
+	urldate = {2019-11-04},
+	journal = {arXiv:1312.6114 [cs, stat]},
+	author = {Kingma, Diederik P. and Welling, Max},
+	month = may,
+	year = {2014},
+	note = {arXiv: 1312.6114},
+	keywords = {Computer Science - Machine Learning, Statistics - Machine Learning},
+	file = {arXiv Fulltext PDF:/Users/ivannazarov/Zotero/storage/HWZK2M3Y/Kingma and Welling - 2014 - Auto-Encoding Variational Bayes.pdf:application/pdf;arXiv.org Snapshot:/Users/ivannazarov/Zotero/storage/NLIRQZIH/1312.html:text/html}
+}
+
+@article{figurnov_implicit_2019,
+	title = {Implicit {Reparameterization} {Gradients}},
+	url = {http://arxiv.org/abs/1805.08498},
+	abstract = {By providing a simple and efficient way of computing low-variance gradients of continuous random variables, the reparameterization trick has become the technique of choice for training a variety of latent variable models. However, it is not applicable to a number of important continuous distributions. We introduce an alternative approach to computing reparameterization gradients based on implicit differentiation and demonstrate its broader applicability by applying it to Gamma, Beta, Dirichlet, and von Mises distributions, which cannot be used with the classic reparameterization trick. Our experiments show that the proposed approach is faster and more accurate than the existing gradient estimators for these distributions.},
+	urldate = {2019-11-04},
+	journal = {arXiv:1805.08498 [cs, stat]},
+	author = {Figurnov, Michael and Mohamed, Shakir and Mnih, Andriy},
+	month = jan,
+	year = {2019},
+	note = {arXiv: 1805.08498},
+	keywords = {Computer Science - Machine Learning, Statistics - Machine Learning},
+	file = {arXiv Fulltext PDF:/Users/ivannazarov/Zotero/storage/ANEUWL3V/Figurnov et al. - 2019 - Implicit Reparameterization Gradients.pdf:application/pdf;arXiv.org Snapshot:/Users/ivannazarov/Zotero/storage/X2GZKD6M/1805.html:text/html}
+}
+
+@article{ranganath_operator_2018,
+	title = {Operator {Variational} {Inference}},
+	url = {http://arxiv.org/abs/1610.09033},
+	abstract = {Variational inference is an umbrella term for algorithms which cast Bayesian inference as optimization. Classically, variational inference uses the Kullback-Leibler divergence to define the optimization. Though this divergence has been widely used, the resultant posterior approximation can suffer from undesirable statistical properties. To address this, we reexamine variational inference from its roots as an optimization problem. We use operators, or functions of functions, to design variational objectives. As one example, we design a variational objective with a Langevin-Stein operator. We develop a black box algorithm, operator variational inference (OPVI), for optimizing any operator objective. Importantly, operators enable us to make explicit the statistical and computational tradeoffs for variational inference. We can characterize different properties of variational objectives, such as objectives that admit data subsampling---allowing inference to scale to massive data---as well as objectives that admit variational programs---a rich class of posterior approximations that does not require a tractable density. We illustrate the benefits of OPVI on a mixture model and a generative model of images.},
+	urldate = {2019-11-04},
+	journal = {arXiv:1610.09033 [cs, stat]},
+	author = {Ranganath, Rajesh and Altosaar, Jaan and Tran, Dustin and Blei, David M.},
+	month = mar,
+	year = {2018},
+	note = {arXiv: 1610.09033},
+	keywords = {Computer Science - Machine Learning, Statistics - Computation, Statistics - Machine Learning, Statistics - Methodology},
+	file = {arXiv Fulltext PDF:/Users/ivannazarov/Zotero/storage/9E47IFZY/Ranganath et al. - 2018 - Operator Variational Inference.pdf:application/pdf;arXiv.org Snapshot:/Users/ivannazarov/Zotero/storage/ISJSAREL/1610.html:text/html}
+}
