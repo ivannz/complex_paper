@@ -181,7 +181,7 @@ This key identity yield an equivalent problem for \eqref{eq:variational-progam}:
 maximizing the \textit{evidence lower bound} (ELBO)
 \begin{equation} \label{eq:elbo_general}
 \begin{aligned}
-  & \underset{\theta}{\text{maximize}}
+  & \underset{\theta, \phi, \lambda}{\text{maximize}}
     & \mathcal{L}(\theta; \phi, \lambda)
       & = \mathbb{E}_{\omega \sim q_{\theta}}
           \log p_{\phi}(D \mid \omega)
@@ -250,46 +250,33 @@ $.
 
 For a particular family of posterior approximation, variational inference can be used
 as a regularization method \cite{kingma_variational_2015} and as model sparsification
-technique \cite{molchanov_variational_2017}. In \cite{kingma_variational_2015} Binary
-dropout, DropConnect and Gaussian dropout, \cite{hinton_improving_2012,wan_regularization_2013},
-\cite{srivastava_dropout_2014}, and \cite{wang_fast_2013} were reinterpreted as variational
-inference methods. That study argues that the multiplicative noise, introduced by dropout,
-induces a distribution equivalent to a fully factorized variational posterior of the form $
+technique \cite{molchanov_variational_2017}. \cite{kingma_variational_2015} propose
+Variational Dropout, by studying Binary dropout, DropConnect and Gaussian dropout,
+\cite{hinton_improving_2012,wan_regularization_2013}, \cite{srivastava_dropout_2014},
+and \cite{wang_fast_2013} through the lens of variational inference methods. The study
+argues that the multiplicative noise, introduced by dropout, induces a distribution
+equivalent to a fully factorized variational posterior of the form $
   q_\theta(\omega) = \prod_j q_{\theta}(\omega_j)
 $, where $q_{\theta}(\omega_j)$ is $\omega_j = \mu_j \xi_j$ with $\xi_j \sim p(\xi_j)$
-iid from some $p_\xi$. In Binary dropout with rate $p \in (0, 1)$ we have $
+iid from some $p_\xi$. Binary dropout with rate $p \in (0, 1)$ uses $
   p_\xi
     = \mathcal{B}\bigl(
-        \{0, \tfrac1{1-p}\}, 1-p
-      \bigr)
+      \{0, \tfrac1{1-p}\}, 1-p
+    \bigr)
 $, whereas in Gaussian dropout $
   \xi \sim \mathcal{N}(1, \alpha)
-$ for $\alpha = \tfrac{p}{1-p}$. In the latter case, the \textit{dropout score} $\alpha$ acts
-like a variance scaling factor, making it a natural variational parameter for the posterior
-approximation, which is optimized via SGVB \eqref{eq:elbo}. Thus \cite{kingma_variational_2015}
-propose Variational Dropout technique for Bayesian model regularization. The flexibility in
-specifying dependence of $q_\theta$ on $\alpha$ allows imposing structure on dropout: global
-rate for the whole model network, local per each component and even specific to individual
-parameter.
+$ for $\alpha = \tfrac{p}{1-p}$. This suggests making $\alpha$ a variational parameter
+and optimizing it in \eqref{eq:elbo_general} with an appropriate penalty term. Flexibility
+in dependence of $q_\theta$ on $\alpha$ allows structured dropout with shared $\alpha$
+across groups of parameters or sparsifying dropout, where the rate $\alpha$ is optimized
+for each individual parameter, \cite{molchanov_variational_2017}.
 
-Secondary contribution of \cite{kingma_variational_2015} has been the analysis of the local
-reparameterization trick as a gradient variance reduction technique for \eqref{eq:elbo},
-that is particularly suitable for Variational Dropout. The trick is to translate uncertainty
-from the global parameter noise to local noise in intermediate outputs within the network.
-Initially, this idea was used in \cite{who-dis-originally-22} for Gaussian dropout,
-who employed the closure of Gaussians under affine transformations as a way to inject
-regularizing noise. Later in \cite[app.~B]{kingma_variational_2015} it was rigorously shown
-that for the case of fully factorized Gaussian dropout posterior approximations, the
-gradient estimator $\nabla_\theta \tilde{\mathcal{L}}$ is more statistically efficient
-and computationally fast, when the trick is used in addition to independent per sample
-parameter draws, which reduce variance by decorrelating ELBO estimates within the minibatch.
-
-Bayesian dropout technique with mean field Gaussian variational approximation is further
-developed in \cite{molchanov_variational_2017} and \cite{kharitonov_variational_2018}. The
-first paper studies variational dropout from a model sparsification perspective and improves
-on the results of \cite{kingma_variational_2015} in two directions: the authors propose a
-more accurate approximation to the KL-divergence term in \eqref{eq:elbo}, and introduce
-additive noise parameterization for the factors of $q_\theta(\omega)$, $\omega = W$.
+Variational Dropout with mean field Gaussian variational approximation is further developed
+in \cite{molchanov_variational_2017} and \cite{kharitonov_variational_2018}. The first paper
+studies variational dropout from a model sparsification perspective and improves on the
+results of \cite{kingma_variational_2015} in two directions: the authors propose a more
+accurate approximation to the KL-divergence term in \eqref{eq:elbo}, and introduce additive
+noise parameterization for the factors of $q_\theta(\omega)$, $\omega = W$.
 
 Under the original $(\mu, \alpha)$ parameterization the stochastic output of a linear
 layer $
@@ -338,12 +325,23 @@ with respect to $\log \alpha$.
 % Since gradient based methods rely on unbiased gradient estimates
 
 In another variant of Bayesian dropout, called Automatic Relevance Determination, is developed
-in the \cite{molchanov2018}. The key difference from Variational Dropout is the choice of
-prior: the log-uniform factor $\pi(\omega_{ij})$ is replaced by a proper Gaussian prior
-$\mathcal{N}(0, \tau^{-1}_{ij})$ with learnable precision $\tau_{ij} > 0$. This is knowns as
-the Empirical Bayes method, \cite{citation_needed}, which fits a prior distribution while
+in the \cite{kharitonov_variational_2018}. The key difference from Variational Dropout is the
+choice of prior: the log-uniform factor $\pi(\omega_{ij})$ is replaced by a proper Gaussian
+prior $\mathcal{N}(0, \tau^{-1}_{ij})$ with learnable precision $\tau_{ij} > 0$. This is knowns
+as the Empirical Bayes method, \cite{citation_needed}, which fits a prior distribution while
 performing variational inference. The optimal precision parameter is found in the closed form
 by minimizing the KL-divergence term holding variational parameters $\theta$ fixed.
+
+Second contribution of \cite{kingma_variational_2015} is the analysis of the \textit{local
+reparameterization trick}, proposed in \cite{wang_fast_2013} to speed up Gaussian dropout,
+as a gradient variance reduction technique for \eqref{eq:elbo}. This trick utilizes the
+closure of Gaussians under affine transformations, thereby translating uncertainty from the
+global parameter noise to local noise in intermediate outputs within the network.
+%
+\cite{kingma_variational_2015} show, that for the case of fully factorized Gaussian
+posterior approximations, the trick decorrelates ELBO estimates within the minibatch,
+making the gradient estimator $\nabla_\theta \tilde{\mathcal{L}}$ more statistically
+efficient.
 
 % This concludes the section on the foundations of Bayesian dropout techniques.
 
@@ -576,7 +574,7 @@ MAP estimates for them.
 As was demonstrated in \cite{kingma_variational_2015}, local reparameterization trick
 provides both faster computations and better statistical efficiency of the SGVB gradient
 estimator. We formulate the $\cplx$ version of the local reparameterization trick, which
-generalizes \cite{who-dis-originally-22}.
+generalizes \cite{wang_fast_2013}.
 
 % subsection c_gaussian_variational_approximation (end)
 
