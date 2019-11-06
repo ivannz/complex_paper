@@ -423,15 +423,16 @@ activation, which preserves the angle and applies soft-thresholding to the modul
 $ with a learnable parameter $\theta\in \real$. 
 
 Complex networks are, in general, non-holomorphic, i.e. not $\cplx$-differentiable, which is
-exacerbated by the loss being real-valued. Indeed, as implied by Cauchy-Riemann conditions, a
-$\cplx$-differentiable real-valued function is necessarily trivial. This issue is dealt with
-by employing Wirtinger, or $\cplx\real$ calculus, which generalizes holomorphic calculus
-to non-holomorphic functions of $\cplx$-argument, \cite{adali_complex-valued_2011}. It was
-considered as a basis for $\cplx$ version of backpropagation in \cite{benvenuto_complex_1992}
-and \cite{trabelsi_deep_2017} (see sec.~\ref{sub:wirtinger_calculus} for details). The key
-benefit of $\cplx\real$ calculus is straightforward symbolic differentiation, and the fact,
-that this allows retrofiting $\cplx$-valued networks into existing $\real$ deep learning
-auto-differentiation libraries.
+exacerbated by the loss being real-valued. Indeed a $\cplx$-differentiable real-valued function is
+necessarily trivial by Cauchy-Riemann conditions. This issue is dealt with by employing Wirtinger,
+or $\cplx\real$ calculus, which generalizes holomorphic calculus to non-holomorphic functions
+of $\cplx$-argument, \cite{adali_complex-valued_2011}. The rules it defines satisfy intuitive
+linearity, product and chain rules, and respect complex conjugation, but most importantly the
+$\cplx\real$-differential of a function on $\cplx$ coincides with its classical differential as
+a function on $\real^2$. Essentially, it allows straightforward retrofiting of $\cplx$-valued
+networks into existing $\real$ deep learning auto-differentiation frameworks. It was considered
+as a basis for $\cplx$ version of backpropagation in \cite{benvenuto_complex_1992} and
+\cite{trabelsi_deep_2017}, (see sec.~\ref{sub:wirtinger_calculus} for details).
 
 \todo{read on holomorphic nets}
 
@@ -1491,28 +1492,16 @@ part of a constraint, ie. downstream computation)
 \label{sub:wirtinger_calculus}
 
 % TLDR: we use Wirtinger calculus!
-Basically $\cplx\real$ calculus regard $f(z)$ as a function of two independent variables $z$ 
-and its conjugate $\conj{z}$ and symbolically defines derivative operators $
-  \tfrac{\partial}{\partial z}
-$ and $
-  \tfrac{\partial}{\partial \conj{z}}
-$, that satisfy linearity, product and chain rules, and respect complex conjugation. The important
-property is that, if we identify $f(z) = f(u + jv) = F(u, v)$, then the $\cplx\real$ calculus
-rules differential of $f$ as a $\cplx$ function coincides its differential as an $\real^2$
-function. This makes it possible to use and apply the rules of $\real$-calculus to the networks
-represented in paired $\real$ fashion and use existing $\real$-valued backpropagation in autograd
-software. The key analytic advantage is that computing derivatives is more streamlined, less
-messy, and derivative expressions involving complex variables turn out to be simpler that their
-real-imaginary analogues, \cite{adali_complex-valued_2011}.
 
 % essential intro into Wirtinger calculus (CR)
 % https://math.stackexchange.com/a/444493
-Wirtinger calculus relies on the natural identification of $\cplx$ with $\real \times \real$.
-Let's consider $
+Wirtinger ($\cplx\real$) calculus relies on the natural identification of $\cplx$ with $
+  \real \times \real
+$, and regards $
   f\colon \cplx \to \cplx
-$ and treat it as an equivalent function $\real^2 \to \cplx$ via $
+$ as an equivalent in algebraic sense function $F\colon \real^2 \to \cplx$ defined $
   f(z) = f(u + jv) = F(u, v)
-$. Wirtinger calculus defines two formal derivative operators
+$. Under this identification, we define two formal derivative operators
 $
   \tfrac{\partial}{\partial z}
     = \tfrac12 \bigl(
@@ -1551,24 +1540,14 @@ df(z) \big\vert_{z=u + jv}
    = dF(u, v)
   \,, $$
 where $dz = du + j dv$ and $d\conj{z} = du - j dv$. This implies that the complex argument
-and its conjugate are treated as independent variables. In this notation Cauchy-Riemann
-conditions are expressed as $
+and its conjugate are treated as independent variables. Cauchy-Riemann conditions $
+  -j \tfrac{\partial F}{\partial v} = \tfrac{\partial F}{\partial u}
+$ impose a rigid structure on real and imaginary parts of $F$ and can be expressed as $
   \tfrac{\partial f}{\partial \conj{z}} = 0
-$, or $
-  -j \tfrac{\partial F}{\partial v} = \tfrac{\partial F}{\partial v}
-$. These conditions impose a rigid structure on real and imaginary parts of $F(u, v)$, namely $
-  \tfrac{\partial F_{\Re }}{\partial u} = \tfrac{\partial F_{\Im }}{\partial v}
-$ and $
-  \tfrac{\partial F_{\Re }}{\partial v} = - \tfrac{\partial F_{\Im }}{\partial u}
-$. Thus Wirtinger calculus subsumes the usual $\cplx$-calculus on holomorphic functions,
-when $
-  \tfrac{\partial f}{\partial \conj{z}} = 0
-$, i.e. $
-  f(z)
-    % = g(z, \conj{z})
-    = F(\tfrac12 (z + \conj{z}), \tfrac1{j 2} (z - \conj{z}))
-$ does not depend on $\conj{z}$. The usual rules of calculus, like chain and product rules,
-follow directly from the definition of the operators, e.g.
+$ in this notation. Thus $\cplx\real$ calculus subsumes the usual $\cplx$-calculus on
+holomorphic functions, when $f(z)$, regarded as $f(z, \conj{z})$, is constant with respect
+to $\conj{z}$. The usual rules of calculus, like chain and product rules, follow directly
+from the definition of the operators, e.g.
 $$
   \frac{\partial (f\circ g)}{\partial z}
     = \frac{\partial f(g(z))}{\partial g} \frac{\partial g(z)}{\partial z}
@@ -1589,14 +1568,14 @@ $$
 %   = df(g(z)) d g(z)
 %   \,. $$
 
-Since in machine learning the target loss is typically an empirical real-valued risk, which
-is minimized, and we let's derive the expression for the gradient and make sure that it is
-compatible with real-valued calculus upon which current auto-differentiation tools are built.
-For a real-valued $f\colon \cplx \to \real$ we have $\conj{f} = f$, whence $
+In machine learning tasks the target objective is typically empirical risk, which has to
+be real-valued to be minimized. Nevertheless, the expression of the $\cplx\real$ gradient
+is compatible with what is expected, when $f$ is treated like a $\real^2$ function. For a
+real-valued $f\colon \cplx \to \real$ we have $\conj{f} = f$, which implies $
   \tfrac{\partial f}{\partial \conj{z}}
     = \tfrac{\partial \conj{f}}{\partial \conj{z}}
     = \conj{\tfrac{\partial f}{\partial z}}
-$. Hence
+$, whence
 $$
 df
   = \tfrac{\partial f}{\partial z} dz
@@ -1610,12 +1589,11 @@ df
     \tfrac{\partial f}{\partial z} dz
   \bigr)
   \,. $$
-Hence the gradient of $f$ at $z$ is given by $
-  \tfrac{\partial f}{\partial \conj{z}}
+Thus, the gradient of $f$ at $z$ is given by $
+  \nabla_z f(z)
     = \tfrac{\partial F}{\partial u}
       + j \tfrac{\partial F}{\partial v}
-$, meaning that we can use gradients with respect ral and imaginary parts independently. Thus
-using Wirtinger calculus makes it possible to reuse $\real$-backpropagation for $\cplx$-networks.
+$. Therefore, Wirtinger calculus makes it possible to reuse $\real$-backpropagation.
 
 % subsection wirtinger_calculus (end)
 
