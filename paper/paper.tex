@@ -370,49 +370,45 @@ injected by the trick \eqref{eq:r-gauss-trick}, and further stabilizes gradients
 \label{sec:c_valued_networks}
 
 In this section we overview $\mathbb{C}$-valued networks, their motivation and peculiarities.
-In out exposition we shall focus mostly on linear layers, keeping in mind that transferring 
+In our exposition we shall focus mostly on linear layers, keeping in mind that transferring 
 the ideas to convolutional layers is straightforward.
 
-The most recent study of complex-valued networks \cite{trabelsi_deep_2017}, provides a set
-of building blocks for deep $\cplx$-valued networks. The core of their work is structured
-framework for complex-valued operations including representation and linear layers (dense
-and convolutional) as well as $\cplx$-valued activations and complex batch-normalization
-and weight initialization.
+The study \cite{trabelsi_deep_2017}, outlines building blocks for deep $\cplx$-valued
+networks and describes suitable representation and operations including linear layers (dense
+and convolutional), $\cplx$-valued activations, complex batch-normalization and suitable
+weight initialization. In fact all papers touching one way or another upon the subject of
+$\cplx$-valued networks, refrain each other, and the current study is no exception.
 
 Following \cite{trabelsi_deep_2017}, we naturally identify $\cplx$ with $\real^2$ via $
   z_\mathrm{r} + j z_\mathrm{i} \mapsto (z_\mathrm{r}, z_\mathrm{i})
 $, storing the real and imaginary parts in interleaved format, and emulate $\cplx$-algebra
-using $\real$-valued arithmetic. Thus designed $\cplx$-network is, essentially, a
-$\real$-network with \textit{double} the layers' widths to accommodate real and imaginary
-parts and with constraints on layers' parameters that make them respect $\cplx$-algebra.
-This makes it possible to retrofit $\cplx$-valued networks into the existing $\real$-valued
-auto-differentiation libraries.
-
-In particular, common linear layers, such as dense layers and convolutions,
+using $\real$-valued arithmetic. In particular, convolutional and linear layers,
 $
   L \colon \cplx^{\mathrm{[in]}}
     \to \cplx^{\mathrm{[out]}}
 $ act upon their inputs as follows:
-$$
-\real^{2 \times \mathrm{[in]}}
-  \to \real^{2 \times \mathrm{[out]}}
-  \colon (x_r, x_i)
-    \mapsto \Bigl(
-      L_r x_r - L_i x_i,
-      L_r x_i + L_i x_r
-    \Bigr)
-  \,, $$
+\begin{equation} \label{eq:cplx-lin-op}
+  \real^{2 \times \mathrm{[in]}}
+    \to \real^{2 \times \mathrm{[out]}}
+    \colon (x_r, x_i)
+      \mapsto \Bigl(
+        L_r x_r - L_i x_i,
+        L_r x_i + L_i x_r
+      \Bigr)
+    \,,
+\end{equation}
 where $
   L_r, L_i
     \colon \real^{\mathrm{[in]}}
       \to \real^{\mathrm{[out]}}
-$ are the unique $\real$-linear operators that make up $L = L_r + j L_i$ the overall
-effect of the layer. For instance, to respect $\cplx$-arithmetic a convolutional layer with
-$\cplx$-kernel $W$ can be implemented using two $\real$-convolutions with $\real$-kernels
-$\Re{W}$ and $\Im{W}$. Other algebraic operations, such as division and roots in batch
-normalization \cite{trabelsi_deep_2017}, are implemented in such a way as to respect
-$\cplx$-algebra.
-%
+$ are unique linear operators that make up $L = L_r + j L_i$. Thus, a $\cplx$-convolutional
+layer with complex kernel $W$ can be implemented as two $\real$-convolutions with kernels
+$\Re{W}$ and $\Im{W}$ using \eqref{eq:cplx-lin-op}. Other algebraic operations, such as
+trigonometric functions, and complex division and roots in batch normalization
+\cite{trabelsi_deep_2017}, are implemented through their counterparts in $\real^2$. This
+makes $\cplx$-valued network into an intricately connected $\real$-valued computational
+graph that respects $\cplx$-algebra.
+
 Concerning activations, \cite{trabelsi_deep_2017} consider the following: independent
 componentwise application of $\real$-valued non-linearities, $
   z = u + j v
@@ -426,29 +422,18 @@ activation, which preserves the angle and applies soft-thresholding to the modul
   %   \bigr)_+
 $ with a learnable parameter $\theta\in \real$. 
 
-The question of differentiability of complex-valued networks is tricky, since they usually
-use non-differentiable non-linearities. However, a more severe problem stems from the loss
-objective being real-valued. Indeed, if $f\colon \cplx \to \cplx$ were $\cplx$-differentiable
-(holomorphic), the composition of $f$ with a non-trivial $h \colon \cplx\to \real$ makes it
-not $\cplx$-differentiable with respect parameters, since $h$ violates Cauchy-Riemann conditions.
-This problem is dealt with by using Wirtinger, or $\cplx\real$ calculus, which subsumes
-$\cplx$-calculus, and is applicable to non-holomorphic functions of $\cplx$-argument,
-\cite{adali_complex-valued_2011}. As a basis for backpropagation algorithm it was considered
-in \cite{benvenuto_complex_1992} and \cite{trabelsi_deep_2017}.
+Complex networks are, in general, non-holomorphic, i.e. not $\cplx$-differentiable, which is
+exacerbated by the loss being real-valued. Indeed, as implied by Cauchy-Riemann conditions, a
+$\cplx$-differentiable real-valued function is necessarily trivial. This issue is dealt with
+by employing Wirtinger, or $\cplx\real$ calculus, which generalizes holomorphic calculus
+to non-holomorphic functions of $\cplx$-argument, \cite{adali_complex-valued_2011}. It was
+considered as a basis for $\cplx$ version of backpropagation in \cite{benvenuto_complex_1992}
+and \cite{trabelsi_deep_2017} (see sec.~\ref{sub:wirtinger_calculus} for details). The key
+benefit of $\cplx\real$ calculus is straightforward symbolic differentiation, and the fact,
+that this allows retrofiting $\cplx$-valued networks into existing $\real$ deep learning
+auto-differentiation libraries.
 
-Basically $\cplx\real$ calculus regard $f(z)$ as a function of two independent variables $z$ 
-and its conjugate $\conj{z}$ and symbolically defines derivative operators $
-  \tfrac{\partial}{\partial z}
-$ and $
-  \tfrac{\partial}{\partial \conj{z}}
-$, that satisfy linearity, product and chain rules, and respect complex conjugation. The important
-property is that, if we identify $f(z) = f(u + jv) = F(u, v)$, then the $\cplx\real$ calculus
-rules differential of $f$ as a $\cplx$ function coincides its differential as an $\real^2$
-function. This makes it possible to use and apply the rules of $\real$-calculus to the networks
-represented in paired $\real$ fashion and use existing $\real$-valued backpropagation in autograd
-software. The key analytic advantage is that computing derivatives is more streamlined, less
-messy, and derivative expressions involving complex variables turn out to be simpler that their
-real-imaginary analogues, \cite{adali_complex-valued_2011}.
+\todo{read on holomorphic nets}
 
 % section c_valued_networks (end)
 
@@ -1506,6 +1491,19 @@ part of a constraint, ie. downstream computation)
 \label{sub:wirtinger_calculus}
 
 % TLDR: we use Wirtinger calculus!
+Basically $\cplx\real$ calculus regard $f(z)$ as a function of two independent variables $z$ 
+and its conjugate $\conj{z}$ and symbolically defines derivative operators $
+  \tfrac{\partial}{\partial z}
+$ and $
+  \tfrac{\partial}{\partial \conj{z}}
+$, that satisfy linearity, product and chain rules, and respect complex conjugation. The important
+property is that, if we identify $f(z) = f(u + jv) = F(u, v)$, then the $\cplx\real$ calculus
+rules differential of $f$ as a $\cplx$ function coincides its differential as an $\real^2$
+function. This makes it possible to use and apply the rules of $\real$-calculus to the networks
+represented in paired $\real$ fashion and use existing $\real$-valued backpropagation in autograd
+software. The key analytic advantage is that computing derivatives is more streamlined, less
+messy, and derivative expressions involving complex variables turn out to be simpler that their
+real-imaginary analogues, \cite{adali_complex-valued_2011}.
 
 % essential intro into Wirtinger calculus (CR)
 % https://math.stackexchange.com/a/444493
