@@ -140,7 +140,8 @@ recasts posterior inference into variational optimization problem
 \end{equation}
 over a tractable parametric family of distributions on the parameter space $
   \mathcal{Q} = \{Q_\theta(d\omega) \colon \theta \in \Theta\}
-$. The class $\mathcal{Q}$ is picked so that its member have tractable densities $
+$, $\theta$ -- generic variational parameter. The class $\mathcal{Q}$ is picked so that
+its member have tractable densities $
   q_\theta(\omega) d\omega
 $, can be sampled from and possess tractable $\log$-derivatives $
   \omega \mapsto \nabla_\theta \log q_\theta(\omega)
@@ -201,7 +202,7 @@ commonly used algorithm to optimize \eqref{eq:elbo_general} is to use EM-algorit
 Other variational objectives are possible, provided $p(\omega \mid D)$ is probed only
 through $\log p(D \mid \omega)$ and $\log \pi(\omega)$, \cite{ranganath_operator_2018}.
 
-Stochastic Gradient Variational Bayes (SGVB), proposed by \cite{kingma_auto-encoding_2014},
+\textit{Stochastic Gradient Variational Bayes} (SGVB), proposed by \cite{kingma_auto-encoding_2014},
 is an differentiable unbiased Monte-Carlo estimator of \eqref{eq:elbo_general}, which makes
 it possible to employ stochastic gradient-based optimization methods. If $
   \omega \sim q_{\theta}
@@ -267,8 +268,8 @@ $, whereas in Gaussian dropout $
   \xi \sim \mathcal{N}(1, \alpha)
 $ for $\alpha = \tfrac{p}{1-p}$. This suggests making $\alpha$ a variational parameter
 and optimizing it in \eqref{eq:elbo_general} with an appropriate penalty term. Thus,
-\cite{kingma_variational_2015} propose \textit{Variational Dropout} with mean field Gaussian
-approximation $
+\cite{kingma_variational_2015} propose \textit{Variational Dropout} with mean field
+Gaussian approximation $
   q_\theta(\omega)
     = \prod_j \mathcal{N}(\mu_j, \alpha_j \mu_j^2)
 $ and factorized log-uniform prior $\pi(\omega)$ with $
@@ -299,15 +300,20 @@ respect to $\log \alpha$.
 Flexibility in dependence of $q_\theta$ on $\alpha$ allows structured dropout with shared
 $\alpha$ across groups of parameters $\omega$. \cite{molchanov_variational_2017} study
 Variational Dropout from a model sparsification perspective, optimizing $\alpha$ for each
-individual parameter. Another variant of Bayesian dropout, called Automatic Relevance
-Determination, is developed in \cite{kharitonov_variational_2018}. The key difference from
-Variational Dropout is the choice of prior: the log-uniform factor $\pi(\omega_{ij})$ is
-replaced by a proper Gaussian prior $
+individual parameter. Another variant of Bayesian dropout, called \textit{Automatic Relevance
+Determination}, is developed in \cite{kharitonov_variational_2018}. The key difference is
+that the log-uniform factor $\pi(\omega_{ij})$ is replaced by a proper Gaussian prior $
   \mathcal{N}(0, \tau^{-1}_{ij})
-$ with learnable precision $\tau_{ij} > 0$. This is known as the Empirical Bayes method,
-\cite{citation_needed}, which fits a prior distribution while performing variational inference.
-The optimal precision parameter is found in the closed form by minimizing the KL-divergence
-term holding variational parameters $\theta$ fixed.
+$ with learnable precision $\tau_{ij} > 0$. This method, known as \textit{Empirical Bayes}
+\cite{citation_needed}, fits a prior distribution while performing variational inference.
+Maximizing \eqref{eq:elbo} over $\lambda$, holding other parameters fixed, yields $
+  \tau^* = {(\mu^2 + \sigma^2)}^{-1}
+$, whence
+\begin{equation}  \label{eq:ard-kl-div-real}
+  KL(q_\theta(\omega) \| \pi(\omega))
+    = \log{\bigl(1 + \tfrac1{\alpha} \bigr)}
+    \,.
+\end{equation}
 
 Another contribution of \cite{kingma_variational_2015} is the analysis of the \textit{local
 reparameterization trick}, proposed in \cite{wang_fast_2013} to speed up Gaussian dropout,
