@@ -266,39 +266,12 @@ iid from some $p_\xi$. Binary dropout with rate $p \in (0, 1)$ uses $
 $, whereas in Gaussian dropout $
   \xi \sim \mathcal{N}(1, \alpha)
 $ for $\alpha = \tfrac{p}{1-p}$. This suggests making $\alpha$ a variational parameter
-and optimizing it in \eqref{eq:elbo_general} with an appropriate penalty term. Flexibility
-in dependence of $q_\theta$ on $\alpha$ allows structured dropout with shared $\alpha$
-across groups of parameters or sparsifying dropout, where the rate $\alpha$ is optimized
-for each individual parameter, \cite{molchanov_variational_2017}.
-
-Variational Dropout with mean field Gaussian variational approximation is further developed
-in \cite{molchanov_variational_2017} and \cite{kharitonov_variational_2018}. The first paper
-studies variational dropout from a model sparsification perspective and improves on the
-results of \cite{kingma_variational_2015} in two directions: the authors propose a more
-accurate approximation to the KL-divergence term in \eqref{eq:elbo}, and introduce additive
-noise parameterization for the factors of $q_\theta(\omega)$, $\omega = W$.
-
-Under the original $(\mu, \alpha)$ parameterization the stochastic output of a linear
-layer $
-  y = W^\top x + b
-$ with $
-  W \in \mathbb{R}^{n\times m}
-$ and independent $
-  W_{ij} \sim \mathcal{N}(\mu_{ij}, \alpha_{ij} \mu_{ij}^2)
-$ is equivalent in distribution to $
-  y \sim \prod_i \mathcal{N}\Bigl(
-      \sum_j \mu_{ij} x_j + b_i,
-      \sum_j \alpha_{ij} \mu_{ij}^2 x_j^2
-  \Bigr)
-$. \cite{molchanov_variational_2017} argue that for the purposes of model sparsification
-this parameterization should be abandoned in favour of an equivalent $(\mu, \sigma^2)$ with
-the score $\alpha$ calculated using $\tfrac{\sigma^2}{\mu^2}$ when needed. This makes $
-  \nabla_\mu \tilde{\mathcal{L}}
-$, which is particularly important for sparsification, independent of the noise injected
-by the trick.
-
-\cite{kingma_variational_2015} and \cite{molchanov_variational_2017} consider a factorized
-prior $\pi(\omega)$ with improper log-uniform factors $
+and optimizing it in \eqref{eq:elbo_general} with an appropriate penalty term. Thus,
+\cite{kingma_variational_2015} propose \textit{Variational Dropout} with mean field Gaussian
+approximation $
+  q_\theta(\omega)
+    = \prod_j \mathcal{N}(\mu_j, \alpha_j \mu_j^2)
+$ and factorized log-uniform prior $\pi(\omega)$ with $
   \pi(\omega_j) \propto \lvert \omega_j \rvert^{-1}
 $. This unravels the divergence term in \eqref{eq:elbo} into a sum of the following terms:
 \begin{equation} \label{eq:improper-kl-div-real}
@@ -311,37 +284,65 @@ $. This unravels the divergence term in \eqref{eq:elbo} into a sum of the follow
       % - \frac12 \log{\alpha}
   \,.
 \end{equation}
-The expectation in \eqref{eq:expect-improper-term-cplx} is half the $\log$-moment of a non-central
-$\chi^2$ distribution with shape $1$ and non-centrality $\lambda = \tfrac1{\alpha}$. In general,
-there is no analytically tractable expression for log-moment of a $\chi^2_m$ with odd degrees
-of freedom. To circumvent this, \cite{kingma_variational_2015} approximate the expectation by
-a non-linear polynomial regression for truncated $\alpha \in (0, 1)$. This approximation was
-substantially refined in \cite{molchanov_variational_2017}, both in term of the domain of scores
-$\alpha$ and accuracy. The paper considered regression with sigmoid and soft-plus basis functions
-fit to the Monte-Carlo estimator of \eqref{eq:improper-kl-div-real} for $\alpha$ varying over
-a fine logarithmic grid. In sec.~\ref{sub:real-chisq-grad} we verify the approximation and
-compare the approximate derivative to the exact derivative of \eqref{eq:improper-kl-div-real}
-with respect to $\log \alpha$.
-% Since gradient based methods rely on unbiased gradient estimates
+In general, there is tractable expression for log-moment of a non-central $\chi^2_m$ random
+variable with odd $m$, that sits under the expectation in \eqref{eq:expect-improper-term-cplx}.
+To circumvent this, \cite{kingma_variational_2015} approximate the expectation by a non-linear
+polynomial regression for truncated $\alpha \in (0, 1)$. This approximation was refined in
+\cite{molchanov_variational_2017}, both in terms of the domain of $\alpha$ and accuracy. The
+paper considered regression with sigmoid and soft-plus basis functions fit to the Monte-Carlo
+estimator of \eqref{eq:improper-kl-div-real} for $\alpha$ varying over a fine logarithmic grid.
+In sec.~\ref{sub:real-chisq-grad} we verify the approximation and confirm its accuracy, by
+comparing its derivative to the exact derivative of \eqref{eq:improper-kl-div-real} with
+respect to $\log \alpha$.
+% (!) good for SGVB: gradient-based methods require unbiased gradient estimates
 
-In another variant of Bayesian dropout, called Automatic Relevance Determination, is developed
-in the \cite{kharitonov_variational_2018}. The key difference from Variational Dropout is the
-choice of prior: the log-uniform factor $\pi(\omega_{ij})$ is replaced by a proper Gaussian
-prior $\mathcal{N}(0, \tau^{-1}_{ij})$ with learnable precision $\tau_{ij} > 0$. This is knowns
-as the Empirical Bayes method, \cite{citation_needed}, which fits a prior distribution while
-performing variational inference. The optimal precision parameter is found in the closed form
-by minimizing the KL-divergence term holding variational parameters $\theta$ fixed.
+Flexibility in dependence of $q_\theta$ on $\alpha$ allows structured dropout with shared
+$\alpha$ across groups of parameters $\omega$. \cite{molchanov_variational_2017} study
+Variational Dropout from a model sparsification perspective, optimizing $\alpha$ for each
+individual parameter. Another variant of Bayesian dropout, called Automatic Relevance
+Determination, is developed in \cite{kharitonov_variational_2018}. The key difference from
+Variational Dropout is the choice of prior: the log-uniform factor $\pi(\omega_{ij})$ is
+replaced by a proper Gaussian prior $
+  \mathcal{N}(0, \tau^{-1}_{ij})
+$ with learnable precision $\tau_{ij} > 0$. This is known as the Empirical Bayes method,
+\cite{citation_needed}, which fits a prior distribution while performing variational inference.
+The optimal precision parameter is found in the closed form by minimizing the KL-divergence
+term holding variational parameters $\theta$ fixed.
 
-Second contribution of \cite{kingma_variational_2015} is the analysis of the \textit{local
+Another contribution of \cite{kingma_variational_2015} is the analysis of the \textit{local
 reparameterization trick}, proposed in \cite{wang_fast_2013} to speed up Gaussian dropout,
 as a gradient variance reduction technique for \eqref{eq:elbo}. This trick utilizes the
 closure of Gaussians under affine transformations, thereby translating uncertainty from the
 global parameter noise to local noise in intermediate outputs within the network.
 %
+The stochastic output of a linear layer $
+  y = W^\top x + b
+$ with $
+  W \in \mathbb{R}^{n\times m}
+$ and independent $
+  W_{ij} \sim \mathcal{N}(\mu_{ij}, \alpha_{ij} \mu_{ij}^2)
+$ is equivalent in distribution to
+\begin{equation} \label{eq:r-gauss-trick}
+    y \sim \prod_i \mathcal{N}\Bigl(
+          \sum_j \mu_{ij} x_j + b_i,
+          \sum_j \alpha_{ij} \mu_{ij}^2 x_j^2
+      \Bigr)
+    \,.
+\end{equation}
+%
 \cite{kingma_variational_2015} show, that for the case of fully factorized Gaussian
 posterior approximations, the trick decorrelates ELBO estimates within the minibatch,
 making the gradient estimator $\nabla_\theta \tilde{\mathcal{L}}$ more statistically
-efficient.
+efficient. \cite{molchanov_variational_2017} propose an improvement by introducing
+\textit{additive noise parameterization}, which is relevant to model sparsification.
+The paper argues that $(\mu, \alpha)$ parameterization should be abandoned in favour
+of an equivalent $(\mu, \sigma^2)$ with the score $\alpha$ calculated using $
+  \tfrac{\sigma^2}{\mu^2}
+$ when needed. This makes $
+  \nabla_\mu \tilde{\mathcal{L}}
+$, which is shown in \cite{molchanov_variational_2017} to be independent of the noise,
+injected by the trick \eqref{eq:r-gauss-trick}, and further stabilizes gradients in SGVB
+\eqref{eq:elbo}.
 
 % This concludes the section on the foundations of Bayesian dropout techniques.
 
