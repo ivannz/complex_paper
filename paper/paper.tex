@@ -574,82 +574,28 @@ $C = 0$. From \eqref{eq:c-gauss-entropy-derivation} the entropy of a proper $\cp
     = \log \bigl\lvert \det{(\pi e \Gamma)} \bigr\rvert
     \,.
 \end{equation}
-
-
-the characteristic function is
-$$
-z \sim \mathcal{N}^{\cplx}_m(z \vert \mu, \Gamma, C)
-  \Leftrightarrow
-  \mathbb{E}_{z} e^{j \Re{(t^{\hop} z)}}
-  = \exp{\{
-    j \Re{(t^{\hop} \mu)}
-    - \tfrac14 \bigl(
-      t^{\hop} \Gamma t + \Re{(t^{\hop} C \conj{t})}
-    \bigr)
-  \}}
-  \,, $$
-
-Not every $\real^{2m}$ Gaussian corresponds to a $\cplx^m$ Gaussian vecor,
-but when it does the covariance and relation can be recovered through
-$$
-\Sigma
-  = \begin{pmatrix}
-    \Sigma_{rr} & \Sigma_{ri} \\ 
-    \Sigma_{ir} & \Sigma_{ii} 
-  \end{pmatrix}
-  \, \Leftrightarrow
-  \,
-  \begin{cases}
-    \Gamma
-      = \Sigma_{rr} + \Sigma_{ii} + j (\Sigma_{ir} - \Sigma_{ri})
-    \,, \\
-    C = \Sigma_{rr} - \Sigma_{ii} + j (\Sigma_{ir} + \Sigma_{ri}) 
-  \end{cases}
-  $$
-
-This implies that $
-  \Sigma_{ir}
-  % = -\Sigma_{ri}
-  = -\Sigma_{ir}^\top
-$ and $\Sigma_{rr} = \Sigma_{ii}$, i.e. real and imaginary component of the same random element
-are uncorrelated, since skew-symmetric matrices necessarily have zero-diagonal.
-
-If $M \in \real^{m\times m}$, $M \succeq 0$ and $M^\top = M$, then
-$$
-  (u - j v)^\top M (u + j v)
-    = u^\top M u + v^\top M v + j (u^\top M v - v^\top M u)
-    % = u^\top M u + v^\top M v + j (u^\top M v - u^\top M^\top v)
-    = u^\top M u + v^\top M v \geq 0
-\,. $$
-if $M^\top = - M$, then
-$$
-  u^\top M v - v^\top M u - j (u^\top M u + v^\top M v)
-  % = u^\top M v - u^\top M^\top v - j (u^\top M u + v^\top M^\top v)
-  = u^\top M v + u^\top M v - j (u^\top M u - v^\top M v)
-  \,. $$
-
-
-
 %
-% The intuition behind them is more apparent in the complex univariate case ($m=1$):
-% here $\Gamma = \sigma^2 \geq 0$, and $C$ can be represented as $\sigma^2 \rho \in \cplx$ with $
+% The roles of $\Gamma$ and $C$ is more evident in univariate case: here $
+%   \Gamma = \sigma^2 \geq 0
+% $, and $C = \sigma^2 \rho \in \cplx$ with $
 %   \lvert \rho \rvert \leq 1
-% $. Therefore $\sigma^2$ affects the overall ``concentration'' of the complex random variable,
-% whereas $\rho$ is responsible for the strength and ``direction'' of the linear relation between
-% the real and imaginary parts, \cite{lapidoth_capacity_2003}.
+% $. $\sigma^2$ determines the ``dispersion'', whereas $\rho$ is determines the
+% ``strength'' and ``direction'' of the linear relation between real and imaginary
+% parts, \cite{lapidoth_capacity_2003}.
 % $$
 % \frac{\sigma^2}2
 %   \begin{pmatrix}
 %     1 + \Re{\rho} & \Im{\rho} \\
 %     \Im{\rho} & 1 - \Re{\rho}
 %   \end{pmatrix}
-%   = \frac{\sigma^2}2 I
-%   + \frac{\sigma^2 \lvert \rho \rvert}2 
-%   \begin{pmatrix}
-%     \cos\theta & \sin\theta \\
-%     \sin\theta & - \cos\theta
-%   \end{pmatrix}
-% $$
+%   = \frac{\sigma^2}2 
+%       \begin{pmatrix}
+%         1 + \lvert \rho \rvert \cos\theta
+%           & \lvert \rho \rvert \sin\theta \\
+%         \lvert \rho \rvert \sin\theta
+%           & 1 - \lvert \rho \rvert \cos\theta
+%       \end{pmatrix}
+%   \,. $$
 
 To develop $\cplx$-variational dropout we assume a fully factorized posterior approximation
 distribution on the layers' parameters: $\omega = (W, b)$, where a $\cplx$-valued $W$ collects
