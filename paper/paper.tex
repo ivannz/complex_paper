@@ -450,7 +450,17 @@ in terms of special functions.
 
 %notation
 We first clarify some notation: $M^{\top}$ is the matrix transpose, $\conj{M}$ is elementwise
-complex conjugation, and $M^{\hop} = (\conj{M})^\top$ denotes Hermitian conjugate.
+complex conjugation, and $M^{\hop} = (\conj{M})^\top$ denotes Hermitian conjugate. By $e_i$
+we denote the $i$-th real unit vector of dimensionality \textbf{conforming} to the matrix-vector
+expression it is used in. $\vec{M}$ denotes row-major flattening of $M$ into a vector, i.e.
+in lexicographic order of its indices. $\otimes$ denotes the Kronecker product, for which we
+note the following identities $
+  \vec{P Q R} = (P \otimes R^\top) \vec{Q}
+$, and $
+  (P \otimes R) (C \otimes S) = P Q \otimes R S
+$, \cite{petersen_matrix_2012}.
+% It follows from the definition of the Kronecker product
+% of $P$ and $R^\top$ and the row-major order vectorization.
 
 \subsection{$\cplx$-Gaussian Variational Approximation} % (fold)
 \label{sub:c_gaussian_variational_approximation}
@@ -597,22 +607,17 @@ $C = 0$. From \eqref{eq:c-gauss-entropy-derivation} the entropy of a proper $\cp
 %       \end{pmatrix}
 %   \,. $$
 
-To develop $\cplx$-variational dropout we assume a fully factorized posterior approximation
-distribution on the layers' parameters: $\omega = (W, b)$, where a $\cplx$-valued $W$ collects
-all weight matrices of linear layers and kernels of convolutional layers, and $b$ represents
-all bias term combined. We use a fully factorized Dirac family on the biases, and mean-field
-proper $\cplx$-Gaussian variational approximation for the weights: $
-  q(W) = \prod_{lij} q(W^{l}_{ij})
-$ with each parameter being an independent univariate proper complex Gaussian
-% (we omit the subscript $m=1$ for brevity)
+In $\cplx$-variational dropout we use mean-field proper $\cplx$-Gaussian variational
+approximation. Specifically, parameters $W \in \cplx^{n\times m}$ of a dense layer follow
 \begin{equation}  \label{eq:c-gauss-vi}
-  W_{ij}
-    \sim \mathcal{N}^{\cplx}(\mu_{ij}, \sigma^2_{ij}, 0)
-  \,.
+  % (we omit the subscript $m=1$ for brevity)
+  W \sim q(W) = \prod_{ij}
+    \mathcal{N}^{\cplx}(W_{ij} \mid \mu_{ij}, \sigma^2_{ij}, 0)
+  \,,
 \end{equation}
-Thus we would like to sparsify the weights in the network and, since the bias terms constitute
-a meagre share of network's parameters and are rarely dropped out or pruned, we use Bayesan
-MAP estimates for them.
+and we use analogous independent proper $\cplx$-Gaussian approximation for convolutional
+kernels. As for bias terms, we propose to use their MAP estimates, i.e. assume an independent
+fully factorized Dirac approximation.
 
 As was demonstrated in \cite{kingma_variational_2015}, local reparameterization trick
 provides both faster computations and better statistical efficiency of the SGVB gradient
@@ -653,17 +658,8 @@ $$
 W x + b
   % = I_n W x + b
   = (I_n \otimes x^\top) \vec{W} + b
-  \,, $$
-where $\vec{\cdot}$ denotes flattening in lexicographic order of indices (row-major), and
-$\otimes$ denotes the Kronecker product, for which we have the identity $
-  \vec{P Q R} = (P \otimes R^\top) \vec{Q}
-$, \cite{petersen_matrix_2012}.
-% It follows from the definition of the Kronecker product
-% of $P$ and $R^\top$ and the row-major order vectorization.
-%
-Structure of the matrices, involved in this expression, and the identity $
-  (P \otimes R) (C \otimes S) = P Q \otimes R S
-$, \cite{petersen_matrix_2012}, imply
+  \,. $$
+Structure of the matrices, involved in this expression, imply
 \begin{align*}
   (I \otimes x^\top) \diag{\vec{\Sigma}} (I \otimes x^\top)^\hop
     % &= \sum_{ij} (I \otimes x^\top) e_i \otimes e_j
@@ -677,10 +673,9 @@ $, \cite{petersen_matrix_2012}, imply
     % \\
     &
     = \sum_i (e_i e_i^\top) \sum_j \sigma^2_{ij} x_j \conj{x}_j
-    \,,
+    \,.
 \end{align*}
-where $e_i$ is the $i$-th real unit vector of dimensionality conforming to the expression it
-is involved with. In a similar fashion we obtain the expression for the relation matrix of
+In a similar fashion we obtain the expression for the relation matrix of
 the transformation:
 \begin{equation*}
   (I \otimes x^\top) \diag{\vec{C}} (I \otimes x^\top)^\top
