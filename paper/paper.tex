@@ -131,7 +131,7 @@ The posterior itself is computationally intractable, save for the relatively sim
 \cite{citation_needed}, and therefore exact inference is traded for tractability and scalability
 of Variational Inference. Instead of deriving $p(\omega \mid D)$ using the rule, this approach
 recasts posterior inference into variational optimization problem
-\begin{equation} \label{eq:variational-progam}
+\begin{equation}  \label{eq:variational-progam}
   q_*
     \in \arg \min_{\theta} \rho\bigl(
       q_\theta(\omega), p(\omega \mid D)
@@ -152,7 +152,7 @@ of non-parametric noise, \cite{kingma_auto-encoding_2014,figurnov_implicit_2019}
 % % http://stillbreeze.github.io/REINFORCE-vs-Reparameterization-trick/#fn:1
 
 Kullback-Leibler divergence of density $q$ from $p$ is
-\begin{equation} \label{eq:kl-div-def}
+\begin{equation}  \label{eq:kl-div-def}
   KL(q \| p)
     % = \int \frac{dQ}{dP} \log{\frac{dQ}{dP}} P(d\omega)
     % = \int \frac{q(\omega)}{p(\omega)} \log{\frac{q(\omega)}{p(\omega)}} p(\omega) d\omega
@@ -167,7 +167,7 @@ Kullback-Leibler divergence of density $q$ from $p$ is
 % and, despite it not being a metric and requiring distributions with nested support,
 and is the natural choice for $\rho$, the main reason being that it satisfies the following
 identity for well-behaved $q$ and $p$:
-\begin{equation} \label{eq:kl-div-master}
+\begin{equation}  \label{eq:kl-div-master}
   \log p(D)
     % = \mathbb{E}_{q(\omega)} \log \frac{p(D, \omega)}{p(\omega \mid D)}
     % = \mathbb{E}_{q(\omega)} \log \frac{
@@ -187,7 +187,7 @@ identity for well-behaved $q$ and $p$:
 \end{equation}
 This key identity yield an equivalent problem for \eqref{eq:variational-progam}:
 maximizing the \textit{evidence lower bound} (ELBO)
-\begin{equation} \label{eq:elbo_general}
+\begin{equation}  \label{eq:elbo_general}
 \begin{aligned}
   & \underset{\theta, \phi, \lambda}{\text{maximize}}
     & \mathcal{L}(\theta; \phi, \lambda)
@@ -220,7 +220,7 @@ $ for some non-parametric random variable $
 $ and differentiable $
   g(\varepsilon; \theta)
 $, then the SGVB is
-\begin{equation} \label{eq:sgvb}
+\begin{equation}  \label{eq:sgvb}
   \widetilde{\mathcal{L}}(\theta; \phi, \lambda)
     = - KL(q_{\theta}(\omega) \| \pi_{\lambda}(\omega))
       % + \frac{N}{\lvert B \rvert} \sum_{i\in B}
@@ -242,7 +242,7 @@ replaced by differentiable unbiased Monte-Carlo estimators, \cite{kingma_auto-en
 %
 For the purposes of this study, we assume that the observed data is independent, and
 use minibatch version of \eqref{eq:sgvb} with $L=1$:
-\begin{equation} \label{eq:elbo}
+\begin{equation}  \label{eq:elbo}
   \widetilde{\mathcal{L}}(\theta; \phi, \lambda)
     = - KL(q_{\theta}(\omega) \| \pi_{\lambda}(\omega))
       + \frac{N}{M} \sum_{i=1}^M
@@ -284,7 +284,7 @@ Gaussian approximation $
 $ and factorized log-uniform prior $\pi(\omega)$ with $
   \pi(\omega_j) \propto \lvert \omega_j \rvert^{-1}
 $. This unravels the divergence term in \eqref{eq:elbo} into a sum of the following terms:
-\begin{equation} \label{eq:improper-kl-div-real}
+\begin{equation}  \label{eq:improper-kl-div-real}
   KL(q_\theta(\omega) \| \pi(\omega))
     \propto
       \frac12 \mathbb{E}_{\varepsilon \sim \mathcal{N}(0, 1)}
@@ -337,7 +337,7 @@ $ with $
 $ and independent $
   W_{ij} \sim \mathcal{N}(\mu_{ij}, \alpha_{ij} \mu_{ij}^2)
 $ is equivalent in distribution to
-\begin{equation} \label{eq:r-gauss-trick}
+\begin{equation}  \label{eq:r-gauss-trick}
     y \sim \prod_i \mathcal{N}\Bigl(
           \sum_j \mu_{ij} x_j + b_i,
           \sum_j \alpha_{ij} \mu_{ij}^2 x_j^2
@@ -387,7 +387,7 @@ $
   L \colon \cplx^{\mathrm{[in]}}
     \to \cplx^{\mathrm{[out]}}
 $ act upon their inputs as follows:
-\begin{equation} \label{eq:cplx-lin-op}
+\begin{equation}  \label{eq:cplx-lin-op}
   \real^{2 \times \mathrm{[in]}}
     \to \real^{2 \times \mathrm{[out]}}
     \colon (x_r, x_i)
@@ -456,9 +456,9 @@ complex conjugation, and $M^{\hop} = (\conj{M})^\top$ denotes Hermitian conjugat
 \label{sub:c_gaussian_variational_approximation}
 
 A random vector $z\in \cplx^m$ has complex Gaussian distribution, $
-  z \sim \mathcal{N}^{\cplx}_m(\mu, \Gamma, C)
-$, with mean $\mu \in \cplx^m$ and $\cplx^{m\times m}$ covariance and relation
-matrices $\Gamma$ and $C$ are, respectively, if 
+  z \sim q(z) = \mathcal{N}^{\cplx}_m(\mu, \Gamma, C)
+$, with mean $\mu \in \cplx^m$ and $\cplx^{m\times m}$ covariance and relation matrices
+$\Gamma$ and $C$, respectively, if
 \begin{equation}  \label{eq:cn-paired-real-density}
   \begin{pmatrix}
     \Re z \\ \Im z
@@ -477,21 +477,22 @@ matrices $\Gamma$ and $C$ are, respectively, if
 \end{equation}
 provided they satisfy $\Gamma \succeq 0$, $\Gamma^{\hop} = \Gamma$, $C^\top = C$, and $
   \conj{\Gamma} \succeq C^{\hop} \Gamma^{-1} C
-$. This distribution possesses the usual properties of $\real$-valued Gaussians, including
-if $y = A z + b$ for $
-  A \in \cplx^{n \times m}
-$ and $b \in \cplx^{n}$, then $
+$. Matrices $\Gamma$ and $C$ are $
+  \mathbb{E} (z - \mu)(z - \mu)^{\hop}
+$ and $
+  \mathbb{E} (z - \mu)(z - \mu)^{\top}
+$, respectively. $\cplx$-Gaussians are closed under affine transformations: if $y = A z + b$
+for $A \in \cplx^{n \times m}$ and $b \in \cplx^{n}$, then $
   y \sim \mathcal{N}_n^{\cplx}\bigl(
       A\mu + b, A \Gamma A^{\hop}, A C A^\top
     \bigr)
-$. The entropy of a $\cplx$-Gaussian distribution $
-  q = \mathcal{N}^{\cplx}_m(\mu, \Gamma, C)
-$ is
-\begin{align} \label{eq:c-gauss-entropy-derivation}
+$. The entropy of a $\cplx$-Gaussian distribution coincides with the entropy of
+\eqref{eq:cn-paired-real-density}, and in terms of $\Gamma$ and $C$ can be expresed:
+\begin{align}  \label{eq:c-gauss-entropy-derivation}
   \mathbb{H}(q)
     & = - \mathbb{E}_{z \sim q} \log{q(z)}
     \notag \\
-    &
+    % &
     % entropy of \mathcal{N}_n(\mu, \Sigma)
     %   % = \tfrac12 \log \det{(2 \pi \Sigma)}
     %   % + \tfrac12 \mathop{tr}{(
@@ -500,14 +501,14 @@ $ is
     %   %       (x - \mu) (x - \mu)^\top
     %   %   )}
     %   = \tfrac12 \log \det{(2 \pi e \Sigma)}
-    = \tfrac12 \log \det{\biggl(
-      2 \pi e \tfrac12
-      \begin{pmatrix}
-        \Re{(\Gamma + C)} & - \Im{(\Gamma - C)} \\
-        \Im{(\Gamma + C)} &   \Re{(\Gamma - C)}
-      \end{pmatrix}
-    \biggr)}
-    \notag \\
+    % = \tfrac12 \log \det{\biggl(
+    %   2 \pi e \tfrac12
+    %   \begin{pmatrix}
+    %     \Re{(\Gamma + C)} & - \Im{(\Gamma - C)} \\
+    %     \Im{(\Gamma + C)} &   \Re{(\Gamma - C)}
+    %   \end{pmatrix}
+    % \biggr)}
+    % \notag \\
     % &
     % = \begin{bmatrix}
     %   r_1 + j r_2 \to r_1 \\  % sufficient for C=0 case
@@ -557,15 +558,12 @@ $ is
     % \biggr)}
     % \notag \\
     &
-    = \tfrac12 \log \det{(\pi e \Gamma)} \det{(\pi e (\conj{\Gamma} - \conj{C} \Gamma^{-1} C))}
+    = \tfrac12 \log \det{(\pi e \Gamma)}
+      \det{(\pi e (\conj{\Gamma} - \conj{C} \Gamma^{-1} C))}
     \,.
 \end{align}
-A $\cplx$-Gaussian random vector $z$ is \textit{proper}, if $z$ and $\conj{z}$ are uncorrelated,
-i.e. $C = 0$, since the matrices $\Gamma$ and $C$ correspond to $
-  \mathbb{E} (z - \mu)(z - \mu)^{\hop}
-$ and $
-  \mathbb{E} (z - \mu)(z - \mu)^{\top}
-$, respectively. From \eqref{eq:c-gauss-entropy-derivation} its entropy is therefore 
+A $\cplx$-Gaussian vector $z$ is \textit{proper}, if $z$ and $\conj{z}$ are uncorrelated, i.e.
+$C = 0$. From \eqref{eq:c-gauss-entropy-derivation} the entropy of a proper $\cplx$-Gaussain is
 \begin{equation}  \label{eq:cn-proper-entropy}
   % determinant commutes with complex conjugation, since it is multilinear
   \mathbb{H}(q)
@@ -661,7 +659,7 @@ proper $\cplx$-Gaussian variational approximation for the weights: $
   q(W) = \prod_{lij} q(W^{l}_{ij})
 $ with each parameter being an independent univariate proper complex Gaussian
 % (we omit the subscript $m=1$ for brevity)
-\begin{equation} \label{eq:c-gauss-vi}
+\begin{equation}  \label{eq:c-gauss-vi}
   W_{ij}
     \sim \mathcal{N}^{\cplx}(\mu_{ij}, \sigma^2_{ij}, 0)
   \,.
@@ -751,7 +749,7 @@ $ means that the covariance and relation matrices of $y = Wx + b$ are diagonal.
 These observations coupled with the closure under affine transformation imply that the
 components of $y = W x + b$ are independent univariate $\cplx$-Gaussain random variables
 with distributions
-\begin{equation} \label{eq:c-gaus-trick}
+\begin{equation}  \label{eq:c-gaus-trick}
   y_i
     \sim \mathcal{N}^{\cplx}
       \bigl(
@@ -821,7 +819,7 @@ necessarily involves the (differential) entropy of $q$:
     \,.
 \end{equation*}
 
-\subsubsection{Variational dropout} % (fold){}
+\subsubsection{Variational dropout} % (fold)
 \label{ssub:variational_dropout}
 
 Let's get the divergence term for the improper prior, that most closely recovers the variational
@@ -1442,7 +1440,7 @@ However, since $\alpha$ is nonnegative, it is typically parameterized via its lo
 and computed when needed. Thus, in particular, the gradient of the divergence penalty w.r.t
 $\log \alpha$ is
 
-\begin{equation} \label{eq:real-kl-div-deriv-log}
+\begin{equation}  \label{eq:real-kl-div-deriv-log}
   \frac{d}{d\log \alpha}
     \tfrac12 \mathbb{E}_{z \sim \mathcal{N}(0,1)}
     \log \lvert z + \tfrac1{\sqrt{\alpha}} \rvert^2
