@@ -448,11 +448,137 @@ version of the local reparameterization trick. Then we move on to choosing suita
 and then onward to deriving explicit expressions for the divergence penalties in \eqref{eq:elbo}
 in terms of special functions.
 
+%notation
+We first clarify some notation: $M^{\top}$ is the matrix transpose, $\conj{M}$ is elementwise
+complex conjugation, and $M^{\hop} = (\conj{M})^\top$ denotes Hermitian conjugate.
+
 \subsection{$\cplx$-Gaussian Variational Approximation} % (fold)
 \label{sub:c_gaussian_variational_approximation}
 
-A random vector $z\in \cplx^m$ is said to have complex Gaussian distribution, if its
-characteristic function is
+A random vector $z\in \cplx^m$ has complex Gaussian distribution, $
+  z \sim \mathcal{N}^{\cplx}_m(\mu, \Gamma, C)
+$, with mean $\mu \in \cplx^m$ and $\cplx^{m\times m}$ covariance and relation
+matrices $\Gamma$ and $C$ are, respectively, if 
+\begin{equation}  \label{eq:cn-paired-real-density}
+  \begin{pmatrix}
+    \Re z \\ \Im z
+  \end{pmatrix}
+    \sim \mathcal{N}_{2 m}\biggl(
+      \begin{pmatrix}
+        \Re \mu \\ \Im \mu
+      \end{pmatrix},
+      \frac12
+      \begin{pmatrix}
+        \Re{(\Gamma + C)} & - \Im{(\Gamma - C)} \\
+        \Im{(\Gamma + C)} &   \Re{(\Gamma - C)}
+      \end{pmatrix}
+    \biggr)
+    \,,
+\end{equation}
+provided they satisfy $\Gamma \succeq 0$, $\Gamma^{\hop} = \Gamma$, $C^\top = C$, and $
+  \conj{\Gamma} \succeq C^{\hop} \Gamma^{-1} C
+$. This distribution possesses the usual properties of $\real$-valued Gaussians, including
+if $y = A z + b$ for $
+  A \in \cplx^{n \times m}
+$ and $b \in \cplx^{n}$, then $
+  y \sim \mathcal{N}_n^{\cplx}\bigl(
+      A\mu + b, A \Gamma A^{\hop}, A C A^\top
+    \bigr)
+$. The entropy of a $\cplx$-Gaussian distribution $
+  q = \mathcal{N}^{\cplx}_m(\mu, \Gamma, C)
+$ is
+\begin{align} \label{eq:c-gauss-entropy-derivation}
+  \mathbb{H}(q)
+    & = - \mathbb{E}_{z \sim q} \log{q(z)}
+    \notag \\
+    &
+    % entropy of \mathcal{N}_n(\mu, \Sigma)
+    %   % = \tfrac12 \log \det{(2 \pi \Sigma)}
+    %   % + \tfrac12 \mathop{tr}{(
+    %   %     \Sigma^{-1}
+    %   %     \mathbb{E}_{x\sim q(x)}
+    %   %       (x - \mu) (x - \mu)^\top
+    %   %   )}
+    %   = \tfrac12 \log \det{(2 \pi e \Sigma)}
+    = \tfrac12 \log \det{\biggl(
+      2 \pi e \tfrac12
+      \begin{pmatrix}
+        \Re{(\Gamma + C)} & - \Im{(\Gamma - C)} \\
+        \Im{(\Gamma + C)} &   \Re{(\Gamma - C)}
+      \end{pmatrix}
+    \biggr)}
+    \notag \\
+    % &
+    % = \begin{bmatrix}
+    %   r_1 + j r_2 \to r_1 \\  % sufficient for C=0 case
+    %   j r_1 + r_2 \to r_2     % j conj of transformation for r1, det x 2
+    % \end{bmatrix}
+    % = \tfrac12 \log \det{\biggl(
+    %   % \det{[I & j I \\ j I & I]} = \det{I} \det{I - jI I^{-1} jI} = \det{2 I}
+    %   % left apply : thus dividing by \sqrt{2}
+    %   \tfrac1{\sqrt{2}} 2 \pi e \tfrac12
+    %   \begin{pmatrix}
+    %     \Gamma + C & j (\Gamma - C) \\
+    %     j (\conj{\Gamma} + \conj{C}) & \conj{\Gamma} - \conj{C}
+    %   \end{pmatrix}
+    % \biggr)}
+      % % Implicitly using the fact that for a non-singular $\Omega$ we have $
+      % %   \det{A}
+      % %     = \tfrac{\det{(\Omega A)}}{\det{\Omega}}
+      % %     = \tfrac{\det{(A \Omega)}}{\det{\Omega}}
+      % % $.
+    % \notag \\
+    % &
+    % = \begin{bmatrix}
+    %   c_1 - j c_2 \to c_1 \\  % -j conj of transformation for c2
+    %   c_2 - j c_1 \to c_2     % sufficient for C=0 case
+    % \end{bmatrix}
+    % = \tfrac12 \log \det{\biggl(
+    %   % \det{[I & - j I \\ - j I & I]} = \det{I} \det{I - (-j)I I^{-1} (-j)I} = \det{2 I}
+    %   % right apply : thus dividing by \sqrt{2}
+    %   \tfrac12 2 \pi e \tfrac12
+    %   \begin{pmatrix}
+    %     2 \Gamma     & - 2 j C \\
+    %     2 j \conj{C} & 2 \conj{\Gamma}
+    %   \end{pmatrix}
+    % \biggr)}
+    % \notag \\
+    % &
+    % = \begin{bmatrix}
+    %   r_2 - j \conj{C} \Gamma^{-1} r_1 \to r_2
+    % \end{bmatrix}
+    % = \tfrac12 \log \det{\biggl(
+    %   % \det{[I & 0 \\ - j \conj{C} \Gamma^{-1} & I]} = \det{I} = 1
+    %   \pi e
+    %   \begin{pmatrix}
+    %     \Gamma & - j C \\
+    %     0 & \conj{\Gamma} - \conj{C} \Gamma^{-1} C
+    %   \end{pmatrix}
+    % \biggr)}
+    % \notag \\
+    &
+    = \tfrac12 \log \det{(\pi e \Gamma)} \det{(\pi e (\conj{\Gamma} - \conj{C} \Gamma^{-1} C))}
+    \,.
+\end{align}
+A $\cplx$-Gaussian random vector $z$ is \textit{proper}, if $z$ and $\conj{z}$ are uncorrelated,
+i.e. $C = 0$, since the matrices $\Gamma$ and $C$ correspond to $
+  \mathbb{E} (z - \mu)(z - \mu)^{\hop}
+$ and $
+  \mathbb{E} (z - \mu)(z - \mu)^{\top}
+$, respectively. From \eqref{eq:c-gauss-entropy-derivation} its entropy is therefore 
+\begin{equation}  \label{eq:cn-proper-entropy}
+  % determinant commutes with complex conjugation, since it is multilinear
+  \mathbb{H}(q)
+    % = \tfrac12 \log \det{(\pi e \Gamma)} \det{(\pi e (\conj{\Gamma} - \conj{C} \Gamma^{-1} C))}
+    = \tfrac12 \log \det{(\pi e \Gamma)} \det{(\pi e \conj{\Gamma})}
+    % = \tfrac12 \log \det{(\pi e \Gamma)} \conj{\det{(\pi e \Gamma)}}
+  %  = \tfrac12 \log \bigl\lvert \det{(\pi e \Gamma)} \bigr\rvert^2
+    = \log \bigl\lvert \det{(\pi e \Gamma)} \bigr\rvert
+    \,.
+\end{equation}
+
+
+the characteristic function is
 $$
 z \sim \mathcal{N}^{\cplx}_m(z \vert \mu, \Gamma, C)
   \Leftrightarrow
@@ -464,18 +590,48 @@ z \sim \mathcal{N}^{\cplx}_m(z \vert \mu, \Gamma, C)
     \bigr)
   \}}
   \,, $$
-where $\mu \in \cplx^m$ is the mean, $\Gamma, C \in \cplx^{m\times m}$ are complex covariance
-and relation matrices satisfying $C^\top = C$, $\Gamma^{\hop} = \Gamma$, $\Gamma \succeq 0$,
-and $
-  \conj{\Gamma} \succeq C^{\hop} \Gamma^{-1} C
-$. The matrices $\Gamma$ and $C$ correspond to $
-  \mathbb{E} (z - \mu)(z - \mu)^{\hop}
-$ and $
-  \mathbb{E} (z - \mu)(z - \mu)^\top
-$, respectively. Here ${\cdot}^{\hop}$ denotes Hermitian conjugate, i.e. $
-  A^{\hop} = (\conj{A})^\top
-$, ${\cdot}^{\top}$ -- the matrix transpose, and $\conj{\cdot}$ -- the complex conjugation
-elementwise.
+
+Not every $\real^{2m}$ Gaussian corresponds to a $\cplx^m$ Gaussian vecor,
+but when it does the covariance and relation can be recovered through
+$$
+\Sigma
+  = \begin{pmatrix}
+    \Sigma_{rr} & \Sigma_{ri} \\ 
+    \Sigma_{ir} & \Sigma_{ii} 
+  \end{pmatrix}
+  \, \Leftrightarrow
+  \,
+  \begin{cases}
+    \Gamma
+      = \Sigma_{rr} + \Sigma_{ii} + j (\Sigma_{ir} - \Sigma_{ri})
+    \,, \\
+    C = \Sigma_{rr} - \Sigma_{ii} + j (\Sigma_{ir} + \Sigma_{ri}) 
+  \end{cases}
+  $$
+
+This implies that $
+  \Sigma_{ir}
+  % = -\Sigma_{ri}
+  = -\Sigma_{ir}^\top
+$ and $\Sigma_{rr} = \Sigma_{ii}$, i.e. real and imaginary component of the same random element
+are uncorrelated, since skew-symmetric matrices necessarily have zero-diagonal.
+
+If $M \in \real^{m\times m}$, $M \succeq 0$ and $M^\top = M$, then
+$$
+  (u - j v)^\top M (u + j v)
+    = u^\top M u + v^\top M v + j (u^\top M v - v^\top M u)
+    % = u^\top M u + v^\top M v + j (u^\top M v - u^\top M^\top v)
+    = u^\top M u + v^\top M v \geq 0
+\,. $$
+if $M^\top = - M$, then
+$$
+  u^\top M v - v^\top M u - j (u^\top M u + v^\top M v)
+  % = u^\top M v - u^\top M^\top v - j (u^\top M u + v^\top M^\top v)
+  = u^\top M v + u^\top M v - j (u^\top M u - v^\top M v)
+  \,. $$
+
+
+
 %
 % The intuition behind them is more apparent in the complex univariate case ($m=1$):
 % here $\Gamma = \sigma^2 \geq 0$, and $C$ can be represented as $\sigma^2 \rho \in \cplx$ with $
@@ -496,65 +652,6 @@ elementwise.
 %     \sin\theta & - \cos\theta
 %   \end{pmatrix}
 % $$
-
-A characterization of a $\cplx$-Gaussian vector, more useful for the current study, is via the
-equivalence with the paired real multivariate Gaussian distribution:
-\begin{multline}  \label{eq:cn-paired-real-density}
-  z \sim \mathcal{N}^{\cplx}_m(\mu, \Gamma, C)
-    \\\Leftrightarrow
-    \begin{pmatrix}
-      \Re z \\ \Im z
-    \end{pmatrix}
-      \sim \mathcal{N}_{2 m}\biggl(
-        \begin{pmatrix}
-          \Re \mu \\ \Im \mu
-        \end{pmatrix},
-        \frac12
-        \begin{pmatrix}
-          \Re{(\Gamma + C)} & - \Im{(\Gamma - C)} \\
-          \Im{(\Gamma + C)} &   \Re{(\Gamma - C)}
-        \end{pmatrix}
-      \biggr)
-    \,.
-\end{multline}
-It is possible to recover the $\cplx$ covariance and relation matrices from a block covariance
-matrix $\Sigma$ of a \textit{non-degenerate} paired real Gaussian vector through
-$$
-\begin{pmatrix}
-  \Sigma_{rr} & \Sigma_{ri} \\ 
-  \Sigma_{ir} & \Sigma_{ii} 
-\end{pmatrix}
-  = \frac12
-    \begin{pmatrix}
-      \Re{(\Gamma + C)} & - \Im{(\Gamma - C)} \\
-      \Im{(\Gamma + C)} &   \Re{(\Gamma - C)}
-    \end{pmatrix}
-  \, \Leftrightarrow
-  \,
-  \begin{cases}
-    \Gamma
-      = \Sigma_{rr} + \Sigma_{ii} + j (\Sigma_{ir} - \Sigma_{ri})
-    \,, \\
-    C = \Sigma_{rr} - \Sigma_{ii} + j (\Sigma_{ir} + \Sigma_{ri}) 
-  \end{cases}
-  $$
-
-A $\cplx$-Gaussian random vector $z$ is called \textit{proper}, when $C = 0$, i.e. the random
-vector $z$ and its conjugate $\conj{z}$ are uncorrelated. This implies that in the paired real
-representation $
-  \Sigma_{ir} = -\Sigma_{ri} = -\Sigma_{ir}^\top
-$ and $\Sigma_{rr} = \Sigma_{ii}$, i.e. real and imaginary component of the same random element
-are uncorrelated, since skew-symmetric matrices necessarily have zero-diagonal.
-
-The $\cplx$-Gaussian family of distributions is closed under affine transformations:
-if $
-  x \sim \mathcal{N}_m^{\cplx}(\mu, \Gamma, C)
-$ and $y = A x + b$, for $
-  A \in \cplx^{n\times m}
-$ and $b \in \cplx^{n}$, then $
-  y \sim \mathcal{N}_n^{\cplx}(A\mu + b, A \Gamma A^\hop, A C A^\top)
-$. This follows from the effects of the affine transformation on the characteristic
-function.
 
 To develop $\cplx$-variational dropout we assume a fully factorized posterior approximation
 distribution on the layers' parameters: $\omega = (W, b)$, where a $\cplx$-valued $W$ collects
@@ -723,100 +820,6 @@ necessarily involves the (differential) entropy of $q$:
     = - \mathbb{H}(q) - \mathbb{E}_{\omega \sim q} \log{\pi(\omega)}
     \,.
 \end{equation*}
-The entropy of a real multivariate Gaussian $
-  x \sim q(x) = \mathcal{N}_n(x \vert \mu, \Sigma)
-$ is
-$$
-\mathbb{H}(q)
-  = - \mathbb{E}_{x\sim q(x)} \log{q(x)}
-  % = \tfrac12 \log \det{(2 \pi \Sigma)}
-  % + \tfrac12 \mathop{tr}{(
-  %     \Sigma^{-1}
-  %     \mathbb{E}_{x\sim q(x)}
-  %       (x - \mu) (x - \mu)^\top
-  %   )}
-  = \tfrac12 \log \det{(2 \pi e \Sigma)}
-  \,, $$
-whence follows the expression for the entropy of a general $\cplx$-Gaussian random vector
-$
-  z \sim q(z)
-    = \mathcal{N}^{\cplx}_n(z\vert \mu, \Gamma, C)
-$
-\begin{align*} \label{eq:c-gauss-entropy-derivation}
-  \mathbb{H}(q)
-    &
-    % = \tfrac12 \log \det{(2 \pi e \Sigma)}
-    = \tfrac12 \log \det{\biggl(
-      2 \pi e \tfrac12
-      \begin{pmatrix}
-        \Re{(\Gamma + C)} & - \Im{(\Gamma - C)} \\
-        \Im{(\Gamma + C)} &   \Re{(\Gamma - C)}
-      \end{pmatrix}
-    \biggr)}
-    \notag \\
-    % &
-    % = \begin{bmatrix}
-    %   r_1 + j r_2 \to r_1 \\  % sufficient for C=0 case
-    %   j r_1 + r_2 \to r_2     % j conj of transformation for r1, det x 2
-    % \end{bmatrix}
-    % = \tfrac12 \log \det{\biggl(
-    %   % \det{[I & j I \\ j I & I]} = \det{I} \det{I - jI I^{-1} jI} = \det{2 I}
-    %   % left apply : thus dividing by \sqrt{2}
-    %   \tfrac1{\sqrt{2}} 2 \pi e \tfrac12
-    %   \begin{pmatrix}
-    %     \Gamma + C & j (\Gamma - C) \\
-    %     j (\conj{\Gamma} + \conj{C}) & \conj{\Gamma} - \conj{C}
-    %   \end{pmatrix}
-    % \biggr)}
-      % % Implicitly using the fact that for a non-singular $\Omega$ we have $
-      % %   \det{A}
-      % %     = \tfrac{\det{(\Omega A)}}{\det{\Omega}}
-      % %     = \tfrac{\det{(A \Omega)}}{\det{\Omega}}
-      % % $.
-    % \notag \\
-    % &
-    % = \begin{bmatrix}
-    %   c_1 - j c_2 \to c_1 \\  % -j conj of transformation for c2
-    %   c_2 - j c_1 \to c_2     % sufficient for C=0 case
-    % \end{bmatrix}
-    % = \tfrac12 \log \det{\biggl(
-    %   % \det{[I & - j I \\ - j I & I]} = \det{I} \det{I - (-j)I I^{-1} (-j)I} = \det{2 I}
-    %   % right apply : thus dividing by \sqrt{2}
-    %   \tfrac12 2 \pi e \tfrac12
-    %   \begin{pmatrix}
-    %     2 \Gamma     & - 2 j C \\
-    %     2 j \conj{C} & 2 \conj{\Gamma}
-    %   \end{pmatrix}
-    % \biggr)}
-    % \notag \\
-    % &
-    % = \begin{bmatrix}
-    %   r_2 - j \conj{C} \Gamma^{-1} r_1 \to r_2
-    % \end{bmatrix}
-    % = \tfrac12 \log \det{\biggl(
-    %   % \det{[I & 0 \\ - j \conj{C} \Gamma^{-1} & I]} = \det{I} = 1
-    %   \pi e
-    %   \begin{pmatrix}
-    %     \Gamma & - j C \\
-    %     0 & \conj{\Gamma} - \conj{C} \Gamma^{-1} C
-    %   \end{pmatrix}
-    % \biggr)}
-    % \notag \\
-    &
-    = \tfrac12 \log \det{(\pi e \Gamma)} \det{(\pi e (\conj{\Gamma} - \conj{C} \Gamma^{-1} C))}
-    \,.
-\end{align*}
-The entropy of a proper $\cplx$-Gaussian random vector ($C = 0$) is therefore 
-\begin{equation}  \label{eq:cn-proper-entropy}
-  % determinant commutes with complex conjugation, since it is multilinear
-  \mathbb{H}(q)
-    % = \tfrac12 \log \det{(\pi e \Gamma)} \det{(\pi e (\conj{\Gamma} - \conj{C} \Gamma^{-1} C))}
-    = \tfrac12 \log \det{(\pi e \Gamma)} \det{(\pi e \conj{\Gamma})}
-    % = \tfrac12 \log \det{(\pi e \Gamma)} \conj{\det{(\pi e \Gamma)}}
-  %  = \tfrac12 \log \bigl\lvert \det{(\pi e \Gamma)} \bigr\rvert^2
-    = \log \bigl\lvert \det{(\pi e \Gamma)} \bigr\rvert
-    \,.
-\end{equation}
 
 \subsubsection{Variational dropout} % (fold){}
 \label{ssub:variational_dropout}
