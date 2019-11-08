@@ -461,6 +461,11 @@ $, and $
 $, \cite{petersen_matrix_2012}.
 % It follows from the definition of the Kronecker product
 % of $P$ and $R^\top$ and the row-major order vectorization.
+Finally, $
+  \diag{}
+    \colon \mathbb{K}^n \to \mathbb{K}^{n\times n}
+    \colon v \mapsto (\delta_{ij} v_i)_{ij}
+$ is a diagonal matrix embedding, $\mathbb{K} = \real$ or $\cplx$.
 
 \subsection{$\cplx$-Gaussian Variational Approximation} % (fold)
 \label{sub:c_gaussian_variational_approximation}
@@ -491,12 +496,25 @@ $. Matrices $\Gamma$ and $C$ are $
   \mathbb{E} (z - \mu)(z - \mu)^{\hop}
 $ and $
   \mathbb{E} (z - \mu)(z - \mu)^{\top}
-$, respectively. $\cplx$-Gaussians are closed under affine transformations: if $y = A z + b$
-for $A \in \cplx^{n \times m}$ and $b \in \cplx^{n}$, then $
-  y \sim \mathcal{N}_n^{\cplx}\bigl(
+$, respectively.
+%
+% $\cplx$-Gaussians are closed under affine transformations: if $y = A z + b$
+% for $A \in \cplx^{n \times m}$ and $b \in \cplx^{n}$, then $
+%   y \sim \mathcal{N}_n^{\cplx}\bigl(
+%       A\mu + b, A \Gamma A^{\hop}, A C A^\top
+%     \bigr)
+% $.
+%
+$\cplx$-Gaussians are closed under affine transformations:
+for $A \in \cplx^{n \times m}$ and $b \in \cplx^{n}$
+\begin{equation}  \label{eq:cn-affine}
+  A z + b \sim \mathcal{N}_n^{\cplx}\bigl(
       A\mu + b, A \Gamma A^{\hop}, A C A^\top
     \bigr)
-$. The entropy of a $\cplx$-Gaussian distribution coincides with the entropy of
+  \,.
+\end{equation}
+%
+The entropy of a $\cplx$-Gaussian distribution coincides with the entropy of
 \eqref{eq:cn-paired-real-density}, and in terms of $\Gamma$ and $C$ can be expresed:
 \begin{align}  \label{eq:c-gauss-entropy-derivation}
   \mathbb{H}(q)
@@ -573,7 +591,7 @@ $. The entropy of a $\cplx$-Gaussian distribution coincides with the entropy of
     \,.
 \end{align}
 A $\cplx$-Gaussian vector $z$ is \textit{proper}, if $z$ and $\conj{z}$ are uncorrelated, i.e.
-$C = 0$. From \eqref{eq:c-gauss-entropy-derivation} the entropy of a proper $\cplx$-Gaussain is
+$C = 0$. From \eqref{eq:c-gauss-entropy-derivation} the entropy of a proper $\cplx$-Gaussian is
 \begin{equation}  \label{eq:cn-proper-entropy}
   % determinant commutes with complex conjugation, since it is multilinear
   \mathbb{H}(q)
@@ -611,109 +629,85 @@ In $\cplx$-variational dropout we use mean-field proper $\cplx$-Gaussian variati
 approximation. Specifically, parameters $W \in \cplx^{n\times m}$ of a dense layer follow
 \begin{equation}  \label{eq:c-gauss-vi}
   % (we omit the subscript $m=1$ for brevity)
-  W \sim q(W) = \prod_{ij}
-    \mathcal{N}^{\cplx}(W_{ij} \mid \mu_{ij}, \sigma^2_{ij}, 0)
+  W
+    \sim q(W)
+    = \prod_{ij} q(W_{ij})
+  \,,\,
+    q(W_{ij})
+      = \mathcal{N}^{\cplx}(W_{ij} \mid \mu_{ij}, \sigma^2_{ij}, 0)
   \,,
 \end{equation}
 and we use analogous independent proper $\cplx$-Gaussian approximation for convolutional
 kernels. As for bias terms, we propose to use their MAP estimates, i.e. assume an independent
 fully factorized Dirac approximation.
 
-As was demonstrated in \cite{kingma_variational_2015}, local reparameterization trick
-provides both faster computations and better statistical efficiency of the SGVB gradient
-estimator. We formulate the $\cplx$ version of the local reparameterization trick, which
-generalizes \cite{wang_fast_2013}.
-
 % subsection c_gaussian_variational_approximation (end)
 
 \subsection{Local reparameterization trick} % (fold)
 \label{sub:local_reparameterization_trick}
 
-To simplify exposition of the trick, we consider the complex linear dense layer, and afterwards
-outline the caveats for $\cplx$-convolutional layers. In both cases we use fully factorized
-general $\cplx$-Gaussian distribution for parameters $W$ of the layer.
+The local reparameterization trick provides both faster computations, \cite{wang_fast_2013},
+and better statistical efficiency of the SGVB gradient estimator, \cite{kingma_variational_2015}.
+We formulate $\cplx$ version of the local reparameterization trick using a dense linear
+layer as an example, and afterwards outline the caveats for $\cplx$-convolutions.
 
-Consider a $\cplx$-linear layer: $
+A general mean field $\cplx$-Gaussian approximation \eqref{eq:c-gauss-vi} for $
   W \in \cplx^{n\times m}
-$ is a random $\cplx$-Gaussian matrix with independent elements $
-  w_{ij} \sim \mathcal{N}^{\cplx}\bigl(
-    w_{ij}
-    \big \vert
-    \mu_{ij}, \sigma^2_{ij}, C_{ij}
-  \bigr)
-$ with $\mu_{ij}\in cplx$, $\sigma^2_{ij} \geq 0$, $C_{ij}\in \cplx$ and $
-  \lvert C_{ij} \rvert^2 \leq \sigma^2_{ij}
-$. We begin by observing that the variational approximation of $q(W)$ is a multivariate
-$\cplx$-Gaussian: $
+$ is
+\begin{equation}  \label{eq:c-gauss-vi-general}
   \vec{W}
-    \sim \mathcal{N}^{\cplx}_{[n\times m]} \bigl(
+    \sim \mathcal{N}^{\cplx}_{nm} \bigl(
       \vec{\mu}, \diag{\vec{\Sigma}}, \diag{\vec{C}}
     \bigr)
-$, where $[n\times m]$ denotes lexicographically flattened dimension and $\diag{v}$ is a
-diagonal square matrix with $v_i$ on the main diagonal. Here we collected variances and means
-into matrices $\Sigma$ and $\mu$, respectively.
-%
-Now, for any $x \in \cplx^m$ and $b\in \cplx^n$ we have
-$$
-W x + b
-  % = I_n W x + b
-  = (I_n \otimes x^\top) \vec{W} + b
-  \,. $$
-Structure of the matrices, involved in this expression, imply
-\begin{align*}
-  (I \otimes x^\top) \diag{\vec{\Sigma}} (I \otimes x^\top)^\hop
-    % &= \sum_{ij} (I \otimes x^\top) e_i \otimes e_j
-    %   \sigma^2_{ij} (e_i \otimes e_j)^\top (I \otimes x^\top)^\hop
-    % \\
-    &
-    = \sum_{ij} (e_i \otimes x^\top e_j)
-      \sigma^2_{ij} (e_i \otimes x^\top e_j)^\hop
-    \notag \\
-    % &= \sum_{ij} (e_i \otimes x_j) \sigma^2_{ij} (e_i^\top \otimes \conj{x}_j)
-    % \\
-    &
-    = \sum_i (e_i e_i^\top) \sum_j \sigma^2_{ij} x_j \conj{x}_j
-    \,.
-\end{align*}
-In a similar fashion we obtain the expression for the relation matrix of
-the transformation:
-\begin{equation*}
+  \,,
+\end{equation}
+where mean, \textit{variance} and relation are given by matrices $
+  \mu, \Sigma, C \in \cplx^{n\times m}
+$ with $\Sigma_{ij} \geq 0$, and $
+  \lvert C_{ij} \rvert^2 \leq \Sigma_{ij}
+$. For any $x \in \cplx^m$ and $b\in \cplx^n$ $
+  y = W x + b
+    = (I_n \otimes x^\top) \vec{W} + b
+$, whence the covariance and relation matrices of $y$ are
+\begin{align}
+  (I \otimes x^\top) \diag{\vec{\Sigma}} (I \otimes x^\top)^{\hop}
+    % = \sum_{ij} (I \otimes x^\top) e_i \otimes e_j
+    %   \Sigma_{ij} (e_i \otimes e_j)^\top (I \otimes x^\top)^{\hop}
+    % = \sum_{ij} (e_i \otimes x^\top e_j)
+    %   \Sigma_{ij} (e_i \otimes x^\top e_j)^{\hop}
+    % = \sum_{ij} (e_i \otimes x_j) \Sigma_{ij} (e_i^\top \otimes \conj{x}_j)
+    & = \sum_{i=1}^n (e_i e_i^\top) \sum_{j=1}^m \Sigma_{ij} x_j \conj{x}_j
+    \,,  \label{eq:cn-gauss-lrt-cov} \\
   (I \otimes x^\top) \diag{\vec{C}} (I \otimes x^\top)^\top
     % = \sum_{ij} (e_i \otimes x_j) C_{ij} (e_i \otimes x_j)^\top
-    = \sum_i e_i e_i^\top \sum_j C_{ij} x_j^2
-    \,.
-\end{equation*}
-The term $
-  \sum_i e_i e_i^\top (\ldots)
-$ means that the covariance and relation matrices of $y = Wx + b$ are diagonal.
-
-These observations coupled with the closure under affine transformation imply that the
-components of $y = W x + b$ are independent univariate $\cplx$-Gaussain random variables
-with distributions
-\begin{equation}  \label{eq:c-gaus-trick}
+    & = \sum_{i=1}^n (e_i e_i^\top) \sum_{j=1}^m C_{ij} x_j^2
+    \,.  \label{eq:cn-gauss-lrt-rel}
+\end{align}
+Since \eqref{eq:cn-gauss-lrt-cov} and \eqref{eq:cn-gauss-lrt-rel} are diagnal, $(y_i)_{i=1}^n$
+are independent whence \eqref{eq:cn-affine} implies
+\begin{equation}  \label{eq:cplx-gauss-trick}
   y_i
     \sim \mathcal{N}^{\cplx}
       \bigl(
         e_i^\top \mu x + b,
-        \, \sum_j \sigma^2_{ij} \lvert x_j \rvert^2,
-        \, \sum_j C_{ij} x_j^2
+        \, \sum_{j=1}^m \Sigma_{ij} \lvert x_j \rvert^2,
+        \, \sum_{j=1}^m C_{ij} x_j^2
       \bigr)
     \,.
 \end{equation}
+For a proper approximation \eqref{eq:c-gauss-vi} the resulting relation coefficients are zero.
 
-We can notice, that in \eqref{eq:c-gaus-trick} the mean, variance and relation parameters are,
-essentially, matrix-vector operations: $\mu x + b$, $\Sigma \lvert x \rvert^2$ and $C x^2$
-with the modulus and power applied elementwise. The local reparameterization trick works
-similarly for $\cplx$-convolutions, provided we draw independent weights $W\sim q(W)$ for each
-spatial patch in the input: convolve value $x$, amplitude $\lvert x \rvert^2$ and complex
-square $x^2$ with the mean, variance, and relation kernels, respectively. The need for
-independent resampling stems from kernel weights being shared between patches, which would
-make the gradient estimator less efficient due to correlation from overlapping patches.
-The argument from \cite{kingma_variational_2015} in favour drawing independent weight per
-sample in the minibatch can be applied here to show that this is \verify{indeed the case}.
-%
-Weight sharing is pushed from weights of the layer to shared variational parameters $\theta$
-in the approximation $q_\theta$.
+\eqref{eq:cplx-gauss-trick} essentially requires three matrix-vector operations: $\mu x + b$,
+$\Sigma \lvert x \rvert^2$ and $C x^2$ with the modulus and power applied elementwise. Similar
+to $\real$ case, variational dropout for $\cplx$ convolutions draws independent kernel $W$
+for each spatial patch in the input, since a convolution is a matrix product of $W$, unrolled
+into a toeplitz matrix, and flattened intput $\vec{x}$. Weight sharing is essentially pushed
+to shared variational parameters $\theta$ in the approximation $q_\theta$. The rationale
+is to reduce correlation in the gradient estimator stemming from kernel weights being
+shared between overlapping patches, \cite{kingma_variational_2015,citation_needed}. Thus
+\eqref{eq:cplx-gauss-trick} requires computing $\cplx$ convolutions of $x$, complex square
+$x^2$, and amplitude $\lvert x \rvert^2$ with the mean, relation, and variance kernels,
+respectively.
 
 % subsection local_reparameterization_trick (end)
 
