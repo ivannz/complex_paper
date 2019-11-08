@@ -599,7 +599,7 @@ $C = 0$. From \eqref{eq:c-gauss-entropy-derivation} the entropy of a proper $\cp
     \,.
 \end{equation}
 %
-% The roles of $\Gamma$ and $C$ is more evident in univariate case: here $
+% The roles of $\Gamma$ and $C$ are more evident in univariate case: here $
 %   \Gamma = \sigma^2 \geq 0
 % $, and $C = \sigma^2 \rho \in \cplx$ with $
 %   \lvert \rho \rvert \leq 1
@@ -711,14 +711,14 @@ We consider two priors for Bayesian dropout: log-uniform and $\cplx$-Gaussian em
 fully factorized approximation $q(\omega)$ and factorized prior belief $\pi(\omega)$, the
 divergence term in ELBO \eqref{eq:elbo} is
 \begin{equation}  \label{eq:elbo-general-kl-div}
-KL(q(\omega) \| \pi(\omega))
-  % = \mathbb{E}_{\oemga \sim q(\oemga)} \log \tfrac{q(\oemga)}{\pi(\oemga)}
-  % = \sum_{ij} \mathbb{E}_{\omega_{ij} \sim q(\omega_{ij})}
-  %   \log \tfrac{q(\omega_{ij})}{\pi(\omega_{ij})}
-  % = \sum_{ij} KL\bigl( q(\omega_{ij}) \| \pi(\omega_{ij}) \bigr)
-  = - \sum_{ij} \mathbb{H}(q(\omega_{ij}))
-    + \mathbb{E}_{\omega_{ij} \sim q(\omega_{ij})} \log{\pi(\omega_{ij})}
-  \,.
+  KL(q(\omega) \| \pi(\omega))
+    % = \mathbb{E}_{\oemga \sim q(\oemga)} \log \tfrac{q(\oemga)}{\pi(\oemga)}
+    % = \sum_{ij} \mathbb{E}_{\omega_{ij} \sim q(\omega_{ij})}
+    %   \log \tfrac{q(\omega_{ij})}{\pi(\omega_{ij})}
+    % = \sum_{ij} KL\bigl( q(\omega_{ij}) \| \pi(\omega_{ij}) \bigr)
+    = - \sum_{ij} \mathbb{H}(q(\omega_{ij}))
+      + \mathbb{E}_{\omega_{ij} \sim q(\omega_{ij})} \log{\pi(\omega_{ij})}
+    \,.
 \end{equation}
 We use approximation \eqref{eq:c-gauss-vi} and omit subscripts ${ij}$ below for brevity.
 
@@ -729,59 +729,64 @@ From \eqref{eq:cn-proper-entropy} the KL-divergence for \verify{log-uniform prio
   \pi(\omega) \propto {\lvert \omega \rvert}^{-\beta}
 $ with $\beta \geq 1$ is
 \begin{equation}  \label{eq:var-do-kl-div-raw}
-KL(q\| \pi)
-  \propto
-  %   \mathbb{E}_{\omega \sim q(\omega)} \log q(\omega)
-  %   + \tfrac{\beta}2 \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
-  % =
-  %   - \log \lvert \det{(\pi e \sigma^2)} \rvert
-  %   + \tfrac{\beta}2 \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
-  % =
-    - \log{\sigma^2}
-    + \tfrac{\beta}2 \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
-  \,.
+  KL(q\| \pi)
+    \propto
+    %   \mathbb{E}_{\omega \sim q(\omega)} \log q(\omega)
+    %   + \tfrac{\beta}2 \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
+    % =
+    %   - \log \lvert \det{(\pi e \sigma^2)} \rvert
+    %   + \tfrac{\beta}2 \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
+    % =
+      - \log{\sigma^2}
+      + \tfrac{\beta}2 \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
+    \,.
 \end{equation}
 Note that for $\mu \neq 0$ from \eqref{eq:cn-affine} we have $
   \mathcal{N}^{\cplx}(\mu, \alpha \lvert \mu \rvert^2, 0)
   \sim \mu \cdot \mathcal{N}^{\cplx}(1, \alpha, 0)
 $, whence
 \begin{equation}  \label{eq:expect-improper-term-cplx}
-\mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
-  % = \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 1, \alpha, 0)}
-  %   \log \lvert \mu \xi \rvert^2
-  % = \log \lvert \mu \rvert^2
-  %   + \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 1, \alpha, 0)}
-  %       \log \lvert \xi \rvert^2
-  = \log \alpha \lvert \mu \rvert^2
-    + \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 0, 1, 0)}
-        \log{\bigl\lvert \tfrac1{\sqrt{\alpha}} + \xi \bigr\rvert^2}
-  \,.
+  \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
+    % = \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 1, \alpha, 0)}
+    %   \log \lvert \mu \xi \rvert^2
+    % = \log \lvert \mu \rvert^2
+    %   + \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 1, \alpha, 0)}
+    %       \log \lvert \xi \rvert^2
+    = \log \alpha \lvert \mu \rvert^2
+      + \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 0, 1, 0)}
+          \log{\bigl\lvert \tfrac1{\sqrt{\alpha}} + \xi \bigr\rvert^2}
+    \,.
 \end{equation}
-Let $(\mu_i)_{i=1}^m \in \cplx$ and $
+Let $
   (z_i)_{i=1}^m \sim \mathcal{N}^{\cplx}(0, 1, 0)
-$ iid. Then $W = \sum_i \lvert \theta_i + z_i \rvert^2$ has a non-central $\chi^2_{2m}$
-distribution with non-centrality parameter $s^2 = \sum_i \lvert \theta_i \rvert^2$. The
-log-moments of $W$ for general integer $m \geq1$ are given in
-\cite[p.~2466]{lapidoth_capacity_2003}.  % in fact Appendix X, Lemma 10.1
+$ iid and $\theta \in \cplx^m$. Then $
+  W
+    = \sum_i \lvert \theta_i + z_i \rvert^2
+    \sim \chi^2_{2m}(s^2)
+$ with $
+  s^2 = \sum_i \lvert \theta_i \rvert^2
+$, i.e. non-central $\chi^2_{2m}$ with parameter $s^2$. The log-moments
+of $W$ for general integer $m \geq1$ are given in \cite[p.~2466]{lapidoth_capacity_2003}.
+% in fact Appendix X, Lemma 10.1
 In particular, for $m=1$ and $\theta\in \cplx$ we have
 \begin{equation}  \label{eq:log-moment-for-chi-2}
-\mathbb{E}_{z \sim \mathcal{N}^{\cplx}(0, 1, 0)}
-  \log \lvert \theta + z \rvert^2
-  = \log \lvert \theta \rvert^2 - \mathop{Ei}( - \lvert \theta \rvert^2)
-  \,,
+  \mathbb{E}_{z \sim \mathcal{N}^{\cplx}(0, 1, 0)}
+    \log \lvert \theta + z \rvert^2
+    = \log \lvert \theta \rvert^2 - \mathop{Ei}( - \lvert \theta \rvert^2)
+    \,,
 \end{equation}
 where $
   \mathop{Ei}(x) = \int^x_{-\infty} t^{-1} e^t dt
 $ for $x < 0$ is the Exponential Integral. Note that
 $
   \tfrac{d}{dx} \mathop{Ei}(x) = \tfrac{e^x}{x}
-$ and $
+$, $
   \mathop{Ei}(x) \leq \log{(-x)}
-$ on $x < 0$, asymptotically $
-  \log{(-x)} - \gamma
-$ as $x\to 0-$ and $
+$, $
+  \mathop{Ei}(x) \approx \log{(-x)} - \gamma
+$ (Euler's constant) as $x\to 0-$ and $
   \mathop{Ei}(x) \geq -e^x
-$ on $x \in (-\infty, -1]$ ($\gamma$ is Euler's constant).
+$ on $x \in (-\infty, -1]$.
 % 1. by Leibniz rule $Ei(x)$ has -ve derivative on $x < 0$
 % 2. $Ei(x) \leq 0$ on $x < 0$, since $t^{-1} e^t \leq t^{-1} < 0$ on $t < 0$
 % 3. $Ei(x) \leq \log{(-x)}$ on $x < 0$, since on $x \in [-1, 0)$
@@ -808,38 +813,38 @@ $ on $x \in (-\infty, -1]$ ($\gamma$ is Euler's constant).
 %   \,. $$
 % 6. $Ei(x) \leq \log{(-x)} - \gamma$ on $x < 0$ and $-e^x \leq Ei(x) \leq 0$ on $x < -1$.
 %
-After cancellation \eqref{eq:var-do-kl-div-raw} becomes
+Through \eqref{eq:expect-improper-term-cplx} and \eqref{eq:log-moment-for-chi-2} we get
 \begin{equation}  \label{eq:var-do-kl-div}
-KL(q\| \pi)
-  \propto
-  %   - \log \lvert \det{(\pi e \sigma^2)} \rvert
-  %   + \tfrac{\beta}2 \log \alpha \lvert \mu \rvert^2
-  %   + \tfrac{\beta}2 \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 0, 1, 0)}
-  %       \log{\bigl\lvert \tfrac1{\sqrt{\alpha}} + \xi \bigr\rvert^2}
-  % =
-  %   - \log{\sigma^2}  % - \log{\pi e}
-  %   + \tfrac{\beta}2 \log \alpha \lvert \mu \rvert^2
-  %   + \tfrac{\beta}2 \bigl(
-  %     - \log \alpha - \mathop{Ei}( -\tfrac1{\alpha})
-  %   \bigr)
-  % =
-  %   - \log{\sigma^2}
-  %   + \tfrac{\beta}2 \log \alpha \lvert \mu \rvert^2
-  %   - \tfrac{\beta}2 \log \alpha
-  %   - \tfrac{\beta}2 \mathop{Ei}( -\tfrac1{\alpha})
-  % =
-    % \log \tfrac{\lvert \mu \rvert^\beta}{\sigma^2}
-    % \log \tfrac{\lvert \mu \rvert^\beta}{\alpha \lvert \mu \rvert^2}
-    \tfrac{\beta-2}2 \log{\lvert \mu \rvert^2}
-    + \log{\tfrac1{\alpha}}
-    - \tfrac{\beta}2 \mathop{Ei}(- \tfrac1{\alpha})
-  \,.
+  KL(q\| \pi)
+    \propto
+    %   - \log \lvert \det{(\pi e \sigma^2)} \rvert
+    %   + \tfrac{\beta}2 \log \alpha \lvert \mu \rvert^2
+    %   + \tfrac{\beta}2 \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 0, 1, 0)}
+    %       \log{\bigl\lvert \tfrac1{\sqrt{\alpha}} + \xi \bigr\rvert^2}
+    % =
+    %   - \log{\sigma^2}  % - \log{\pi e}
+    %   + \tfrac{\beta}2 \log \alpha \lvert \mu \rvert^2
+    %   + \tfrac{\beta}2 \bigl(
+    %     - \log \alpha - \mathop{Ei}( -\tfrac1{\alpha})
+    %   \bigr)
+    % =
+    %   - \log{\sigma^2}
+    %   + \tfrac{\beta}2 \log \alpha \lvert \mu \rvert^2
+    %   - \tfrac{\beta}2 \log \alpha
+    %   - \tfrac{\beta}2 \mathop{Ei}( -\tfrac1{\alpha})
+    % =
+      % \log \tfrac{\lvert \mu \rvert^\beta}{\sigma^2}
+      % \log \tfrac{\lvert \mu \rvert^\beta}{\alpha \lvert \mu \rvert^2}
+      \tfrac{\beta-2}2 \log{\lvert \mu \rvert^2}
+      + \log{\tfrac1{\alpha}}
+      - \tfrac{\beta}2 \mathop{Ei}(- \tfrac1{\alpha})
+      \tag{\ref{eq:var-do-kl-div-raw}'} \,.
 \end{equation}
-% For $\beta = 2$ we add $\gamma$ to make the right-hand side nonegative. (dubious)
-Gradient-based methods that optimize \eqref{eq:elbo} usually do not rely on the value
-of the objective. Since $\mathop{Ei}$ has simple analytic derivative and downstream
-computations depend \eqref{eq:var-do-kl-div} only additively in\eqref{eq:elbo}, it is
-possible to backpropagate through the divergence without forward evaluation.
+% For $\beta = 2$ we add $\gamma$ to make the right-hand side nonegative. (need proof)
+Since $\mathop{Ei}(x)$ has simple analytic derivative and \eqref{eq:elbo} depends additively
+on \eqref{eq:var-do-kl-div}, it is possible to backpropagate through the divergence without
+forward evaluation.
+% Gradient-based optimiziation of \eqref{eq:elbo} usually does not use the value of the objective. 
 
 % subsubsection variational_dropout (end)
 
