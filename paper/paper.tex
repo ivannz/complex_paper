@@ -433,7 +433,7 @@ a function on $\real^2$. Essentially, it allows straightforward retrofiting of $
 networks into existing $\real$ deep learning auto-differentiation frameworks. It was considered
 as a basis for $\cplx$ version of backpropagation in \cite{benvenuto_complex_1992} and
 \cite{trabelsi_deep_2017}, (see sec.~\ref{sub:wirtinger_calculus} for details).
-
+%
 \todo{read on holomorphic nets}
 
 % section c_valued_networks (end)
@@ -450,25 +450,21 @@ in terms of special functions.
 
 %notation
 We first clarify some notation: $M^{\top}$ is the matrix transpose, $\conj{M}$ is elementwise
-complex conjugation, and $M^{\hop} = (\conj{M})^\top$ denotes Hermitian conjugate. By $e_i$
-we denote the $i$-th real unit vector of dimensionality \textbf{conforming} to the matrix-vector
-expression it is used in. $\vec{M}$ denotes row-major flattening of $M$ into a vector, i.e.
-in lexicographic order of its indices. $\otimes$ denotes the Kronecker product, for which we
-note the following identities $
+complex conjugation, and $M^{\hop} = (\conj{M})^\top$ denotes Hermitian conjugate. By $e_i$ we
+denote the $i$-th real unit vector of dimensionality \textit{conforming} to the matrix-vector
+expression it is used in. $\vec{M}$ denotes \textit{row-major} flattening of $M$ into a vector,
+i.e. in lexicographic order of its indices. $\diag{(\cdot)}$ embeds $\cplx^n$ into $n\times n$
+diagonal matrices. $\otimes$ denotes the Kronecker product, for which we note the following
+identities $
   \vec{P Q R} = (P \otimes R^\top) \vec{Q}
 $, and $
   (P \otimes R) (C \otimes S) = P Q \otimes R S
 $, \cite{petersen_matrix_2012}.
 % It follows from the definition of the Kronecker product
 % of $P$ and $R^\top$ and the row-major order vectorization.
-Finally, $
-  \diag{}
-    \colon \mathbb{K}^n \to \mathbb{K}^{n\times n}
-    \colon v \mapsto (\delta_{ij} v_i)_{ij}
-$ is a diagonal matrix embedding, $\mathbb{K} = \real$ or $\cplx$.
 
-\subsection{$\cplx$-Gaussian Variational Approximation} % (fold)
-\label{sub:c_gaussian_variational_approximation}
+\subsection{Complex Gaussians and Local Reparameterization} % (fold)
+\label{sub:c_gauss_and_local_rep}
 
 A random vector $z\in \cplx^m$ has complex Gaussian distribution, $
   z \sim q(z) = \mathcal{N}^{\cplx}_m(\mu, \Gamma, C)
@@ -641,11 +637,6 @@ and we use analogous independent proper $\cplx$-Gaussian approximation for convo
 kernels. As for bias terms, we propose to use their MAP estimates, i.e. assume an independent
 fully factorized Dirac approximation.
 
-% subsection c_gaussian_variational_approximation (end)
-
-\subsection{Local reparameterization trick} % (fold)
-\label{sub:local_reparameterization_trick}
-
 The local reparameterization trick provides both faster computations, \cite{wang_fast_2013},
 and better statistical efficiency of the SGVB gradient estimator, \cite{kingma_variational_2015}.
 We formulate $\cplx$ version of the local reparameterization trick using a dense linear
@@ -708,8 +699,10 @@ shared between overlapping patches, \cite{kingma_variational_2015,citation_neede
 \eqref{eq:cplx-gauss-trick} requires computing $\cplx$ convolutions of $x$, complex square
 $x^2$, and amplitude $\lvert x \rvert^2$ with the mean, relation, and variance kernels,
 respectively.
+%
+\todo{other reasons for patch-independent weights}
 
-% subsection local_reparameterization_trick (end)
+% subsection c_gauss_and_local_rep (end)
 
 \subsection{The choice of priors and Kullback-Leibler divergence} % (fold)
 \label{sub:priors_and_kullback_leibler_divergence}
