@@ -30,9 +30,9 @@
 \newcommand{\diag}[1]{\mathrm{diag}{#1}}
 
 %% drafting macro
-\newcommand{\important}[1]{\textbf{\colorbox{red}{#1}}}
+\newcommand{\important}[1]{\textbf{\!\colorbox{red}{#1}\!}}
 \newcommand{\attn}[2]{\textbf{\color{red} #2~\textsuperscript{\textit{[#1]}}}}
-\newcommand{\verify}[1]{\attn{verify}{#1}}
+\newcommand{\verify}[1]{\textit{\!\colorbox{red}{#1}\!}}
 \newcommand{\rewrite}[1]{\attn{rewrite}{#1}}
 \newcommand{\todo}[1]{{\color{blue} [TODO]} \important{#1}}
 
@@ -716,8 +716,10 @@ divergence term in ELBO \eqref{eq:elbo} is
     % = \sum_{ij} \mathbb{E}_{\omega_{ij} \sim q(\omega_{ij})}
     %   \log \tfrac{q(\omega_{ij})}{\pi(\omega_{ij})}
     % = \sum_{ij} KL\bigl( q(\omega_{ij}) \| \pi(\omega_{ij}) \bigr)
-    = - \sum_{ij} \mathbb{H}(q(\omega_{ij}))
-      + \mathbb{E}_{\omega_{ij} \sim q(\omega_{ij})} \log{\pi(\omega_{ij})}
+    = \sum_{ij} \bigl(
+        - \mathbb{H}(q(\omega_{ij}))
+        - \mathbb{E}_{\omega_{ij} \sim q(\omega_{ij})} \log{\pi(\omega_{ij})}
+      \bigr)
     \,.
 \end{equation}
 We use approximation \eqref{eq:c-gauss-vi} and omit subscripts ${ij}$ below for brevity.
