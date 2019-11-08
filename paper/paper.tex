@@ -743,9 +743,11 @@ $ with $\beta \geq 1$ is
       + \tfrac{\beta}2 \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
     \,.
 \end{equation}
-Note that for $\mu \neq 0$ from \eqref{eq:cn-affine} we have $
-  \mathcal{N}^{\cplx}(\mu, \alpha \lvert \mu \rvert^2, 0)
+\eqref{eq:cn-affine} implies that $
+  \mathcal{N}^{\cplx}(\mu, \sigma^2, 0)
   \sim \mu \cdot \mathcal{N}^{\cplx}(1, \alpha, 0)
+$ for $\mu \neq 0$ and $
+  \sigma^2 = \alpha \lvert \mu \rvert^2
 $, whence
 \begin{equation}  \label{eq:expect-improper-term-cplx}
   \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
@@ -785,10 +787,11 @@ $
 $, $
   \mathop{Ei}(x) \leq \log{(-x)}
 $, $
+  % as x to 0 from below
   \mathop{Ei}(x) \approx \log{(-x)} - \gamma
-$ (Euler's constant) as $x\to 0-$ and $
+$ as $x\to 0$ ($\gamma$ is Euler's constant) and $
   \mathop{Ei}(x) \geq -e^x
-$ on $x \in (-\infty, -1]$.
+$ for $x \leq -1$.
 % 1. by Leibniz rule $Ei(x)$ has -ve derivative on $x < 0$
 % 2. $Ei(x) \leq 0$ on $x < 0$, since $t^{-1} e^t \leq t^{-1} < 0$ on $t < 0$
 % 3. $Ei(x) \leq \log{(-x)}$ on $x < 0$, since on $x \in [-1, 0)$
@@ -853,49 +856,48 @@ forward evaluation.
 \subsubsection{Empirical Bayes} % (fold)
 \label{ssub:empirical_bayes}
 
-For this model we use an empirical Bayes prior. We assume that our initial belief is that
-parameters are independent and each one is proper $\cplx$-Gaussian with its own precision: $
-  \pi(\omega)
+Let's consider fully factorized proper $\cplx$-gaussian prior $
+  \pi_\tau(\omega)
     \propto \mathcal{N}^{\cplx}\bigl(
       \omega \vert 0, \tau^{-1}, 0
     \bigr)
-$. The per element KL-divergence term in the ELBO is computed thus:
+$. The per element divergence term in \eqref{eq:elbo-general-kl-div} is
 \begin{equation}  \label{eq:emp-bayes-kl-div}
-KL(q \| \pi_\tau)
-  = - 1 - \log{(\tau \sigma^2)}
-    + \tau \bigl(
-      \sigma^2 + \lvert \mu \rvert^2
-    \bigr)
-  \,,
+  KL(q \| \pi_\tau)
+    = - 1 - \log{(\tau \sigma^2)}
+      + \tau \bigl(
+        \sigma^2 + \lvert \mu \rvert^2
+      \bigr)
+    \,.
 \end{equation}
-which follows from the KL-divergence expression for two multivariate Gaussians
-$$
-% \mathbb{E}_{\omega\sim q_1(\omega)} \log \tfrac{q_1(\omega)}{q_2(\omega)}
+%
+% This follows from the KL-divergence expression for two multivariate Gaussians
+% $$
+% % \mathbb{E}_{\omega\sim q_1(\omega)} \log \tfrac{q_1(\omega)}{q_2(\omega)}
+% %   =
+% KL(q_1\| q_2)
 %   =
-KL(q_1\| q_2)
-  =
-  % - \tfrac12 \log\det{(2\pi e \Sigma_1)} + \tfrac12 \log\det{(2\pi \Sigma_2)}
-  - \tfrac12 \log \det{e I}
-  + \tfrac12 \log \frac{\det{\Sigma_2}}{\det{\Sigma_1}}
-  + \tfrac12 \tr{\bigl( \Sigma_2^{-1} \Sigma_1 \bigr)}
-  + \tfrac12 (\mu_1 - \mu_2)^\top \Sigma_2^{-1} (\mu_1 - \mu_2)
-  \,. $$
-
-Somewhat counterintuitively, in empirical Bayes we optimize the hyperparameters of the
-prior on the observed dataset. Thus the lower bound \eqref{eq:elbo} is optimized w.r.t.
-$\tau$ of each weight's prior. \eqref{eq:emp-bayes-kl-div} is optimized (minimized) at
-$\tau^\ast = (\sigma^2 + \lvert \mu \rvert^2)^{-1}$, yielding the following penalty in
-ELBO:
+%   % - \tfrac12 \log\det{(2\pi e \Sigma_1)} + \tfrac12 \log\det{(2\pi \Sigma_2)}
+%   - \tfrac12 \log \det{e I}
+%   + \tfrac12 \log \frac{\det{\Sigma_2}}{\det{\Sigma_1}}
+%   + \tfrac12 \tr{\bigl( \Sigma_2^{-1} \Sigma_1 \bigr)}
+%   + \tfrac12 (\mu_1 - \mu_2)^\top \Sigma_2^{-1} (\mu_1 - \mu_2)
+%   \,. $$
+%
+In empirical Bayes the prior adapts to the observed data, i.e. \eqref{eq:elbo} is optimized
+w.r.t. $\tau$ of each weight's prior. Since divergence sits in \eqref{eq:elbo} with negative
+sign, optimal $
+  \tau^\ast = (\sigma^2 + \lvert \mu \rvert^2)^{-1}
+$ is found by minimizing \eqref{eq:emp-bayes-kl-div}, which gives
 \begin{equation}  \label{eq:emp-bayes-opt-kl}
-KL(q \| \pi_{\tau^\ast})
-  % = - 1 - \log{({\tau^\ast} \sigma^2)}
-  %   + {\tau^\ast} \sigma^2 + {\tau^\ast} \lvert \mu \rvert^2
-  % = \log{((\sigma^2 + \lvert \mu \rvert^2) \tfrac1{\sigma^2})}
-  = \log{\bigl(1 + \tfrac{\lvert \mu \rvert^2}{\sigma^2}\bigr)}
-  % = \log{\bigl(1 + \tfrac1\alpha \bigr)}
-  \,,
+  KL(q \| \pi_{\tau^\ast})
+    % = - 1 - \log{({\tau^\ast} \sigma^2)}
+    %   + {\tau^\ast} \sigma^2 + {\tau^\ast} \lvert \mu \rvert^2
+    % = \log{((\sigma^2 + \lvert \mu \rvert^2) \tfrac1{\sigma^2})}
+    = \log{\bigl(1 + \tfrac{\lvert \mu \rvert^2}{\sigma^2}\bigr)}
+    % = \log{\bigl(1 + \tfrac1\alpha \bigr)}
+    \,.
 \end{equation}
-which exactly replicates the term, derived in \cite{kharitonov_variational_2018}.
 
 % subsubsection empirical_bayes (end)
 
