@@ -625,8 +625,7 @@ In $\cplx$-variational dropout we use mean-field proper $\cplx$-Gaussian variati
 approximation. Specifically, parameters $W \in \cplx^{n\times m}$ of a dense layer follow
 \begin{equation}  \label{eq:c-gauss-vi}
   % (we omit the subscript $m=1$ for brevity)
-  W
-    \sim q(W)
+  W \sim q(W)
     = \prod_{ij} q(W_{ij})
   \,,\,
     q(W_{ij})
@@ -707,55 +706,28 @@ respectively.
 \subsection{The choice of priors and Kullback-Leibler divergence} % (fold)
 \label{sub:priors_and_kullback_leibler_divergence}
 
-In this section we consider two different priors, suitable for variational dropout: log-uniform
-\cite{kingma_variational_2015,molchanov_variational_2017} and proper $\cplx$-Gaussian analogue
-for the empirical Bayes prior in \cite{kharitonov_variational_2018}.
-
-Recall that we use fully factorized variational approximation for the parameters: $
-  W \sim q(W)
-    = \prod_{ij} q(\omega_{ij})
-$ with proper complex Gaussian distributions of each element $
-  q(\omega_{ij})
-    = \mathcal{N}^{\cplx}\bigl(
-      \omega_{ij} \big\vert
-      \mu_{ij}, \sigma^2_{ij}, 0
-    \bigr)
-$. Assuming factorized prior belief $\pi(W)$ on the parameters $W$, the KL-divergence
-term in ELBO \eqref{eq:elbo} is
+We consider two priors for Bayesian dropout: log-uniform and $\cplx$-Gaussian empirical Bayes,
+\cite{kingma_variational_2015,molchanov_variational_2017,kharitonov_variational_2018}. For a 
+fully factorized approximation $q(\omega)$ and factorized prior belief $\pi(\omega)$, the
+divergence term in ELBO \eqref{eq:elbo} is
 \begin{equation}  \label{eq:elbo-general-kl-div}
-KL(q(W) \| \pi(W))
-  % = \mathbb{E}_{W \sim q(W)} \log \tfrac{q(W)}{\pi(W)}
+KL(q(\omega) \| \pi(\omega))
+  % = \mathbb{E}_{\oemga \sim q(\oemga)} \log \tfrac{q(\oemga)}{\pi(\oemga)}
   % = \sum_{ij} \mathbb{E}_{\omega_{ij} \sim q(\omega_{ij})}
   %   \log \tfrac{q(\omega_{ij})}{\pi(\omega_{ij})}
-  = \sum_{ij} KL\bigl(
-    q(\omega_{ij}) \| \pi(\omega_{ij})
-  \bigr)
+  % = \sum_{ij} KL\bigl( q(\omega_{ij}) \| \pi(\omega_{ij}) \bigr)
+  = - \sum_{ij} \mathbb{H}(q(\omega_{ij}))
+    + \mathbb{E}_{\omega_{ij} \sim q(\omega_{ij})} \log{\pi(\omega_{ij})}
   \,.
 \end{equation}
-%
-We shall omit the subscripts for brevity in the derivations in the next section, which
-we begin with a derivation of the entropy of a proper $\cplx$-Gaussian.
-
-The expression of Kullback-Leibler divergence of $q(\omega)$ from an arbitrary prior $\pi(\omega)$
-necessarily involves the (differential) entropy of $q$:
-\begin{equation*}
-  KL\bigl(
-    q(\omega) \| \pi(\omega)
-  \bigr)
-    % = \mathbb{E}_{\omega \sim q} \log{q(\omega)} - \mathbb{E}_{\omega \sim q} \log{\pi(\omega)}
-    = - \mathbb{H}(q) - \mathbb{E}_{\omega \sim q} \log{\pi(\omega)}
-    \,.
-\end{equation*}
+We use approximation \eqref{eq:c-gauss-vi} and omit subscripts ${ij}$ below for brevity.
 
 \subsubsection{Variational dropout} % (fold)
 \label{ssub:variational_dropout}
 
-Let's get the divergence term for the improper prior, that most closely recovers the variational
-dropout penalty term in \cite{kingma_variational_2015} and \cite{molchanov_variational_2017}.
-If we assume $
-  \pi(\omega) \propto \tfrac1{\lvert \omega \rvert^\beta}
-$ for some $\beta > 1$, then we formally get the following KL-divergence term (up to an unknown,
-or non-existent constant):
+From \eqref{eq:cn-proper-entropy} the KL-divergence for \verify{log-uniform prior} $
+  \pi(\omega) \propto {\lvert \omega \rvert}^{-\beta}
+$ with $\beta \geq 1$ is
 \begin{equation}  \label{eq:var-do-kl-div-raw}
 KL(q\| \pi)
   \propto
@@ -767,11 +739,12 @@ KL(q\| \pi)
   % =
     - \log{\sigma^2}
     + \tfrac{\beta}2 \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
-  \,,
+  \,.
 \end{equation}
-where we have used \eqref{eq:cn-proper-entropy} with $\Gamma = \sigma^2 \geq 0$. Note
-that for $\mu \neq 0$, we have $\omega \sim q(\omega)$ equal in distribution to $\mu \xi$
-with $\xi \sim \mathcal{N}^{\cplx}(\xi \vert 1, \alpha, 0)$, whence
+Note that for $\mu \neq 0$ from \eqref{eq:cn-affine} we have $
+  \mathcal{N}^{\cplx}(\mu, \alpha \lvert \mu \rvert^2, 0)
+  \sim \mu \cdot \mathcal{N}^{\cplx}(1, \alpha, 0)
+$, whence
 \begin{equation}  \label{eq:expect-improper-term-cplx}
 \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
   % = \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 1, \alpha, 0)}
@@ -784,10 +757,6 @@ with $\xi \sim \mathcal{N}^{\cplx}(\xi \vert 1, \alpha, 0)$, whence
         \log{\bigl\lvert \tfrac1{\sqrt{\alpha}} + \xi \bigr\rvert^2}
   \,.
 \end{equation}
-The expectation in \eqref{eq:expect-improper-term-cplx} involves a log-moment of the non-central
-$\chi^2_2$ distribution, which has an analytic expression for the gradient, unlike the case
-in $\real$-dropout penalty \eqref{eq:improper-kl-div-real}.
-
 Let $(\mu_i)_{i=1}^m \in \cplx$ and $
   (z_i)_{i=1}^m \sim \mathcal{N}^{\cplx}(0, 1, 0)
 $ iid. Then $W = \sum_i \lvert \theta_i + z_i \rvert^2$ has a non-central $\chi^2_{2m}$
@@ -801,11 +770,45 @@ In particular, for $m=1$ and $\theta\in \cplx$ we have
   = \log \lvert \theta \rvert^2 - \mathop{Ei}( - \lvert \theta \rvert^2)
   \,,
 \end{equation}
-where $\mathop{Ei}(x) = \int^x_{-\infty} t^{-1} e^t dt$ for $x < 0$ is the exponential integral
-function. Note that the limiting value of \eqref{eq:log-moment-for-chi-2} as $
-  \lvert \theta \rvert \to 0
-$ is $- \gamma$, i.e. negative Euler's constant. Therefore after cancellation the expression
-of the KL-divergence in \eqref{eq:var-do-kl-div-raw} becomes
+where $
+  \mathop{Ei}(x) = \int^x_{-\infty} t^{-1} e^t dt
+$ for $x < 0$ is the Exponential Integral. Note that
+$
+  \tfrac{d}{dx} \mathop{Ei}(x) = \tfrac{e^x}{x}
+$ and $
+  \mathop{Ei}(x) \leq \log{(-x)}
+$ on $x < 0$, asymptotically $
+  \log{(-x)} - \gamma
+$ as $x\to 0-$ and $
+  \mathop{Ei}(x) \geq -e^x
+$ on $x \in (-\infty, -1]$ ($\gamma$ is Euler's constant).
+% 1. by Leibniz rule $Ei(x)$ has -ve derivative on $x < 0$
+% 2. $Ei(x) \leq 0$ on $x < 0$, since $t^{-1} e^t \leq t^{-1} < 0$ on $t < 0$
+% 3. $Ei(x) \leq \log{(-x)}$ on $x < 0$, since on $x \in [-1, 0)$
+% $$
+%   \mathop{Ei}(x)
+%     = \mathop{Ei}(-1) + \int_{-1}^x t^{-1} e^t dt
+%     \leq \mathop{Ei}(-1) + \int_{-1}^x t^{-1} dt
+%     = \mathop{Ei}(-1) + \log{(-x)}
+%     \leq \log{(-x)}
+%   \,. $$
+% 3. by l'H{\^o}pital rule $Ei(x)$ is asymptotically $\log{-x}$ as $x \to 0-$
+% $$
+% % t = -e^{-x} ,  -\log{(-t)} = x
+%   \lim_{x\to 0-} \frac{\mathop{Ei}(x)}{\log{(-x)}}
+%     = \lim_{x\to 0-} \frac{x^{-1} e^x}{x^{-1}}
+%     = 1
+%   \,. $$
+% 4. \cite{lapidoth_capacity_2003} yields $\lim_{x\to 0-} \log{(-x)} - \mathop{Ei}(x) = \gamma$
+% 5. $Ei(x) \geq -e^x$ for any $x < -1$, since $t^{-1} e^t \geq - e^t$ for $t < -1$
+% $$
+% \mathop{Ei}(x)
+%   = \int_{-\infty}^x t^{-1} e^t dt
+%   \geq \int_{-\infty}^x -e^t dt = -e^x
+%   \,. $$
+% 6. $Ei(x) \leq \log{(-x)} - \gamma$ on $x < 0$ and $-e^x \leq Ei(x) \leq 0$ on $x < -1$.
+%
+After cancellation \eqref{eq:var-do-kl-div-raw} becomes
 \begin{equation}  \label{eq:var-do-kl-div}
 KL(q\| \pi)
   \propto
@@ -832,13 +835,11 @@ KL(q\| \pi)
     - \tfrac{\beta}2 \mathop{Ei}(- \tfrac1{\alpha})
   \,.
 \end{equation}
-
-The exponential integral is readily available in most scientific computations packages nowadays,
-and, what is especially useful for the stochastic variational Bayes purposes, has a simple
-expression for the derivative: $x \mapsto \tfrac{e^x}{x}$ for $x < 0$. This observation enables
-embedding it into autograd software by computing the term with bogus output values, yet correct
-(on device) gradient, provided no downstream computations depend on the value of the KL-divergence
-term itself.
+% For $\beta = 2$ we add $\gamma$ to make the right-hand side nonegative. (dubious)
+Gradient-based methods that optimize \eqref{eq:elbo} usually do not rely on the value
+of the objective. Since $\mathop{Ei}$ has simple analytic derivative and downstream
+computations depend \eqref{eq:var-do-kl-div} only additively in\eqref{eq:elbo}, it is
+possible to backpropagate through the divergence without forward evaluation.
 
 % subsubsection variational_dropout (end)
 
@@ -2161,6 +2162,10 @@ Criticism of \cite{gale_state_2019} implies that $\ell_0$-variational dropout,
 proposed by \cite{louizos_learning_2017} and based on the concrete binary distribution
 of \cite{maddison_concrete_2016}, works consistently better than the variational
 Gaussian dropout.
+
+The expectation in \eqref{eq:expect-improper-term-cplx} involves a log-moment of the non-central
+$\chi^2_2$ distribution, which has an analytic expression for the gradient, unlike the case
+in $\real$-dropout penalty \eqref{eq:improper-kl-div-real}.
 
 % section bayesian_methods (end)
 
