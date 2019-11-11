@@ -363,8 +363,6 @@ $, which is shown in \cite{molchanov_variational_2017} to be independent of the 
 injected by the trick \eqref{eq:r-gauss-trick}, and further stabilizes gradients in SGVB
 \eqref{eq:elbo}.
 
-% This concludes the section on the foundations of Bayesian dropout techniques.
-
 % subsection dropout (end)
 
 % section bayesian_dropout (end)
@@ -373,20 +371,16 @@ injected by the trick \eqref{eq:r-gauss-trick}, and further stabilizes gradients
 \section{$\cplx$-valued networks} % (fold)
 \label{sec:c_valued_networks}
 
-In this section we overview $\mathbb{C}$-valued networks, their motivation and peculiarities.
-In our exposition we shall focus mostly on linear layers, keeping in mind that transferring 
-the ideas to convolutional layers is straightforward.
+In this section we briefly review $\cplx$-valued networks, their distinction from the
+ordinary $\real$-valued networks.
 
-The study \cite{trabelsi_deep_2017}, outlines building blocks for deep $\cplx$-valued
-networks and describes suitable representation and operations including linear layers (dense
-and convolutional), $\cplx$-valued activations, complex batch-normalization and suitable
-weight initialization. In fact all papers touching one way or another upon the subject of
-$\cplx$-valued networks, refrain each other, and the current study is no exception.
+The study \cite{trabelsi_deep_2017} outlines building blocks for deep $\cplx$-valued
+networks and describes suitable representation and operations including convolutional
+and dense layers, $\cplx$-valued activations, complex batch-normalization and suitable
+weight initialization. Their approach makes a complex-valued network into an intricately
+connected $\real$-valued computational graph that respects $\cplx$-algebra.
 
-Following \cite{trabelsi_deep_2017}, we naturally identify $\cplx$ with $\real^2$ via $
-  z_\mathrm{r} + j z_\mathrm{i} \mapsto (z_\mathrm{r}, z_\mathrm{i})
-$, storing the real and imaginary parts in interleaved format, and emulate $\cplx$-algebra
-using $\real$-valued arithmetic. In particular, convolutional and linear layers,
+In particular, linear layers
 $
   L \colon \cplx^{\mathrm{[in]}}
     \to \cplx^{\mathrm{[out]}}
@@ -405,26 +399,21 @@ where $
   L_r, L_i
     \colon \real^{\mathrm{[in]}}
       \to \real^{\mathrm{[out]}}
-$ are unique linear operators that make up $L = L_r + j L_i$. Thus, a $\cplx$-convolutional
-layer with complex kernel $W$ can be implemented as two $\real$-convolutions with kernels
-$\Re{W}$ and $\Im{W}$ using \eqref{eq:cplx-lin-op}. Other algebraic operations, such as
-trigonometric functions, and complex division and roots in batch normalization
-\cite{trabelsi_deep_2017}, are implemented through their counterparts in $\real^2$. This
-makes $\cplx$-valued network into an intricately connected $\real$-valued computational
-graph that respects $\cplx$-algebra.
-
-Concerning activations, \cite{trabelsi_deep_2017} consider the following: independent
-componentwise application of $\real$-valued non-linearities, $
+$ are unique operators that make up $L = L_r + j L_i$. A $\cplx$-convolutional layer with
+kernel $W$ can be implemented as two $\real$-convolutions with kernels $\Re{W}$ and $\Im{W}$
+using \eqref{eq:cplx-lin-op}. Algebraic operations, trigonometric functions, are implemented
+through operations in $\real^2$. Activations, considered in \cite{trabelsi_deep_2017} include
+independent componentwise application of $\real$-valued non-linearities, $
   z = u + j v
     \mapsto \sigma(u) + j \sigma(v)
-$; $\cplx$-differentiable exponential and trigonometric activations; and \textit{modRelu}
-activation, which preserves the angle and applies soft-thresholding to the modulus: $
+$, $\cplx$-differentiable exponential and trigonometric activations, and \textit{modRelu}
+activation, which applies soft-thresholding to the modulus and preserves the angle: $
   z = r e^{j \phi}
-    \mapsto e^{j \phi} (r - \theta)_+
+    \mapsto e^{j \phi} (r - b)_+
   % z \mapsto z \bigl(
-  %     1 - \tfrac\theta{\lvert z \rvert}
+  %     1 - \tfracb{\lvert z \rvert}
   %   \bigr)_+
-$ with a learnable parameter $\theta\in \real$. 
+$ with a learnable threshold parameter $b \in \real$.
 
 Complex networks are, in general, non-holomorphic, i.e. not $\cplx$-differentiable, which is
 exacerbated by the loss being real-valued. Indeed a $\cplx$-differentiable real-valued function is
@@ -453,7 +442,7 @@ and then onward to deriving explicit expressions for the divergence penalties in
 in terms of special functions.
 
 %notation
-We first clarify some notation: $M^{\top}$ is the matrix transpose, $\conj{M}$ is elementwise
+We use the following notation: $M^{\top}$ is the matrix transpose, $\conj{M}$ is elementwise
 complex conjugation, and $M^{\hop} = (\conj{M})^\top$ denotes Hermitian conjugate. By $e_i$ we
 denote the $i$-th real unit vector of dimensionality \textit{conforming} to the matrix-vector
 expression it is used in. $\vec{M}$ denotes \textit{row-major} flattening of $M$ into a vector,
@@ -505,8 +494,8 @@ $, respectively.
 %     \bigr)
 % $.
 %
-$\cplx$-Gaussians are closed under affine transformations:
-for $A \in \cplx^{n \times m}$ and $b \in \cplx^{n}$
+$\cplx$-Gaussians are closed under affine transformations: for $A \in \cplx^{n \times m}$
+and $b \in \cplx^{n}$
 \begin{equation}  \label{eq:cn-affine}
   A z + b \sim \mathcal{N}_n^{\cplx}\bigl(
       A\mu + b, A \Gamma A^{\hop}, A C A^\top
@@ -514,8 +503,8 @@ for $A \in \cplx^{n \times m}$ and $b \in \cplx^{n}$
   \,.
 \end{equation}
 %
-The entropy of a $\cplx$-Gaussian distribution coincides with the entropy of
-\eqref{eq:cn-paired-real-density}, and in terms of $\Gamma$ and $C$ can be expresed:
+From \eqref{eq:cn-paired-real-density} the entropy of a $\cplx$-Gaussian in terms of
+$\Gamma$ and $C$ is
 \begin{align}  \label{eq:c-gauss-entropy-derivation}
   \mathbb{H}(q)
     & = - \mathbb{E}_{z \sim q} \log{q(z)}
@@ -636,15 +625,11 @@ approximation. Specifically, parameters $W \in \cplx^{n\times m}$ of a dense lay
       = \mathcal{N}^{\cplx}(W_{ij} \mid \mu_{ij}, \sigma^2_{ij}, 0)
   \,,
 \end{equation}
-and we use analogous independent proper $\cplx$-Gaussian approximation for convolutional
-kernels. As for bias terms, we propose to use their MAP estimates, i.e. assume an independent
-fully factorized Dirac approximation.
+and we use similar factorized approximation for convolution. We propose to MAP estimates,
+of the biases i.e. assume an independent fully factorized Dirac approximation.
 
 The local reparameterization trick provides both faster computations, \cite{wang_fast_2013},
 and better statistical efficiency of the SGVB gradient estimator, \cite{kingma_variational_2015}.
-We formulate $\cplx$ version of the local reparameterization trick using a dense linear
-layer as an example, and afterwards outline the caveats for $\cplx$-convolutions.
-
 A general mean field $\cplx$-Gaussian approximation \eqref{eq:c-gauss-vi} for $
   W \in \cplx^{n\times m}
 $ is
@@ -689,18 +674,21 @@ are independent whence \eqref{eq:cn-affine} implies
       \bigr)
     \,.
 \end{equation}
-For a proper approximation \eqref{eq:c-gauss-vi} the resulting relation coefficients are zero.
+The trick requires three matrix operations: $\mu x + b$, $\Sigma \lvert x \rvert^2$ and
+$C x^2$ with the modulus and power applied elementwise. For a proper approximation
+\eqref{eq:c-gauss-vi} the relation coefficients are zero.
 
-\eqref{eq:cplx-gauss-trick} essentially requires three matrix-vector operations: $\mu x + b$,
-$\Sigma \lvert x \rvert^2$ and $C x^2$ with the modulus and power applied elementwise. Similar
-to $\real$ case, variational dropout for $\cplx$ convolutions draws independent kernel $W$
-for each spatial patch in the input, since a convolution is a matrix product of $W$, unrolled
-into a toeplitz matrix, and flattened intput $\vec{x}$. Weight sharing is essentially pushed
-to shared variational parameters $\theta$ in the approximation $q_\theta$. The rationale
-is to reduce correlation in the gradient estimator stemming from kernel weights being
-shared between overlapping patches, \cite{kingma_variational_2015,citation_needed}. Thus
-\eqref{eq:cplx-gauss-trick} requires computing $\cplx$ convolutions of $x$, complex square
-$x^2$, and amplitude $\lvert x \rvert^2$ with the mean, relation, and variance kernels,
+The trick and dropout can be applied to any layer, the output of which depends linearly
+on its parameters, e.g. convolutional layers, affine and bilinear transformations ($
+  y_j = x^\top W^{(j)} z + b_j
+$). Similar to $\real$ case, variational dropout for $\cplx$ convolutions draws independent
+kernel $W$ for each spatial patch in the input, since a convolution is a matrix product
+of $W$, unrolled into a toeplitz matrix, and flattened intput $\vec{x}$. Weight sharing
+is essentially pushed to shared variational parameters $\theta$ in the approximation $q_\theta$.
+The rationale is to reduce correlation in the gradient estimator stemming from kernel weights
+being shared between overlapping patches, \cite{kingma_variational_2015,citation_needed}.
+Thus \eqref{eq:cplx-gauss-trick} requires computing $\cplx$ convolutions of $x$, complex
+square $x^2$, and amplitude $\lvert x \rvert^2$ with the mean, relation, and variance kernels,
 respectively.
 %
 \todo{other reasons for patch-independent weights}
@@ -710,10 +698,10 @@ respectively.
 \subsection{The choice of priors and Kullback-Leibler divergence} % (fold)
 \label{sub:priors_and_kullback_leibler_divergence}
 
-We consider two priors for Bayesian dropout: log-uniform and $\cplx$-Gaussian empirical Bayes,
-\cite{kingma_variational_2015,molchanov_variational_2017,kharitonov_variational_2018}. For a 
-fully factorized approximation $q(\omega)$ and factorized prior belief $\pi(\omega)$, the
-divergence term in ELBO \eqref{eq:elbo} is
+We consider two priors for Bayesian dropout: log-uniform and $\cplx$-Gaussian empirical
+Bayes, \cite{kingma_variational_2015,molchanov_variational_2017,kharitonov_variational_2018}.
+For a fully factorized approximation $q(\omega)$ and factorized prior belief $\pi(\omega)$,
+the divergence term in ELBO \eqref{eq:elbo} is
 \begin{equation}  \label{eq:elbo-general-kl-div}
   KL(q(\omega) \| \pi(\omega))
     % = \mathbb{E}_{\oemga \sim q(\oemga)} \log \tfrac{q(\oemga)}{\pi(\oemga)}
@@ -734,7 +722,7 @@ We use approximation \eqref{eq:c-gauss-vi} and omit subscripts ${ij}$ below for 
 From \eqref{eq:cn-proper-entropy} the KL-divergence for \verify{log-uniform prior} $
   \pi(\omega) \propto {\lvert \omega \rvert}^{-\beta}
 $ with $\beta \geq 1$ is
-\begin{equation}  \label{eq:var-do-kl-div-raw}
+\begin{equation}  \label{eq:c-vd-kl-div-raw}
   KL(q\| \pi)
     \propto
     %   \mathbb{E}_{\omega \sim q(\omega)} \log q(\omega)
@@ -768,15 +756,14 @@ $, whence
 Let $
   (z_i)_{i=1}^m \sim \mathcal{N}^{\cplx}(0, 1, 0)
 $ iid and $\theta \in \cplx^m$. Then $
-  W
-    = \sum_i \lvert \theta_i + z_i \rvert^2
+  \sum_i \lvert \theta_i + z_i \rvert^2
     \sim \chi^2_{2m}(s^2)
 $ with $
   s^2 = \sum_i \lvert \theta_i \rvert^2
-$, i.e. non-central $\chi^2_{2m}$ with parameter $s^2$. The log-moments
-of $W$ for general integer $m \geq1$ are given in \cite[p.~2466]{lapidoth_capacity_2003}.
+$, i.e. a non-central $\chi^2_{2m}$ with parameter $s^2$. Its log-moments for general
+integer $m \geq1$ are given in \cite[p.~2466]{lapidoth_capacity_2003}. In particular,
 % in fact Appendix X, Lemma 10.1
-In particular, for $m=1$ and $\theta\in \cplx$ we have
+for $m=1$ and $\theta\in \cplx$ we have
 \begin{equation}  \label{eq:log-moment-for-chi-2}
   \mathbb{E}_{z \sim \mathcal{N}^{\cplx}(0, 1, 0)}
     \log \lvert \theta + z \rvert^2
@@ -823,7 +810,7 @@ $ for $x \leq -1$.
 % 6. $Ei(x) \leq \log{(-x)} - \gamma$ on $x < 0$ and $-e^x \leq Ei(x) \leq 0$ on $x < -1$.
 %
 Through \eqref{eq:expect-improper-term-cplx} and \eqref{eq:log-moment-for-chi-2} we get
-\begin{equation}  \label{eq:var-do-kl-div}
+\begin{equation}  \label{eq:c-vd-kl-div}
   KL(q\| \pi)
     \propto
     %   - \log \lvert \det{(\pi e \sigma^2)} \rvert
@@ -847,11 +834,11 @@ Through \eqref{eq:expect-improper-term-cplx} and \eqref{eq:log-moment-for-chi-2}
       \tfrac{\beta-2}2 \log{\lvert \mu \rvert^2}
       + \log{\tfrac1{\alpha}}
       - \tfrac{\beta}2 \mathop{Ei}(- \tfrac1{\alpha})
-      \tag{\ref{eq:var-do-kl-div-raw}'} \,.
+      \tag{\ref{eq:c-vd-kl-div-raw}'} \,.
 \end{equation}
 % For $\beta = 2$ we add $\gamma$ to make the right-hand side nonegative. (need proof)
 Since $\mathop{Ei}(x)$ has simple analytic derivative and \eqref{eq:elbo} depends additively
-on \eqref{eq:var-do-kl-div}, it is possible to backpropagate through the divergence without
+on \eqref{eq:c-vd-kl-div}, it is possible to backpropagate through the divergence without
 forward evaluation.
 % Gradient-based optimiziation of \eqref{eq:elbo} usually does not use the value of the objective. 
 
@@ -899,12 +886,11 @@ $ is found by minimizing \eqref{eq:emp-bayes-kl-div}, which gives
     %   + {\tau^\ast} \sigma^2 + {\tau^\ast} \lvert \mu \rvert^2
     % = \log{((\sigma^2 + \lvert \mu \rvert^2) \tfrac1{\sigma^2})}
     = \log{\bigl(1 + \tfrac{\lvert \mu \rvert^2}{\sigma^2}\bigr)}
-    % = \log{\bigl(1 + \tfrac1\alpha \bigr)}
+    = \log{\bigl(1 + \tfrac1\alpha \bigr)}
     \,.
 \end{equation}
 
 % subsubsection empirical_bayes (end)
-
 
 \subsubsection{Bayesian $\cplx$-dropout via $\real$-scaling} % (fold)
 \label{ssub:real_scaling_dropout}
@@ -913,68 +899,33 @@ Consider the following parameterization of $W$: $
   W = \mu \odot \xi
 $ where $
   \xi_{ij} \sim \mathcal{N}(1, \alpha_{ij})
-$, yet $\mu \in \cplx^{n \times m}$. This case corresponds to variational inference for the
-multiplicative mask $\xi$, distribution of which is approximated using independent $\real$
-univariate Gaussians (ordinary dropout posteriors). Here we are actually interested in
-inference, regarding the values of $\xi$ after observing the data (and fitting other model
-parameters such as $\mu$). Essentially, in \eqref{eq:elbo} we have
-$$
-\mathbb{E}_{\xi \sim q(\xi)}
-  \log p_\theta(z \vert \xi)
-  - KL(q(\xi) \| \pi(\xi))
-  \approx
-    N \hat{\mathbb{E}}_{(z, \xi) \sim B}
-      \log p_\theta(z \vert \xi)
-    - KL(q(\xi) \| \pi(\xi))
-  \,, $$
-and by running SGVB, i.e. maximizing stochastic batched ELBO, we minimize the KL-divergence
-of the variational approximation $q(\xi)$ from its true posterior $p(\xi\vert D)$. Thus we
-run inference on the relevance factors of the parameters, rather than the parameters themselves.
-
-Under this parameterization we have
-$$
-W_{ij} = \mu_{ij} \odot \xi_{ij}
-  \sim \mathcal{N}^{\cplx} \bigl(
-    \mu_{ij},
-    \, \alpha_{ij} \lvert \mu_{ij} \rvert^2,
-    \, \alpha_{ij} \mu_{ij}^2
-  \bigr)
-  \,, $$
-which is a degenerate $\cplx$-Gaussian distribution. The local reparameterization trick for
-this distribution implies
-$$
-y_i
-  \sim \mathcal{N}^{\cplx}\bigl(
-    e_i^\top \mu x + b,
-    \, \sum_j \alpha_{ij} \lvert x_{ij} \mu_{ij}\rvert^2,
-    \, \sum_j \alpha_{ij} (x_{ij} \mu_{ij})^2,
-    \,
-  \bigr)
-  \,. $$
-This means that it is a little bit more expensive to translate the local parameter noise
-to the immediate activation, since we need to take into consideration the covariance between
-complex output and its conjugate. Due to this, additive noise reparameterization trick,
-\cite{molchanov_variational_2017}, cannot provide its variance reducing benefits, since
-it is impossible to do away with dependence of the complex relation of the key parameter
-$\mu_{ij}$.
-
-The KL-divergence penalty term in this case follows form the penalty in the real variational
-dropout case with the fully factorized Gaussian approximation and an improper prior $
-  \pi(\xi)\propto \lvert \xi \rvert^{-\beta}
-$:
-$$
-KL(q(\xi)\| \pi(\xi))
-  % = - \tfrac12 \log 2\pi e \alpha
-  %   + \tfrac\beta2 \log \alpha
-  %   + \tfrac\beta2 \mathbb{E}_{z\sim \mathcal{N}(0, 1)}
-  %     \log \lvert z + \tfrac1\sqrt{\alpha} \rvert^2
-  \propto \tfrac{\beta-2}2 \log \alpha
-    + \tfrac\beta2 \mathbb{E}_{z\sim \mathcal{N}(0, 1)}
-      \log \lvert z + \tfrac1{\sqrt{\alpha}} \rvert^2
-  \,. $$
-Unlike the $\cplx$-valued case, even derivative of the expectation term is analytically
-intractable (sec.~\ref{sub:real-chisq-grad}). Thus we use the approximation provided
-by \cite{molchanov_variational_2017}.
+$, yet $\mu \in \cplx^{n \times m}$. This case corresponds to inference regarding
+relevance coefficients $\xi$ rather than the parameters themselves after. Under this
+parameterization
+\begin{equation}  \label{eq:real-scal-gauss-vi}
+  W_{ij}
+    \sim \mathcal{N}^{\cplx} \bigl(
+      \mu_{ij},
+      \, \alpha_{ij} \lvert \mu_{ij} \rvert^2,
+      \, \alpha_{ij} \mu_{ij}^2
+    \bigr)
+  \,,
+\end{equation}
+which is a degenerate $\cplx$-Gaussian distribution. \eqref{eq:cplx-gauss-trick} implies
+\begin{equation}  \label{eq:real-scal-gauss-trick}
+  y_i
+    \sim \mathcal{N}^{\cplx}\bigl(
+      e_i^\top \mu x + b,
+      \, \sum_j \alpha_{ij} \lvert x_{ij} \mu_{ij}\rvert^2,
+      \, \sum_j \alpha_{ij} (x_{ij} \mu_{ij})^2,
+      \,
+    \bigr)
+    \,.
+\end{equation}
+The KL-divergence term in \eqref{eq:elbo} coincides with \eqref{eq:improper-kl-div-real}.
+We use the approximation provided by \cite{molchanov_variational_2017}. Note that additive
+noise reparameterization, \cite{molchanov_variational_2017}, cannot be used in
+\eqref{eq:real-scal-gauss-trick}.
 
 % subsubsection real_scaling_dropout (end)
 
@@ -1435,6 +1386,10 @@ part of a constraint, ie. downstream computation)
 \label{sub:wirtinger_calculus}
 
 % TLDR: we use Wirtinger calculus!
+Following \cite{trabelsi_deep_2017}, we naturally identify $\cplx$ with $\real^2$ via $
+  z_\mathrm{r} + j z_\mathrm{i} \mapsto (z_\mathrm{r}, z_\mathrm{i})
+$, storing the real and imaginary parts in interleaved format, and emulate $\cplx$-algebra
+using $\real$-valued arithmetic. 
 
 % essential intro into Wirtinger calculus (CR)
 % https://math.stackexchange.com/a/444493
