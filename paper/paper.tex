@@ -52,11 +52,11 @@ Deep neural networks are an integral part of machine learning and data science t
 for practical data-driven problem solving. Despite recent advances in generalization
 and optimization theory specific to deep networks, deploying in actual embedded hardware
 remains a challenge. Solving the storage and compute constraints encourages development
-of model compress and sparsification methods, that focus on favourable tradeoff between
-performance and size. Most popular techniquees include weight pruning \cite{citation_needed},
+of model compression and sparsification methods, that focus on favourable tradeoff between
+performance and size. Most popular techniques include weight pruning \cite{citation_needed},
 model quantization from IEEE754 floating point to integer-based arithmetic \cite{citation_needed},
-and dropout. The key assumption is that the more explicitly zero parameters, the less
-computations is needed.
+and dropout. The key assumption is that the more explicitly zero parameters there is,
+the less computations is needed.
 
 Bayesian Inference is a principled framework of reasoning about uncertainty. The core principle
 is updating prior beliefs in accordance with the likelihood of empirical observations into
@@ -90,13 +90,13 @@ that operates on the Fourier transform input speech, acoustic, of radio signals.
 papers related to complex-valued distributions \cite{pav_moments_2015,taubock_complex-valued_2012},
 and \cite{karseras_caution:_2014}
 
-The use $\cplx$-valued networks in applications is not new: earliest mentions include
-\cite{citation_needed}. More recently they were applied to music transcription and speech
-recognition \cite{trabelsi_deep_2017,yang_complex_2019}. The key motivation behind adoption
-of $\cplx$-networks is the fact that complex numbers are inherent in digital signal processing
-\cite{citation_needed}, acoustic and radio signal analysis \cite{citation_needed}, and
-quantum systems modelling \cite{citation_needed} etc. All these applications require
-compliance with algebraic operations in field of complex numbers.
+Application of complex-valued networks is not new, \cite{citation_needed}. More recently
+they were applied to music transcription and speech recognition \cite{trabelsi_deep_2017},
+and \cite{yang_complex_2019}. The key motivation behind adoption of $\cplx$-networks is
+pervasiveness of $\cplx$-valued data in digital signal processing \cite{citation_needed},
+acoustic and radio signal analysis \cite{citation_needed}, and quantum systems modelling
+\cite{citation_needed}, etc. All these applications require compliance with algebraic
+operations in the field of complex numbers.
 
 
 The paper is structured as follows. In sec.~\ref{sec:bayesian_dropout} we review Bayesian
@@ -130,7 +130,8 @@ classification uncertainty, predictive statistics, and parameter relevance.
 The posterior itself is computationally intractable, save for the relatively simple cases
 \cite{citation_needed}, and therefore exact inference is traded for tractability and scalability
 of Variational Inference. Instead of deriving $p(\omega \mid D)$ using the rule, this approach
-recasts posterior inference into variational optimization problem
+recasts posterior inference into variational optimization problem: finding $q$ that is close
+to $p(\omega \mid D)$ in terms of a proximity score $\rho$
 \begin{equation}  \label{eq:variational-progam}
   q_*
     \in \arg \min_{\theta} \rho\bigl(
@@ -141,7 +142,7 @@ recasts posterior inference into variational optimization problem
 over a tractable parametric family of distributions on the parameter space $
   \mathcal{Q} = \{Q_\theta(d\omega) \colon \theta \in \Theta\}
 $, $\theta$ -- generic variational parameter. The class $\mathcal{Q}$ is picked so that
-its member have tractable densities $
+its members have tractable densities $
   q_\theta(\omega) d\omega
 $, can be sampled from and possess tractable $\log$-derivatives $
   \omega \mapsto \nabla_\theta \log q_\theta(\omega)
@@ -166,7 +167,7 @@ Kullback-Leibler divergence of density $q$ from $p$ is
 \end{equation}
 % and, despite it not being a metric and requiring distributions with nested support,
 and is the natural choice for $\rho$, the main reason being that it satisfies the following
-identity for well-behaved $q$ and $p$:
+identity for well-behaved densities:
 \begin{equation}  \label{eq:kl-div-master}
   \log p(D)
     % = \mathbb{E}_{q(\omega)} \log \frac{p(D, \omega)}{p(\omega \mid D)}
@@ -185,7 +186,7 @@ identity for well-behaved $q$ and $p$:
     + KL(q(\omega) \| p(\omega \mid D))
     \,.
 \end{equation}
-This key identity yield an equivalent problem for \eqref{eq:variational-progam}:
+This identity yields an equivalent problem for \eqref{eq:variational-progam}:
 maximizing the \textit{evidence lower bound} (ELBO)
 \begin{equation}  \label{eq:elbo_general}
 \begin{aligned}
@@ -205,12 +206,12 @@ maximizing the \textit{evidence lower bound} (ELBO)
 \end{aligned}
 \end{equation}
 where the prior and likelihood are allowed to depend on explicit parameters. The most
-commonly used algorithm to optimize \eqref{eq:elbo_general} is to use EM-algorithm.
-Other variational objectives are possible, provided $p(\omega \mid D)$ is probed only
-through $\log p(D \mid \omega)$ and $\log \pi(\omega)$, \cite{ranganath_operator_2018}.
+commonly used algorithm to optimize \eqref{eq:elbo_general} is EM-algorithm. Other
+variational objectives are possible, provided $p(\omega \mid D)$ is probed only through
+$\log p(D \mid \omega)$ and $\log \pi(\omega)$, \cite{ranganath_operator_2018}.
 
 \textit{Stochastic Gradient Variational Bayes} (SGVB), proposed by \cite{kingma_auto-encoding_2014},
-is an differentiable unbiased Monte-Carlo estimator of \eqref{eq:elbo_general}, which makes
+is a differentiable unbiased Monte-Carlo estimator of \eqref{eq:elbo_general}, which makes
 it possible to employ stochastic gradient-based optimization methods. If $
   \omega \sim q_{\theta}
 $ is equivalent in distribution to $
@@ -237,8 +238,8 @@ $, then the SGVB is
 \end{equation}
 where $
   (\varepsilon_{l})_{l=1}^L
-$ is an iid sample from $p_\varepsilon$. Intractable KL-divergence terms can be also
-replaced by differentiable unbiased Monte-Carlo estimators, \cite{kingma_auto-encoding_2014}.
+$ is an iid sample from $p_\varepsilon$. Intractable KL-divergence terms can be replaced
+by differentiable unbiased Monte-Carlo estimators, \cite{kingma_auto-encoding_2014}.
 %
 For the purposes of this study, we assume that the observed data is independent, and
 use minibatch version of \eqref{eq:sgvb} with $L=1$:
@@ -258,32 +259,37 @@ $.
 \subsection{Dropout} % (fold)
 \label{sub:dropout}
 
-For a particular family of posterior approximation, variational inference can be used
-as a regularization method \cite{kingma_variational_2015} and as model sparsification
-technique \cite{molchanov_variational_2017}. \cite{kingma_variational_2015} propose
-Variational Dropout, by studying Binary dropout, DropConnect and Gaussian dropout,
-\cite{hinton_improving_2012,wan_regularization_2013}, \cite{srivastava_dropout_2014},
-and \cite{wang_fast_2013} through the lens of variational inference methods. The study
-argues that the multiplicative noise, introduced by dropout, induces a distribution
-equivalent to a fully factorized variational posterior of the form $
+With special family of posterior approximation, variational inference can be used as
+a regularization method, \cite{kingma_variational_2015}, and as model sparsification
+technique, \cite{molchanov_variational_2017}. The paper \cite{kingma_variational_2015}
+considers Dropout \cite{hinton_improving_2012}, DropConnect, \cite{wan_regularization_2013},
+and Gaussian dropout, \cite{srivastava_dropout_2014,wang_fast_2013} through the lens
+of Bayesian inference methods and proposes \textit{Variational Dropout}. It argues that
+the multiplicative noise introduced by these methods induces a distribution equivalent to
+a fully factorized variational posterior of the form $
   q_\theta(\omega) = \prod_j q_{\theta}(\omega_j)
-$, where $q_{\theta}(\omega_j)$ is $\omega_j = \mu_j \xi_j$ with $\xi_j \sim p(\xi_j)$
-iid from some $p_\xi$. Binary dropout with rate $p \in (0, 1)$ uses $
-  p_\xi
-    = \mathcal{B}\bigl(
-      \{0, \tfrac1{1-p}\}, 1-p
-    \bigr)
-$, whereas in Gaussian dropout $
-  \xi \sim \mathcal{N}(1, \alpha)
-$ for $\alpha = \tfrac{p}{1-p}$. This suggests making $\alpha$ a variational parameter
-and optimizing it in \eqref{eq:elbo_general} with an appropriate penalty term. Thus,
-\cite{kingma_variational_2015} propose \textit{Variational Dropout} with mean field
-Gaussian approximation $
+$, where $q_{\theta}(\omega_j)$ is $\omega_j = \mu_j \xi_j$ with $
+  \xi_j \sim p_\theta(\xi_j)
+$ iid from some $p_\theta(\xi)$.
+%
+% Binary dropout with rate $p \in (0, 1)$ uses $
+%   p_\xi
+%     = \mathcal{B}\bigl(
+%       \{0, \tfrac1{1-p}\}, 1-p
+%     \bigr)
+% $, whereas in Gaussian dropout $
+%   \xi \sim \mathcal{N}(1, \alpha)
+% $ for $\alpha = \tfrac{p}{1-p}$.
+% This suggests making $\alpha$ a variational parameter
+% and optimizing it in \eqref{eq:elbo_general} with an appropriate penalty term. Thus,
+%
+Variational Dropout with assumes mean field Gaussian approximation $
   q_\theta(\omega)
     = \prod_j \mathcal{N}(\mu_j, \alpha_j \mu_j^2)
 $ and factorized log-uniform prior $\pi(\omega)$ with $
   \pi(\omega_j) \propto \lvert \omega_j \rvert^{-1}
-$. This unravels the divergence term in \eqref{eq:elbo} into a sum of the following terms:
+$. This unravels the divergence term in \eqref{eq:elbo} into a sum of the following
+analytically intractable terms:
 \begin{equation}  \label{eq:improper-kl-div-real}
   KL(q_\theta(\omega) \| \pi(\omega))
     \propto
@@ -294,10 +300,8 @@ $. This unravels the divergence term in \eqref{eq:elbo} into a sum of the follow
       % - \frac12 \log{\alpha}
   \,.
 \end{equation}
-In general, there is tractable expression for log-moment of a non-central $\chi^2_m$ random
-variable with odd $m$, that sits under the expectation in \eqref{eq:expect-improper-term-cplx}.
-To circumvent this, \cite{kingma_variational_2015} approximate the expectation by a non-linear
-polynomial regression for truncated $\alpha \in (0, 1)$. This approximation was refined in
+\cite{kingma_variational_2015} approximate this expression by a non-linear polynomial
+regression for \verify{truncated} $\alpha \in (0, 1)$. This approximation was refined in
 \cite{molchanov_variational_2017}, both in terms of the domain of $\alpha$ and accuracy. The
 paper considered regression with sigmoid and soft-plus basis functions fit to the Monte-Carlo
 estimator of \eqref{eq:improper-kl-div-real} for $\alpha$ varying over a fine logarithmic grid.
@@ -306,7 +310,7 @@ comparing its derivative to the exact derivative of \eqref{eq:improper-kl-div-re
 respect to $\log \alpha$.
 % (!) good for SGVB: gradient-based methods require unbiased gradient estimates
 
-Flexibility in dependence of $q_\theta$ on $\alpha$ allows structured dropout with shared
+Flexibility in specification of $q_\theta$ enables structured dropout with shared
 $\alpha$ across groups of parameters $\omega$. \cite{molchanov_variational_2017} study
 Variational Dropout from a model sparsification perspective, optimizing $\alpha$ for each
 individual parameter. Another variant of Bayesian dropout, called \textit{Automatic Relevance
@@ -324,9 +328,9 @@ $, whence
     \,.
 \end{equation}
 
-Another contribution of \cite{kingma_variational_2015} is the analysis of the \textit{local
-reparameterization trick}, proposed in \cite{wang_fast_2013} to speed up Gaussian dropout,
-as a gradient variance reduction technique for \eqref{eq:elbo}. This trick utilizes the
+Another contribution of \cite{kingma_variational_2015} is the analysis of the effects of the
+\textit{local reparameterization trick} on the variance of the gradient of \eqref{eq:elbo}.
+This trick, proposed in \cite{wang_fast_2013} to speed up Gaussian dropout, utilizes the
 closure of Gaussians under affine transformations, thereby translating uncertainty from the
 global parameter noise to local noise in intermediate outputs within the network.
 %
