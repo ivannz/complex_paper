@@ -966,15 +966,16 @@ complex high-dimensional time series In-phase Quadrature (IQ)
 \subsection{Radio Frequiency Digital Signal Predistortion} % (fold)
 \label{sub:radio_freq_dpd}
 
-Radio Frequency power amplifiers, being physical electronic devices, have imperfections such
-as parasitic inductance and capacitance. This coupled with them being operated in saturation,
-make their gain respond non-linearly to the input signal, adding undesirable interference and
-spectral spreading. Although these effects can be minimized by careful circuit design, they
-cannot be eliminated entirely \cite{citation_needed}. Digital signal predistortion aims at
-linearizing the amplifier, by introducing signal-dependent compensating component to the input.
-At the same time the non-linearities should be corrected on-device efficiently and with low
-latency in order to reduce cross-channel interference and enable higher bandwidth utilization
-in wireless transmitters.
+Radio Frequency Power Amplifiers (PA) are devices used to increase the power of a signal for
+latter transmission via amplitude modulation over radio. One of the most important problems
+in wireless transmission is distortion caused by imperfections the amplifier, which degrades
+the throughput. Although careful circuit design can mitigate undesirable effects, they cannot
+be eliminated entirely \cite{citation_needed}. \textit{Digital Signal Predistortion} (DPD)
+aims at linearizing the amplifier by introducing computed on-the-fly compensation to the
+input that pushes the signal into the linear region of the PA. Practically, the method helps
+reduce cross-channel interference and enables higher bandwidth utilization in wireless
+transmitters, \cite{citation_needed}. The main challenge of DPD methods is efficient
+compensation on-device (with low-latency).
 
 \cite{traverso_low_2019} uses \rewrite{some group delay estimators of something};
 \cite{schoukens_obtaining_2017} develops an iterative approach to inference of the predistortion for a given
@@ -1003,53 +1004,24 @@ interface form the setup owner.
 
 Bayesian inference is a very rich field of research with a large body of knowledge and techniques
 that enable practical quantification of predictive, parameter, or model uncertainty and its
-propagation into solutions of the problems of interest. It is not safeguarded against overfitting
-and modelling biases: there are quite a handful of assumptions made every time a Bayesian model
-is setup for inference. We need to have a prior belief, the model and its interaction with
-the data (the likelihood), and even the posterior: although the Bayes formula is explicit in
-how the posterior is derived, in all problems of at least some practical significance the
-exact posterior inference involves analytically intractable expectations, compelling the use
-of approximations. In addition to this, even if the likelihood and prior come from conjugate
-families, making the posterior explicit, the questions of interest are usually concerned with
-inference using the posterior predictive distribution, which is factorized as the conditional
-predictive distribution given the model and new observation, and the posterior of the model
-after observing the data.
+propagation into solutions of the problems of interest.
 
 % criticism and discussion
-Despite this, $\cplx$-networks remain much less popular than $\real$-networks for several
-reasons. One possible reason is that a $\cplx$-layer is identical to a paired $\real$-layer,
 based on the algebraic equivalence between $2 \times 2$ real matrices and complex numbers.
 Due to this constraint $\cplx$-networks have less expressive power for the same computation
 complexity compared to a $\real$-layer with twice as many inputs and outputs.
 %
-Another one is that a $\cplx$-network is not a true complex-valued function of a complex
-argument: common non-linearities are pointwise applications of $\real$-valued activations
-\cite{trabelsi_deep_2017}.
-%
-Third conceptual issue is that a real-valued loss as a $\cplx\to\real$ function fails
-Cauchy-Riemann conditions, and so is not $\cplx$-differentiable. Since the network has to
-be trained by a gradient-based method (stochastic), this issue is overcome by $\cplx\real$,
-or Wirtinger calculus, which treats the complex argument $z$ and its conjugate $\conj{z}$
-as explicit independent variables. For non-holomorphic functions this approach makes taking
-their derivatives essentially indistinguishable from calculus on $\real^2$.
-%
-The last reason is the lack of native support by the major deep learning and auto-differentiation
-frameworks.
-
-Practical performance of variational dropout techniques was studied in \cite{citation_needed}
-and \cite{citation_needed}. The most fierce critique of Bayesian approach towards model
+The most fierce critique of Bayesian approach towards model
 sparsification was voiced in \cite{gale_state_2019}, where it was show that it yielded
 inconsistent results in text translation tasks and systematically underperformed simpler
 techniques such as norm pruning and $\ell_0$-regularization, \cite{louizos_learning_2017}.
 
 The latter approach introduces stochastic masks one the parameters, which have hard-concrete
 mask distribution. It is closely related to gumbel-softmax reparameterization trick,
-\cite{kingma_auto-encoding_2014,jang_categorical_2017}: the mask values are, essentially,
-$[0,1]$ clamped scaled sigmoids, that are randomly shifted relative to a learnable location
-parameter, that indicates the degree of weight's relevance. The penalty in the objective is
-the expected number of nonzero parameters, and is a smooth approximation to $\ell_0$ norm.
-This approach is related to stochastic, rather than bayesian networks: it is formulated in
-terms of empirical risk minimization of the negative $\log$-likelihood term in \eqref{eq:elbo}.
+\cite{kingma_auto-encoding_2014,jang_categorical_2017}: the mask is a stretched sigmoid,
+clamped to $[0,1]$, that takes random input shifted relative to a learnable location
+parameter, which indicates the degree of relevance. The penalty in the objective is a
+smooth approximation to $\ell_0$ norm, i.e. the expected number of nonzero parameters.
 
 % section discussion_and_related_research (end)
 
@@ -1073,60 +1045,59 @@ terms of empirical risk minimization of the negative $\log$-likelihood term in \
 \subsection{Gradient of the KL-divergence in $\real$ case} % (fold)
 \label{sub:real-chisq-grad}  % gradient_of_the_kl_divergence_in_R_case
 
-In this section we derive the exact gradient of the KL-divergence term \eqref{eq:improper-kl-div-real}
-for $\mathbb{R}$-dropout in case of a log-uniform prior. Even though the final expression for
-the penalty term itself involves a derivative of a hypergeometric function, and the gradient,
-essentially, relies on computing the error function, the following analysis provides independent
-verification of the correctness of the approximation, proposed in \cite{molchanov_variational_2017}.
+In this section we derive the exact gradient of \eqref{eq:improper-kl-div-real}. Even
+though, ultimately, the divergence involves a hypergeometric function \todo{which one},
+and its gradient requires evaluating the Gauss error function, the analysis provides
+independent verification of the approximation, proposed in \cite{molchanov_variational_2017}.
 The logic of the derivation follows \cite{lapidoth_capacity_2003}.
 % \cite{pav_moments_2015} correctly notice that \cite[p. 2466]{lapidoth_capacity_2003} has a missing $\log{2}$ term.
 
-Let $(z_i)_{i=1}^m \sim \mathcal{N}(0, 1)$ iid and $
+For $(z_i)_{i=1}^m \sim \mathcal{N}(0, 1)$ iid and $
   (\mu_i)_{i=1}^m \in \mathbb{R}
-$. The random variable $
-  W = \sum_i (\mu_i + z_i)^2
-$ is said to be $\chi^2_m(\lambda)$, i.e. noncentral $\chi^2$ with shape $m$ and noncentrality
-parameter $\lambda = \sum_i \mu_i^2$. Its density is given by, \cite{citation_needed}
-$$
-f_W(x)
-  % = e^{- \tfrac\lambda2} \sum_{n \geq 0} \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
-  %   \tfrac{
-  %     x^{n + \tfrac{m}2 - 1} e^{-\tfrac{x}2}
-  %   }{
-  %     2^{n + \tfrac{m}2} \Gamma(n + \tfrac{m}2)
-  %   }
-  % = e^{- \tfrac\lambda2} \sum_{n \geq 0} \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
-  %     \tfrac{
-  %         \bigl(\tfrac{x}2\bigr)^{n + \tfrac{m}2 - 1} e^{-\tfrac{x}2}
-  %     }{
-  %         2 \Gamma(n + \tfrac{m}2)
-  %     }
-  = \frac12 e^{- \tfrac{x + \lambda}2} \bigl(\tfrac{x}2\bigr)^{\tfrac{m}2 - 1}
-    \sum_{n \geq 0} \tfrac{
-      \bigl(\tfrac{x \lambda}4\bigr)^n
-    }{
-      n! \Gamma(n + \tfrac{m}2)
-    }
-  % = \frac12 e^{- \tfrac{x + \lambda}2}
-  % \bigl(\tfrac{x}\lambda\bigr)^{\tfrac{m}4 - \tfrac12}
-  % \bigl(\tfrac{x \lambda}4\bigr)^{\tfrac{m}4 - \tfrac12}
-  % \sum_{n \geq 0} \tfrac{
-  %         \bigl(\tfrac{x \lambda}4\bigr)^n
-  %     }{
-  %         n! \Gamma(n + \tfrac{m}2)
-  %     }
-  % = \frac12 e^{- \tfrac{x + \lambda}2}
-  % \bigl(\tfrac{x}\lambda\bigr)^{\tfrac{m}4 - \tfrac12}
-  % \bigl(\tfrac{\sqrt{x \lambda}}2\bigr)^{\tfrac{m}2 - 1}
-  % \sum_{n \geq 0} \tfrac{
-  %         \bigl(\tfrac{x \lambda}4\bigr)^n
-  %     }{
-  %         n! \Gamma(n + \tfrac{m}2)
-  %     }
-  % = \frac12 e^{- \tfrac{x + \lambda}2}
-  % \bigl(\tfrac{x}\lambda\bigr)^{\tfrac{m - 2}4}
-  % I_{\bigl(\tfrac{m}2 - 1\bigr)}(\sqrt{x \lambda})
-  \,. $$
+$. The random variable $W = \sum_i (\mu_i + z_i)^2$ noncentral $\chi^2$ with shape $m$
+and noncentrality parameter $\lambda = \sum_i \mu_i^2$, i.e. $W\sim \chi^2_m(\lambda)$.
+Its density is
+\begin{equation}. \label{eq:nonchisq-density}
+  f_W(x)
+    % = e^{- \tfrac\lambda2} \sum_{n \geq 0} \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
+    %   \tfrac{
+    %     x^{n + \tfrac{m}2 - 1} e^{-\tfrac{x}2}
+    %   }{
+    %     2^{n + \tfrac{m}2} \Gamma(n + \tfrac{m}2)
+    %   }
+    % = e^{- \tfrac\lambda2} \sum_{n \geq 0} \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
+    %     \tfrac{
+    %         \bigl(\tfrac{x}2\bigr)^{n + \tfrac{m}2 - 1} e^{-\tfrac{x}2}
+    %     }{
+    %         2 \Gamma(n + \tfrac{m}2)
+    %     }
+    = \frac12 e^{- \tfrac{x + \lambda}2} \bigl(\tfrac{x}2\bigr)^{\tfrac{m}2 - 1}
+      \sum_{n \geq 0} \tfrac{
+        \bigl(\tfrac{x \lambda}4\bigr)^n
+      }{
+        n! \Gamma(n + \tfrac{m}2)
+      }
+    % = \frac12 e^{- \tfrac{x + \lambda}2}
+    % \bigl(\tfrac{x}\lambda\bigr)^{\tfrac{m}4 - \tfrac12}
+    % \bigl(\tfrac{x \lambda}4\bigr)^{\tfrac{m}4 - \tfrac12}
+    % \sum_{n \geq 0} \tfrac{
+    %         \bigl(\tfrac{x \lambda}4\bigr)^n
+    %     }{
+    %         n! \Gamma(n + \tfrac{m}2)
+    %     }
+    % = \frac12 e^{- \tfrac{x + \lambda}2}
+    % \bigl(\tfrac{x}\lambda\bigr)^{\tfrac{m}4 - \tfrac12}
+    % \bigl(\tfrac{\sqrt{x \lambda}}2\bigr)^{\tfrac{m}2 - 1}
+    % \sum_{n \geq 0} \tfrac{
+    %         \bigl(\tfrac{x \lambda}4\bigr)^n
+    %     }{
+    %         n! \Gamma(n + \tfrac{m}2)
+    %     }
+    % = \frac12 e^{- \tfrac{x + \lambda}2}
+    % \bigl(\tfrac{x}\lambda\bigr)^{\tfrac{m - 2}4}
+    % I_{\bigl(\tfrac{m}2 - 1\bigr)}(\sqrt{x \lambda})
+    \,.
+\end{equation}
 % where $I_k$ is the modified Bessel function of the first kind
 % $$
 % I_k(s)
@@ -1135,9 +1106,7 @@ f_W(x)
 %           \bigl( \tfrac{s}2 \bigr)^{2n}
 %       }{n! \Gamma(n + k + 1)}
 %   \,. $$
-
-In the real multiplicative noise case we need to compute the kl-divergence penalty, the key
-term of which is the expected logarithm of $W$:
+In \eqref{eq:ard-kl-div-real} we need the expected logarithm of $W$:
 \begin{align}
   \mathbb{E}_{W\sim \chi^2_m(\lambda)} \log W
     &= \int_0^\infty f_W(x) \log x dx
@@ -1175,153 +1144,149 @@ term of which is the expected logarithm of $W$:
     \,,
 \end{align}
 where $\psi(x)$ is the digamma function, i.e.
-$$
-\psi(x)
-  = \frac{d}{dx} \log \Gamma(x)
-  = \frac1{\Gamma(x)}
-    \int_0^\infty
-      u^{x-1} e^{-u} \log{u}
-    \, du
-  \,. $$
-The following properties of the digamma function will be used in the our analysis:
-$
+\begin{equation}  \label{eq:digamma}
+  \psi(x)
+    = \frac{d}{dx} \log \Gamma(x)
+    = \frac1{\Gamma(x)}
+      \int_0^\infty
+        u^{x-1} e^{-u} \log{u}
+      \, du
+    \,.
+\end{equation}
+Note that $\psi$ satisfies: $
   \psi(z+1) = \psi(z) + \tfrac1z
-$ and $
+$, $
+  \psi(x)\leq \log x - \tfrac1{2x}
+$, and $
   \psi(\tfrac12) = -\gamma - 2\log 2
-$. If we put
-$$
-g_m(x)
-  % alpha: e^{-x} \sum_{n=0}^{\infty} \frac{x^n}{n!} \psi(n + m / 2)
-  % = e^{-x} \sum_{n \geq 0} \frac{x^n}{n! \Gamma(n + \tfrac{m}2)}
-  %     \int_0^\infty e^{-t} t^{n + \tfrac{m}2-1} \log{t} dt
-  = e^{-x} \sum_{n \geq 0} \frac{x^n}{n!} \psi(n + \tfrac{m}2)
-  \,, $$
-then the desired expectation $
-  \mathbb{E}_{z \sim \mathcal{N}(0, 1)}
-    \log{\bigl\lvert z + \tfrac1{\sqrt{\alpha}} \bigr\rvert^2}
-$ is equal to $
+$ ($\gamma$ is Euler's constant). If we put
+\begin{equation}  \label{eq:g-m-series}
+  g_m(x)
+    % alpha: e^{-x} \sum_{n=0}^{\infty} \frac{x^n}{n!} \psi(n + m / 2)
+    % = e^{-x} \sum_{n \geq 0} \frac{x^n}{n! \Gamma(n + \tfrac{m}2)}
+    %     \int_0^\infty e^{-t} t^{n + \tfrac{m}2-1} \log{t} dt
+    = e^{-x} \sum_{n \geq 0} \frac{x^n}{n!} \psi(n + \tfrac{m}2)
+    \,,
+\end{equation}
+then the desired expectation in \eqref{eq:ard-kl-div-real} equals $
   \log{2} + g_1(\tfrac1{2\alpha})
 $.
 
-We can differentiate the series in $g_m(x)$, since the sum converges everywhere
-on $\mathbb{R}$. Indeed, it is a power series featuring nonnegative coefficients,
-which is dominated by $
-  \sum_{n \geq 1} \tfrac{x^n}{n!} \log{(n+\tfrac{m}2)}
-$, because $\psi(x)\leq \log x - \tfrac1{2x}$. By the ratio test, the dominating
-series has infinite radius:
-$$
-\lim_{n\to\infty}
-  \biggl\lvert
-    \frac{
-      n! x^{n+1} \log{(n + 1 + \tfrac{m}2)}
-    }{
-      x^n \log{(n + \tfrac{m}2)} (n+1)!
-    }
-  \biggr\rvert
-  = \lim_{n\to\infty}
-    \lvert x \rvert 
-    \biggl\lvert
-      \frac{
-        \log{(n + 1 + \tfrac{m}2)}
-      }{
-        \log{(n + \tfrac{m}2)} (n+1)
-      }
-    \biggr\rvert
-  % = \lim_{n\to\infty}
-  %   \lvert x \rvert 
-  %   \biggl\lvert
-  %     \frac{
-  %       n + \tfrac{m}2
-  %     }{
-  %       (n + 1 + \tfrac{m}2)((n+1) + (n + \tfrac{m}2) \log{(n + \tfrac{m}2)})
-  %     }
-  %   \biggr\rvert
-  = 0 < 1
-  \,, $$
-since
-$$
-\frac{\log{(x + a + 1)}}{x \log{(x + a)}}
-  \sim \frac{\log{(x+1)}}{(x-a) \log{x}}
-  \sim \frac{\log{(x+1)}}{x \log{x}}
-  \sim \frac{\tfrac1{(x+1)}}{1 + \log{x}}
-  \to 0
-  \,. $$
-A theorem from calculus states, that the formal series derivative (integral)
-coincides with the derivative (integral) of the function, corresponding to
-the power series (everywhere on the convergence region). And the convergence
-regions of derivative (integral) coincide with the region of the original
-power series.
+% We can differentiate the series in $g_m(x)$, since the sum converges on $\mathbb{R}$.
+% Indeed, it is a power series featuring nonnegative coefficients, which is dominated by $
+%   \sum_{n \geq 1} \tfrac{x^n}{n!} \log{(n+\tfrac{m}2)}
+% $. By the ratio test, the dominating
+% series has infinite radius:
+% $$
+% \lim_{n\to\infty}
+%   \biggl\lvert
+%     \frac{
+%       n! x^{n+1} \log{(n + 1 + \tfrac{m}2)}
+%     }{
+%       x^n \log{(n + \tfrac{m}2)} (n+1)!
+%     }
+%   \biggr\rvert
+%   = \lim_{n\to\infty}
+%     \lvert x \rvert 
+%     \biggl\lvert
+%       \frac{
+%         \log{(n + 1 + \tfrac{m}2)}
+%       }{
+%         \log{(n + \tfrac{m}2)} (n+1)
+%       }
+%     \biggr\rvert
+%   % = \lim_{n\to\infty}
+%   %   \lvert x \rvert 
+%   %   \biggl\lvert
+%   %     \frac{
+%   %       n + \tfrac{m}2
+%   %     }{
+%   %       (n + 1 + \tfrac{m}2)((n+1) + (n + \tfrac{m}2) \log{(n + \tfrac{m}2)})
+%   %     }
+%   %   \biggr\rvert
+%   = 0 < 1
+%   \,, $$
+% since
+% $$
+% \frac{\log{(x + a + 1)}}{x \log{(x + a)}}
+%   \sim \frac{\log{(x+1)}}{(x-a) \log{x}}
+%   \sim \frac{\log{(x+1)}}{x \log{x}}
+%   \sim \frac{\tfrac1{(x+1)}}{1 + \log{x}}
+%   \to 0
+%   \,. $$
+% A theorem from calculus states, that the formal series derivative (integral)
+% coincides with the derivative (integral) of the function, corresponding to
+% the power series (everywhere on the convergence region). And the convergence
+% regions of derivative (integral) coincide with the region of the original
+% power series.
 
 Differentiating the series within $g_m$ yields
-$$
-\frac{d}{d x} g_m(x)
-  % = e^{-x} \sum_{n\geq 1} \frac{x^{n-1}}{(n-1)!} \psi(n + \tfrac{m}2) - g_m(x)
-  % = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} \psi(n + \tfrac{m}2 + 1) - g_m(x)
-  % = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} (
-  %     \psi(n + \tfrac{m}2 + 1) - \psi(n + \tfrac{m}2)
-  % )
-  % = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} \tfrac1{n + \tfrac{m}2}
-  = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} (n + \tfrac{m}2)^{-1}
-  = \cdots
-  \,. $$
-Now, observe that $
+\begin{equation*}  \label{eq:g-m-deriv}
+  \frac{d}{d x} g_m(x)
+    % = e^{-x} \sum_{n\geq 1} \frac{x^{n-1}}{(n-1)!} \psi(n + \tfrac{m}2) - g_m(x)
+    % = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} \psi(n + \tfrac{m}2 + 1) - g_m(x)
+    % = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} (
+    %     \psi(n + \tfrac{m}2 + 1) - \psi(n + \tfrac{m}2)
+    % )
+    % = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} \tfrac1{n + \tfrac{m}2}
+    = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} (n + \tfrac{m}2)^{-1}
+    = \cdots
+    \,.
+\end{equation*}
+Since $
     e^t  = \sum_{n\geq 0} \tfrac{t^n}{n!}
 $ on $\mathbb{R}$, for $\alpha\neq 0$ we have $
   \int_0^x t^{\alpha-1} dt
     = \tfrac{x^\alpha}{\alpha}
-$ and that
-$$
-\sum_{n\geq 0} \int_0^x \frac{t^{n+\alpha-1}}{n!} dt
-  = \int_0^x \sum_{n\geq 0} \frac{t^{n+\alpha-1}}{n!} dt
-  = \int_0^x t^{\alpha-1} e^t dt
-  \,, $$
-by the monotone convergence theorem on $
-  ([0, x], \mathcal{B}([0, x]), dx)
-$ whence
-$$
-\cdots
-  = x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
-      \frac{x^{n + \tfrac{m}2}}{n!} (n + \tfrac{m}2)^{-1}
-  % = x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
-  %     \frac1{n!} \int_0^x t^{n + \tfrac{m}2 - 1} dt
-  % = x^{-\tfrac{m}2} e^{-x}
-  %     \int_0^x t^{\tfrac{m}2 - 1} \sum_{n\geq 0} \frac{t^n}{n!} dt
-  = x^{-\tfrac{m}2} e^{-x}
-      \int_0^x t^{\tfrac{m}2 - 1} e^t dt
-  = \cdots
-  \,. $$
-The substitution $u^2 = t$ on $[0, \infty]$ with $2u du = dt$ results in
-$$
-\int_0^x t^{\tfrac{m}2 - 1} e^t  dt
-  % = \int_0^{\sqrt{x}} u^{m - 2} e^{u^2} 2 u du
-  = 2 \int_0^{\sqrt{x}} u^{m - 1} e^{u^2} du
-  \,, $$
-whence
+$ and
+\begin{equation*}  \label{eq:g-m-deriv-int-1}
+  \sum_{n\geq 0} \int_0^x \frac{t^{n+\alpha-1}}{n!} dt
+    = \int_0^x \sum_{n\geq 0} \frac{t^{n+\alpha-1}}{n!} dt
+    = \int_0^x t^{\alpha-1} e^t dt
+    \,,
+  % the MCT ([0, x], \mathcal{B}([0, x]), dx)
+\end{equation*}
+by the monotone convergence theorem, whence
+\begin{equation}  \label{eq:g-m-deriv-int-2}
+  \cdots
+    = x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
+        \frac{x^{n + \tfrac{m}2}}{n!} (n + \tfrac{m}2)^{-1}
+    % = x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
+    %     \frac1{n!} \int_0^x t^{n + \tfrac{m}2 - 1} dt
+    % = x^{-\tfrac{m}2} e^{-x}
+    %     \int_0^x t^{\tfrac{m}2 - 1} \sum_{n\geq 0} \frac{t^n}{n!} dt
+    = x^{-\tfrac{m}2} e^{-x}
+        \int_0^x t^{\tfrac{m}2 - 1} e^t dt
+    = \cdots
+    \,.
+\end{equation}
+The substitution $u^2 = t$ on $[0, \infty]$ with $2u du = dt$ yields
 $$
 \frac{d}{d x} g_m(x)
-  % = x^{-\tfrac{m}2} e^{-x}
-  %     \int_0^x t^{\tfrac{m}2 - 1} e^t dt
+  = x^{-\tfrac{m}2} e^{-x}
+      \int_0^x t^{\tfrac{m}2 - 1} e^t dt
   = 2 x^{-\tfrac{m}2} e^{-x}
       \int_0^{\sqrt{x}} u^{m - 1} e^{u^2} du
   \,. $$
 In particular, for $m=1$ we get
-$$
-g_1(x)
-  = - \gamma - 2 \log{2}
-  + e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} \sum_{p=1}^n \frac2{2p - 1}
-  \,, $$
-and the derivative of the KL-term can be computed thus 
-$$
-\frac{d}{d x} g_1(x)
-  = 2 \tfrac{F(\sqrt{x})}{\sqrt{x}}
-  \,, $$
-using Dawson's integral $
+\begin{equation}  \label{eq:g-m-series-one}
+  g_1(x)
+    = - \gamma - 2 \log{2}
+    + e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} \sum_{p=1}^n \frac2{2p - 1}
+    \,,
+\end{equation}
+and the derivative \eqref{eq:g-m-deriv} can be computed thus
+\begin{equation}  \label{eq:g-m-deriv-one}
+  \frac{d}{d x} g_1(x)
+    = 2 \tfrac{F(\sqrt{x})}{\sqrt{x}}
+    \,,
+\end{equation}
+using $
   F \colon \mathbb{R} \to \mathbb{R}
   \colon x \mapsto e^{-x^2} \int_0^x e^{u^2} du
-$ -- a special function, implemented in most scientific computing libraries, e.g.
-``scipy.special.dawsn''.
+$ (Dawson's integral) a special function.
 
-The derivative wrt $\alpha$ is 
+The derivative of \eqref{eq:ard-kl-div-real} with respect to $\alpha$ is
 $$
 \tfrac{d}{d \alpha} g_1(\tfrac1{2\alpha})
   = -\tfrac1{2 \alpha^2} g_1'(\tfrac1{2\alpha})
@@ -1330,9 +1295,7 @@ $$
   = -\tfrac1{\alpha} \sqrt{\tfrac2{\alpha}} F(\tfrac1{\sqrt{2\alpha}})
   \,. $$
 However, since $\alpha$ is nonnegative, it is typically parameterized via its logarithm
-and computed when needed. Thus, in particular, the gradient of the divergence penalty w.r.t
-$\log \alpha$ is
-
+and computed when needed. Thus the gradient w.r.t $\log \alpha$ is
 \begin{equation}  \label{eq:real-kl-div-deriv-log}
   \frac{d}{d\log \alpha}
     \tfrac12 \mathbb{E}_{z \sim \mathcal{N}(0,1)}
