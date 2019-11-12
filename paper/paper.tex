@@ -2,6 +2,9 @@
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{natbib}
+% \setcitestyle{authoryear,open={((},close={))}}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -53,21 +56,21 @@ for practical data-driven problem solving. Despite recent advances in generaliza
 and optimization theory specific to deep networks, deploying in actual embedded hardware
 remains a challenge. Solving the storage and compute constraints encourages development
 of model compression and sparsification methods, that focus on favourable tradeoff between
-performance and size. Most popular techniques include weight pruning \cite{citation_needed},
-model quantization from IEEE754 floating point to integer-based arithmetic \cite{citation_needed},
+performance and size. Most popular techniques include weight pruning \citep{citation_needed},
+model quantization from IEEE754 floating point to integer-based arithmetic \citep{citation_needed},
 and dropout. The key assumption is that the more explicitly zero parameters there is,
 the less computations is needed.
 
 Bayesian Inference is a principled framework of reasoning about uncertainty. The core principle
 is updating prior beliefs in accordance with the likelihood of empirical observations into
 posterior belief. Under suitable modelling and prior assumptions, Bayesian methods can be
-used towards model sparsification, \cite{kingma_variational_2015,molchanov_variational_2017},
-and \cite{kharitonov_variational_2018}.
+used towards model sparsification, \citep{kingma_variational_2015,molchanov_variational_2017},
+and \citep{kharitonov_variational_2018}.
 
 % complex nets and related stuff
 data that is naturally complex-valued
 studies have shown a potentially richer representation of complex nets
-\cite{hirose2003,fijulamin2009}
+\citep{hirose2003,fijulamin2009}
 % [3] Akira Hirose, Complex-valued neural networks: theories and applications, vol. 5, World Scientific, 2003.
 % [4] Md Faijul Amin and Kazuyuki Murase, “Single-layered complex-valued neural network for real-valued classification problems,” Neurocomputing, vol. 72, no. 4-6, pp. 945–955, 2009.
 
@@ -76,7 +79,7 @@ its richer representational capacity.
 % Nevio Benvenuto and Francesco Piazza, “On the complex backpropagation algorithm,” IEEE Transactions on Signal Processing, vol. 40, no. 4, pp. 967–969, 1992.
 
 
-\cite{yang_complex_2019} develop complex transformer, with $\cplx$-attention and complex
+\citep{yang_complex_2019} develop complex transformer, with $\cplx$-attention and complex
 encoder-decoder, and apply it to music transcription and wireless signal classification.
 
 that interfaces the rest of
@@ -87,15 +90,15 @@ the network with complex numbers
 that operates on the Fourier transform input speech, acoustic, of radio signals.
 
 
-papers related to complex-valued distributions \cite{pav_moments_2015,taubock_complex-valued_2012},
-and \cite{karseras_caution:_2014}
+papers related to complex-valued distributions \citep{pav_moments_2015,taubock_complex-valued_2012},
+and \citep{karseras_caution:_2014}
 
-Application of complex-valued networks is not new, \cite{citation_needed}. More recently
-they were applied to music transcription and speech recognition \cite{trabelsi_deep_2017},
-and \cite{yang_complex_2019}. The key motivation behind adoption of $\cplx$-networks is
-pervasiveness of $\cplx$-valued data in digital signal processing \cite{citation_needed},
-acoustic and radio signal analysis \cite{citation_needed}, and quantum systems modelling
-\cite{citation_needed}, etc. All these applications require compliance with algebraic
+Application of complex-valued networks is not new, \citep{citation_needed}. More recently
+they were applied to music transcription and speech recognition \citep{trabelsi_deep_2017},
+and \citep{yang_complex_2019}. The key motivation behind adoption of $\cplx$-networks is
+pervasiveness of $\cplx$-valued data in digital signal processing \citep{citation_needed},
+acoustic and radio signal analysis \citep{citation_needed}, and quantum systems modelling
+\citep{citation_needed}, etc. All these applications require compliance with algebraic
 operations in the field of complex numbers.
 
 
@@ -128,7 +131,7 @@ $, provides useful information about yet unobserved data and model parameters, e
 classification uncertainty, predictive statistics, and parameter relevance.
 
 The posterior itself is computationally intractable, save for the relatively simple cases
-\cite{citation_needed}, and therefore exact inference is traded for tractability and scalability
+\citep{citation_needed}, and therefore exact inference is traded for tractability and scalability
 of Variational Inference. Instead of deriving $p(\omega \mid D)$ using the rule, this approach
 recasts posterior inference into variational optimization problem: finding $q$ that is close
 to $p(\omega \mid D)$ in terms of a proximity score $\rho$
@@ -146,8 +149,8 @@ its members have tractable densities $
   q_\theta(\omega) d\omega
 $, can be sampled from and possess tractable $\log$-derivatives $
   \omega \mapsto \nabla_\theta \log q_\theta(\omega)
-$, \cite{williams_simple_1992}, or can be represented as differentiable transformations
-of non-parametric noise, \cite{kingma_auto-encoding_2014,figurnov_implicit_2019}.
+$, \citep{williams_simple_1992}, or can be represented as differentiable transformations
+of non-parametric noise, \citep{kingma_auto-encoding_2014,figurnov_implicit_2019}.
 % (reparameterization trick, pathwise gradieent) $q_{\theta}(d\omega)$ is a push-forward
 % of $p(d\varepsilon)$ by a differentiable map $g(\varepsilon; \theta)$.
 % % http://stillbreeze.github.io/REINFORCE-vs-Reparameterization-trick/#fn:1
@@ -208,9 +211,9 @@ maximizing the \textit{evidence lower bound} (ELBO)
 where the prior and likelihood are allowed to depend on explicit parameters. The most
 commonly used algorithm to optimize \eqref{eq:elbo_general} is EM-algorithm. Other
 variational objectives are possible, provided $p(\omega \mid D)$ is probed only through
-$\log p(D \mid \omega)$ and $\log \pi(\omega)$, \cite{ranganath_operator_2018}.
+$\log p(D \mid \omega)$ and $\log \pi(\omega)$, \citep{ranganath_operator_2018}.
 
-\textit{Stochastic Gradient Variational Bayes} (SGVB), proposed by \cite{kingma_auto-encoding_2014},
+\textit{Stochastic Gradient Variational Bayes} (SGVB), proposed by \citep{kingma_auto-encoding_2014},
 is a differentiable unbiased Monte-Carlo estimator of \eqref{eq:elbo_general}, which makes
 it possible to employ stochastic gradient-based optimization methods. If $
   \omega \sim q_{\theta}
@@ -239,7 +242,7 @@ $, then the SGVB is
 where $
   (\varepsilon_{l})_{l=1}^L
 $ is an iid sample from $p_\varepsilon$. Intractable KL-divergence terms can be replaced
-by differentiable unbiased Monte-Carlo estimators, \cite{kingma_auto-encoding_2014}.
+by differentiable unbiased Monte-Carlo estimators, \citep{kingma_auto-encoding_2014}.
 %
 For the purposes of this study, we assume that the observed data is independent, and
 use minibatch version of \eqref{eq:sgvb} with $L=1$:
@@ -260,11 +263,10 @@ $.
 \label{sub:dropout}
 
 With special family of posterior approximation, variational inference can be used as
-a regularization method, \cite{kingma_variational_2015}, and as model sparsification
-technique, \cite{molchanov_variational_2017}. The paper \cite{kingma_variational_2015}
-considers Dropout \cite{hinton_improving_2012}, DropConnect, \cite{wan_regularization_2013},
-and Gaussian dropout, \cite{srivastava_dropout_2014,wang_fast_2013} through the lens
-of Bayesian inference methods and proposes \textit{Variational Dropout}. It argues that
+a regularization method and as model sparsification technique. \citet{kingma_variational_2015}
+consider Dropout \citep{hinton_improving_2012}, DropConnect, \citep{wan_regularization_2013},
+and Gaussian dropout, \citep{srivastava_dropout_2014,wang_fast_2013} through the lens
+of Bayesian inference methods and proposes \textit{Variational Dropout}. They argue that
 the multiplicative noise introduced by these methods induces a distribution equivalent to
 a fully factorized variational posterior of the form $
   q_\theta(\omega) = \prod_j q_{\theta}(\omega_j)
@@ -283,7 +285,7 @@ $ iid from some $p_\theta(\xi)$.
 % This suggests making $\alpha$ a variational parameter
 % and optimizing it in \eqref{eq:elbo_general} with an appropriate penalty term. Thus,
 %
-Variational Dropout with assumes mean field Gaussian approximation $
+Variational Dropout assumes fully factorized Gaussian approximate posterior $
   q_\theta(\omega)
     = \prod_j \mathcal{N}(\mu_j, \alpha_j \mu_j^2)
 $ and factorized log-uniform prior $\pi(\omega)$ with $
@@ -300,25 +302,25 @@ analytically intractable terms:
       % - \frac12 \log{\alpha}
   \,.
 \end{equation}
-\cite{kingma_variational_2015} approximate this expression by a non-linear polynomial
-regression for \verify{truncated} $\alpha \in (0, 1)$. This approximation was refined in
-\cite{molchanov_variational_2017}, both in terms of the domain of $\alpha$ and accuracy. The
-paper considered regression with sigmoid and soft-plus basis functions fit to the Monte-Carlo
-estimator of \eqref{eq:improper-kl-div-real} for $\alpha$ varying over a fine logarithmic grid.
-In sec.~\ref{sub:real-chisq-grad} we verify the approximation and confirm its accuracy, by
-comparing its derivative to the exact derivative of \eqref{eq:improper-kl-div-real} with
-respect to $\log \alpha$.
+\citet{kingma_variational_2015} approximate this expression by a non-linear polynomial
+regression for \verify{truncated} $\alpha \in (0, 1)$. \citet{molchanov_variational_2017}
+refine the approximation by using sigmoid and soft-plus basis functions.
+%
+In sec.~\ref{sub:real-chisq-grad} we verify the approximation against Monte-Carlo
+estimates of \eqref{eq:improper-kl-div-real} for $\alpha$ varying over a fine logarithmic
+grid, and confirm its accuracy, by comparing its derivative to the exact derivative of
+\eqref{eq:improper-kl-div-real} with respect to $\log \alpha$.
 % (!) good for SGVB: gradient-based methods require unbiased gradient estimates
 
 Flexibility in specification of $q_\theta$ enables structured dropout with shared
-$\alpha$ across groups of parameters $\omega$. \cite{molchanov_variational_2017} study
+$\alpha$ across groups of parameters $\omega$. \citet{molchanov_variational_2017} study
 Variational Dropout from a model sparsification perspective, optimizing $\alpha$ for each
 individual parameter. Another variant of Bayesian dropout, called \textit{Automatic Relevance
-Determination}, is developed in \cite{kharitonov_variational_2018}. The key difference is
+Determination}, is developed in \citep{kharitonov_variational_2018}. The key difference is
 that the log-uniform factor $\pi(\omega_{ij})$ is replaced by a proper Gaussian prior $
   \mathcal{N}(0, \tau^{-1}_{ij})
 $ with learnable precision $\tau_{ij} > 0$. This method, known as \textit{Empirical Bayes}
-\cite{citation_needed}, fits a prior distribution while performing variational inference.
+\citep{citation_needed}, fits a prior distribution while performing variational inference.
 Maximizing \eqref{eq:elbo} over $\lambda$, holding other parameters fixed, yields $
   \tau^* = {(\mu^2 + \sigma^2)}^{-1}
 $, whence
@@ -328,9 +330,9 @@ $, whence
     \,.
 \end{equation}
 
-Another contribution of \cite{kingma_variational_2015} is the analysis of the effects of the
+Another contribution of \citep{kingma_variational_2015} is the analysis of the effects of the
 \textit{local reparameterization trick} on the variance of the gradient of \eqref{eq:elbo}.
-This trick, proposed in \cite{wang_fast_2013} to speed up Gaussian dropout, utilizes the
+This trick, proposed in \citep{wang_fast_2013} to speed up Gaussian dropout, utilizes the
 closure of Gaussians under affine transformations, thereby translating uncertainty from the
 global parameter noise to local noise in intermediate outputs within the network.
 %
@@ -349,17 +351,17 @@ $ is equivalent in distribution to
     \,.
 \end{equation}
 %
-\cite{kingma_variational_2015} show, that for the case of fully factorized Gaussian
+\citet{kingma_variational_2015} show, that for the case of fully factorized Gaussian
 posterior approximations, the trick decorrelates ELBO estimates within the minibatch,
 making the gradient estimator $\nabla_\theta \tilde{\mathcal{L}}$ more statistically
-efficient. \cite{molchanov_variational_2017} propose an improvement by introducing
+efficient. \citet{molchanov_variational_2017} propose an improvement by introducing
 \textit{additive noise parameterization}, which is relevant to model sparsification.
-The paper argues that $(\mu, \alpha)$ parameterization should be abandoned in favour
-of an equivalent $(\mu, \sigma^2)$ with the score $\alpha$ calculated using $
+They argue that $(\mu, \alpha)$ parameterization should be abandoned in favour of an
+equivalent $(\mu, \sigma^2)$ with the score $\alpha$ calculated using $
   \tfrac{\sigma^2}{\mu^2}
 $ when needed. This makes $
   \nabla_\mu \tilde{\mathcal{L}}
-$, which is shown in \cite{molchanov_variational_2017} to be independent of the noise,
+$, which is shown in \citep{molchanov_variational_2017} to be independent of the noise,
 injected by the trick \eqref{eq:r-gauss-trick}, and further stabilizes gradients in SGVB
 \eqref{eq:elbo}.
 
@@ -374,11 +376,11 @@ injected by the trick \eqref{eq:r-gauss-trick}, and further stabilizes gradients
 In this section we briefly review $\cplx$-valued networks, their distinction from the
 ordinary $\real$-valued networks.
 
-The study \cite{trabelsi_deep_2017} outlines building blocks for deep $\cplx$-valued
-networks and describes suitable representation and operations including convolutional
-and dense layers, $\cplx$-valued activations, complex batch-normalization and suitable
-weight initialization. Their approach makes a complex-valued network into an intricately
-connected $\real$-valued computational graph that respects $\cplx$-algebra.
+\citet{trabelsi_deep_2017} outline the building blocks for deep $\cplx$-valued networks
+and describe suitable representation and operations including convolutional and dense layers,
+$\cplx$-valued activations, complex batch-normalization and suitable weight initialization.
+Their approach makes a complex-valued network into an intricately connected $\real$-valued
+computational graph that respects $\cplx$-algebra.
 
 In particular, linear layers
 $
@@ -402,7 +404,7 @@ where $
 $ are unique operators that make up $L = L_r + j L_i$. A $\cplx$-convolutional layer with
 kernel $W$ can be implemented as two $\real$-convolutions with kernels $\Re{W}$ and $\Im{W}$
 using \eqref{eq:cplx-lin-op}. Algebraic operations, trigonometric functions, are implemented
-through operations in $\real^2$. Activations, considered in \cite{trabelsi_deep_2017} include
+through operations in $\real^2$. Activations, considered in \citep{trabelsi_deep_2017} include
 independent componentwise application of $\real$-valued non-linearities, $
   z = u + j v
     \mapsto \sigma(u) + j \sigma(v)
@@ -419,13 +421,13 @@ Complex networks are, in general, non-holomorphic, i.e. not $\cplx$-differentiab
 exacerbated by the loss being real-valued. Indeed a $\cplx$-differentiable real-valued function is
 necessarily trivial by Cauchy-Riemann conditions. This issue is dealt with by employing Wirtinger,
 or $\cplx\real$ calculus, which generalizes holomorphic calculus to non-holomorphic functions
-of $\cplx$-argument, \cite{adali_complex-valued_2011}. The rules it defines satisfy intuitive
+of $\cplx$-argument, \citep{adali_complex-valued_2011}. The rules it defines satisfy intuitive
 linearity, product and chain rules, and respect complex conjugation, but most importantly the
 $\cplx\real$-differential of a function on $\cplx$ coincides with its classical differential as
 a function on $\real^2$. Essentially, it allows straightforward retrofiting of $\cplx$-valued
 networks into existing $\real$ deep learning auto-differentiation frameworks. It was considered
-as a basis for $\cplx$ version of backpropagation in \cite{benvenuto_complex_1992} and
-\cite{trabelsi_deep_2017}, (see sec.~\ref{sub:wirtinger_calculus} for details).
+as a basis for $\cplx$ version of backpropagation in \citep{benvenuto_complex_1992} and
+\citep{trabelsi_deep_2017}, (see sec.~\ref{sub:wirtinger_calculus} for details).
 %
 \todo{read on holomorphic nets}
 
@@ -452,7 +454,7 @@ identities $
   \vec{P Q R} = (P \otimes R^\top) \vec{Q}
 $, and $
   (P \otimes R) (C \otimes S) = P Q \otimes R S
-$, \cite{petersen_matrix_2012}.
+$, \citep{petersen_matrix_2012}.
 % It follows from the definition of the Kronecker product
 % of $P$ and $R^\top$ and the row-major order vectorization.
 
@@ -598,7 +600,7 @@ $C = 0$. From \eqref{eq:c-gauss-entropy-derivation} the entropy of a proper $\cp
 %   \lvert \rho \rvert \leq 1
 % $. $\sigma^2$ determines the ``dispersion'', whereas $\rho$ is determines the
 % ``strength'' and ``direction'' of the linear relation between real and imaginary
-% parts, \cite{lapidoth_capacity_2003}.
+% parts, \citep{lapidoth_capacity_2003}.
 % $$
 % \frac{\sigma^2}2
 %   \begin{pmatrix}
@@ -628,9 +630,9 @@ approximation. Specifically, parameters $W \in \cplx^{n\times m}$ of a dense lay
 and we use similar factorized approximation for convolution. We propose to MAP estimates,
 of the biases i.e. assume an independent fully factorized Dirac approximation.
 
-The local reparameterization trick provides both faster computations, \cite{wang_fast_2013},
-and better statistical efficiency of the SGVB gradient estimator, \cite{kingma_variational_2015}.
-A general mean field $\cplx$-Gaussian approximation \eqref{eq:c-gauss-vi} for $
+The local reparameterization trick provides both faster computations, and better statistical
+efficiency of the SGVB gradient estimator, \citep{wang_fast_2013,kingma_variational_2015}. A
+general mean field $\cplx$-Gaussian approximation \eqref{eq:c-gauss-vi} for $
   W \in \cplx^{n\times m}
 $ is
 \begin{equation}  \label{eq:c-gauss-vi-general}
@@ -686,7 +688,7 @@ kernel $W$ for each spatial patch in the input, since a convolution is a matrix 
 of $W$, unrolled into a toeplitz matrix, and flattened intput $\vec{x}$. Weight sharing
 is essentially pushed to shared variational parameters $\theta$ in the approximation $q_\theta$.
 The rationale is to reduce correlation in the gradient estimator stemming from kernel weights
-being shared between overlapping patches, \cite{kingma_variational_2015,citation_needed}.
+being shared between overlapping patches, \citep{kingma_variational_2015,citation_needed}.
 Thus \eqref{eq:cplx-gauss-trick} requires computing $\cplx$ convolutions of $x$, complex
 square $x^2$, and amplitude $\lvert x \rvert^2$ with the mean, relation, and variance kernels,
 respectively.
@@ -699,7 +701,7 @@ respectively.
 \label{sub:priors_and_kullback_leibler_divergence}
 
 We consider two priors for Bayesian dropout: log-uniform and $\cplx$-Gaussian empirical
-Bayes, \cite{kingma_variational_2015,molchanov_variational_2017,kharitonov_variational_2018}.
+Bayes, \citep{kingma_variational_2015,molchanov_variational_2017,kharitonov_variational_2018}.
 For a fully factorized approximation $q(\omega)$ and factorized prior belief $\pi(\omega)$,
 the divergence term in ELBO \eqref{eq:elbo} is
 \begin{equation}  \label{eq:elbo-general-kl-div}
@@ -800,7 +802,7 @@ $ for $x \leq -1$.
 %     = \lim_{x\to 0-} \frac{x^{-1} e^x}{x^{-1}}
 %     = 1
 %   \,. $$
-% 4. \cite{lapidoth_capacity_2003} yields $\lim_{x\to 0-} \log{(-x)} - \mathop{Ei}(x) = \gamma$
+% 4. \citep{lapidoth_capacity_2003} yields $\lim_{x\to 0-} \log{(-x)} - \mathop{Ei}(x) = \gamma$
 % 5. $Ei(x) \geq -e^x$ for any $x < -1$, since $t^{-1} e^t \geq - e^t$ for $t < -1$
 % $$
 % \mathop{Ei}(x)
@@ -923,8 +925,8 @@ which is a degenerate $\cplx$-Gaussian distribution. \eqref{eq:cplx-gauss-trick}
     \,.
 \end{equation}
 The KL-divergence term in \eqref{eq:elbo} coincides with \eqref{eq:improper-kl-div-real}.
-We use the approximation provided by \cite{molchanov_variational_2017}. Note that additive
-noise reparameterization, \cite{molchanov_variational_2017}, cannot be used in
+We use the approximation provided by \citep{molchanov_variational_2017}. Note that additive
+noise reparameterization, \citep{molchanov_variational_2017}, cannot be used in
 \eqref{eq:real-scal-gauss-trick}.
 
 % subsubsection real_scaling_dropout (end)
@@ -944,8 +946,8 @@ valued networks.
 \subsection{Tasks and datasets} % (fold)
 \label{sub:tasks_and_datasets}
 
-\cite{trabelsi_deep_2017} studies the applicability of complex-valued networks to
-image classification (CIFAR-10, CIFAR-100, reduced train of SVHN), music-transcription
+\citet{trabelsi_deep_2017} study the applicability of complex-valued networks to image
+classification (CIFAR-10, CIFAR-100, reduced train of SVHN), music-transcription
 (MusicNet), and Speech Spectrum prediction (TIMIT).
 \begin{itemize}
   \item 
@@ -956,10 +958,10 @@ test on MusicNet, (music transcription [14])
 
 complex high-dimensional time series In-phase Quadrature (IQ)
 
-\cite{monning_evaluation_2018}
-\cite{jankowski_complex-valued_1996}
-\cite{amin_complex-valued_2012}
-\cite{sarroff_complex_2018}
+\citep{monning_evaluation_2018}
+\citep{jankowski_complex-valued_1996}
+\citep{amin_complex-valued_2012}
+\citep{sarroff_complex_2018}
 
 % subsection tasks_and_datasets (end)
 
@@ -970,26 +972,26 @@ Radio Frequency Power Amplifiers (PA) are devices used to increase the power of 
 latter transmission via amplitude modulation over radio. One of the most important problems
 in wireless transmission is distortion caused by imperfections the amplifier, which degrades
 the throughput. Although careful circuit design can mitigate undesirable effects, they cannot
-be eliminated entirely \cite{citation_needed}. \textit{Digital Signal Predistortion} (DPD)
+be eliminated entirely \citep{citation_needed}. \textit{Digital Signal Predistortion} (DPD)
 aims at linearizing the amplifier by introducing computed on-the-fly compensation to the
 input that pushes the signal into the linear region of the PA. Practically, the method helps
 reduce cross-channel interference and enables higher bandwidth utilization in wireless
-transmitters, \cite{citation_needed}. The main challenge of DPD methods is efficient
+transmitters, \citep{citation_needed}. The main challenge of DPD methods is efficient
 compensation on-device (with low-latency).
 
-\cite{traverso_low_2019} uses \rewrite{some group delay estimators of something};
-\cite{schoukens_obtaining_2017} develops an iterative approach to inference of the predistortion for a given
-signal \todo{unclear};
+\citet{traverso_low_2019} use \rewrite{some group delay estimators of something};
+\citet{schoukens_obtaining_2017} develop an iterative approach to inference of the predistortion
+for a given signal \todo{unclear};
 
-\cite{tarver_design_2019} models the predistorter as a paired real dense shallow neural network and
-demonstrates viability and competitiveness of this approach against polynomial based DPD on an
-FPGA implementation.
+\citet{tarver_design_2019} model the predistorter as a paired real dense shallow neural network
+and demonstrate viability and competitiveness of this approach against polynomial based DPD on
+an FPGA implementation.
 
 % About rfWEbLab
 The ``RFWebLab'' platform is remote RF power amplifier setup with web-based API, that feeds
 the user-submitted quadrature signal through a class AB GaN amplifier and sends-back the measured
-output \cite{dpdcompetiton2018}. It is maintained by the GHz Centre at Chalmers University of
-Technolgy and National Instruments \cite{landin_rfweblab_2015}.
+output \citep{dpdcompetiton2018}. It is maintained by the GHz Centre at Chalmers University of
+Technolgy and National Instruments \citep{landin_rfweblab_2015}.
 
 We use a custom-written python interface to the WebLab setup that is compatible with the MATLAB
 interface form the setup owner.
@@ -1011,14 +1013,14 @@ based on the algebraic equivalence between $2 \times 2$ real matrices and comple
 Due to this constraint $\cplx$-networks have less expressive power for the same computation
 complexity compared to a $\real$-layer with twice as many inputs and outputs.
 %
-The most fierce critique of Bayesian approach towards model
-sparsification was voiced in \cite{gale_state_2019}, where it was show that it yielded
+The \verify{most fierce critique} of Bayesian approach towards model
+sparsification was voiced in \citep{gale_state_2019}, where it was show that it yielded
 inconsistent results in text translation tasks and systematically underperformed simpler
-techniques such as norm pruning and $\ell_0$-regularization, \cite{louizos_learning_2017}.
+techniques such as norm pruning and $\ell_0$-regularization, \citep{louizos_learning_2017}.
 
 The latter approach introduces stochastic masks one the parameters, which have hard-concrete
 mask distribution. It is closely related to gumbel-softmax reparameterization trick,
-\cite{kingma_auto-encoding_2014,jang_categorical_2017}: the mask is a stretched sigmoid,
+\citep{kingma_auto-encoding_2014,jang_categorical_2017}: the mask is a stretched sigmoid,
 clamped to $[0,1]$, that takes random input shifted relative to a learnable location
 parameter, which indicates the degree of relevance. The penalty in the objective is a
 smooth approximation to $\ell_0$ norm, i.e. the expected number of nonzero parameters.
@@ -1033,7 +1035,7 @@ smooth approximation to $\ell_0$ norm, i.e. the expected number of nonzero param
 
 \clearpage
 
-\bibliographystyle{unsrt}
+\bibliographystyle{abbrvnat}
 \bibliography{references}
 % \nocite{*}
 
@@ -1048,9 +1050,9 @@ smooth approximation to $\ell_0$ norm, i.e. the expected number of nonzero param
 In this section we derive the exact gradient of \eqref{eq:improper-kl-div-real}. Even
 though, ultimately, the divergence involves a hypergeometric function \todo{which one},
 and its gradient requires evaluating the Gauss error function, the analysis provides
-independent verification of the approximation, proposed in \cite{molchanov_variational_2017}.
-The logic of the derivation follows \cite{lapidoth_capacity_2003}.
-% \cite{pav_moments_2015} correctly notice that \cite[p. 2466]{lapidoth_capacity_2003} has a missing $\log{2}$ term.
+independent verification of the approximation, proposed in \citep{molchanov_variational_2017}.
+The logic of the derivation follows \citep{lapidoth_capacity_2003}.
+% \citep{pav_moments_2015} correctly notice that \cite[p. 2466]{lapidoth_capacity_2003} has a missing $\log{2}$ term.
 
 For $(z_i)_{i=1}^m \sim \mathcal{N}(0, 1)$ iid and $
   (\mu_i)_{i=1}^m \in \mathbb{R}
@@ -1308,7 +1310,7 @@ and computed when needed. Thus the gradient w.r.t $\log \alpha$ is
     \,.
 \end{equation}
 
-We replicated the simulation experiment in \cite{molchanov_variational_2017} and recovered
+We replicated the simulation experiment in \citep{molchanov_variational_2017} and recovered
 the same nonlinear approximation result reported therein. We sampled $10^7$ draws of  and 
 The coefficients are within
 $1\%$ relative tolerance of the reported.
@@ -1331,7 +1333,7 @@ sampling error) see fig.~\ref{fig:molchanov-derivative-replica}.
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=1.\linewidth]{../notebooks/assets/grad_log.pdf}
-  \caption{$\tfrac{d f(\alpha)}{d \log{\alpha}}$ of the fit \cite{molchanov_variational_2017},
+  \caption{$\tfrac{d f(\alpha)}{d \log{\alpha}}$ of the fit \citep{molchanov_variational_2017},
   MC estimate, and exact derivative using \eqref{eq:real-kl-div-deriv-log}.}
   \label{fig:molchanov-derivative-replica}
 \end{figure}
@@ -1349,7 +1351,7 @@ part of a constraint, ie. downstream computation)
 \label{sub:wirtinger_calculus}
 
 % TLDR: we use Wirtinger calculus!
-Following \cite{trabelsi_deep_2017}, we naturally identify $\cplx$ with $\real^2$ via $
+Following \citep{trabelsi_deep_2017}, we naturally identify $\cplx$ with $\real^2$ via $
   z_\mathrm{r} + j z_\mathrm{i} \mapsto (z_\mathrm{r}, z_\mathrm{i})
 $, storing the real and imaginary parts in interleaved format, and emulate $\cplx$-algebra
 using $\real$-valued arithmetic. 
