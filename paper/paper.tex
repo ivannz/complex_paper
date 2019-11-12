@@ -582,7 +582,7 @@ $\Gamma$ and $C$ is
     \,.
 \end{align}
 A $\cplx$-Gaussian vector $z$ is \textit{proper}, if $z$ and $\conj{z}$ are uncorrelated, i.e.
-$C = 0$. From \eqref{eq:c-gauss-entropy-derivation} the entropy of a proper $\cplx$-Gaussian is
+$C = 0$. The entropy of proper $\cplx$-Gaussians is
 \begin{equation}  \label{eq:cn-proper-entropy}
   % determinant commutes with complex conjugation, since it is multilinear
   \mathbb{H}(q)
@@ -591,7 +591,7 @@ $C = 0$. From \eqref{eq:c-gauss-entropy-derivation} the entropy of a proper $\cp
     % = \tfrac12 \log \det{(\pi e \Gamma)} \conj{\det{(\pi e \Gamma)}}
   %  = \tfrac12 \log \bigl\lvert \det{(\pi e \Gamma)} \bigr\rvert^2
     = \log \bigl\lvert \det{(\pi e \Gamma)} \bigr\rvert
-    \,.
+    \tag{\ref{eq:c-gauss-entropy-derivation}'}\,.
 \end{equation}
 %
 % The roles of $\Gamma$ and $C$ are more evident in univariate case: here $
@@ -712,7 +712,7 @@ the divergence term in ELBO \eqref{eq:elbo} is
     % = \sum_{ij} KL\bigl( q(\omega_{ij}) \| \pi(\omega_{ij}) \bigr)
     = \sum_{ij} \bigl(
         - \mathbb{H}(q(\omega_{ij}))
-        - \mathbb{E}_{\omega_{ij} \sim q(\omega_{ij})} \log{\pi(\omega_{ij})}
+        - \mathbb{E}_{q(\omega_{ij})} \log{\pi(\omega_{ij})}
       \bigr)
     \,.
 \end{equation}
@@ -1059,7 +1059,7 @@ For $(z_i)_{i=1}^m \sim \mathcal{N}(0, 1)$ iid and $
 $. The random variable $W = \sum_i (\mu_i + z_i)^2$ noncentral $\chi^2$ with shape $m$
 and noncentrality parameter $\lambda = \sum_i \mu_i^2$, i.e. $W\sim \chi^2_m(\lambda)$.
 Its density is
-\begin{equation}. \label{eq:nonchisq-density}
+\begin{equation}  \label{eq:nonchisq-density}
   f_W(x)
     % = e^{- \tfrac\lambda2} \sum_{n \geq 0} \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
     %   \tfrac{
@@ -1108,17 +1108,18 @@ Its density is
 %           \bigl( \tfrac{s}2 \bigr)^{2n}
 %       }{n! \Gamma(n + k + 1)}
 %   \,. $$
-In \eqref{eq:ard-kl-div-real} we need the expected logarithm of $W$:
-\begin{align}
+In \eqref{eq:ard-kl-div-real} we need $
   \mathbb{E}_{W\sim \chi^2_m(\lambda)} \log W
-    &= \int_0^\infty f_W(x) \log x dx
-    \notag \\
+$:
+\begin{align}
+    % &= \int_0^\infty f_W(x) \log x dx
+    % \notag \\
     &= \frac12 e^{- \tfrac\lambda2}
     \int_0^\infty \sum_{n \geq 0} \biggl(
         \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
         \tfrac{e^{- \tfrac{x}2}}{\Gamma(n + \tfrac{m}2)}
         \bigl(\tfrac{x}2\bigr)^{n + \tfrac{m}2 - 1}
-    \biggr) \log x dx
+    \biggr) \log{(x)} dx
     % = [\text{ absolute summability and Fubini, or any other conv. thm for integrals of non-negative integrals}]
     % = e^{- \tfrac\lambda2} \sum_{n \geq 0}
     %     \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
@@ -1153,9 +1154,9 @@ where $\psi(x)$ is the digamma function, i.e.
       \int_0^\infty
         u^{x-1} e^{-u} \log{u}
       \, du
-    \,.
+    \,,
 \end{equation}
-Note that $\psi$ satisfies: $
+which satisfies $
   \psi(z+1) = \psi(z) + \tfrac1z
 $, $
   \psi(x)\leq \log x - \tfrac1{2x}
@@ -1223,7 +1224,7 @@ $.
 % power series.
 
 Differentiating the series within $g_m$ yields
-\begin{equation*}  \label{eq:g-m-deriv}
+\begin{equation}  \label{eq:g-m-deriv}
   \frac{d}{d x} g_m(x)
     % = e^{-x} \sum_{n\geq 1} \frac{x^{n-1}}{(n-1)!} \psi(n + \tfrac{m}2) - g_m(x)
     % = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} \psi(n + \tfrac{m}2 + 1) - g_m(x)
@@ -1232,25 +1233,25 @@ Differentiating the series within $g_m$ yields
     % )
     % = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} \tfrac1{n + \tfrac{m}2}
     = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} (n + \tfrac{m}2)^{-1}
-    = \cdots
     \,.
-\end{equation*}
+\end{equation}
 Since $
     e^t  = \sum_{n\geq 0} \tfrac{t^n}{n!}
-$ on $\mathbb{R}$, for $\alpha\neq 0$ we have $
-  \int_0^x t^{\alpha-1} dt
-    = \tfrac{x^\alpha}{\alpha}
-$ and
-\begin{equation*}  \label{eq:g-m-deriv-int-1}
+$ on $\mathbb{R}$, for $\alpha\neq 0$ we have
+% $
+%   \int_0^x t^{\alpha-1} dt
+%     = \tfrac{x^\alpha}{\alpha}
+% $ and
+\begin{equation}  \label{eq:g-m-deriv-int-1}
   \sum_{n\geq 0} \int_0^x \frac{t^{n+\alpha-1}}{n!} dt
-    = \int_0^x \sum_{n\geq 0} \frac{t^{n+\alpha-1}}{n!} dt
+    % = \int_0^x \sum_{n\geq 0} \frac{t^{n+\alpha-1}}{n!} dt
     = \int_0^x t^{\alpha-1} e^t dt
     \,,
   % the MCT ([0, x], \mathcal{B}([0, x]), dx)
-\end{equation*}
+\end{equation}
 by the monotone convergence theorem, whence
 \begin{equation}  \label{eq:g-m-deriv-int-2}
-  \cdots
+  \eqref{eq:g-m-deriv}
     = x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
         \frac{x^{n + \tfrac{m}2}}{n!} (n + \tfrac{m}2)^{-1}
     % = x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
@@ -1259,17 +1260,17 @@ by the monotone convergence theorem, whence
     %     \int_0^x t^{\tfrac{m}2 - 1} \sum_{n\geq 0} \frac{t^n}{n!} dt
     = x^{-\tfrac{m}2} e^{-x}
         \int_0^x t^{\tfrac{m}2 - 1} e^t dt
-    = \cdots
     \,.
 \end{equation}
 The substitution $u^2 = t$ on $[0, \infty]$ with $2u du = dt$ yields
-$$
-\frac{d}{d x} g_m(x)
-  = x^{-\tfrac{m}2} e^{-x}
-      \int_0^x t^{\tfrac{m}2 - 1} e^t dt
-  = 2 x^{-\tfrac{m}2} e^{-x}
-      \int_0^{\sqrt{x}} u^{m - 1} e^{u^2} du
-  \,. $$
+\begin{equation}  \label{eq:g-m-deriv-int-3}
+  \frac{d}{d x} g_m(x)
+    % = x^{-\tfrac{m}2} e^{-x}
+    %     \int_0^x t^{\tfrac{m}2 - 1} e^t dt
+    = 2 x^{-\tfrac{m}2} e^{-x}
+        \int_0^{\sqrt{x}} u^{m - 1} e^{u^2} du
+    \,.
+\end{equation}
 In particular, for $m=1$ we get
 \begin{equation}  \label{eq:g-m-series-one}
   g_1(x)
@@ -1286,7 +1287,7 @@ and the derivative \eqref{eq:g-m-deriv} can be computed thus
 using $
   F \colon \mathbb{R} \to \mathbb{R}
   \colon x \mapsto e^{-x^2} \int_0^x e^{u^2} du
-$ (Dawson's integral) a special function.
+$ Dawson's integral (special function).
 
 The derivative of \eqref{eq:ard-kl-div-real} with respect to $\alpha$ is
 $$
@@ -1296,39 +1297,42 @@ $$
   % = -\tfrac1{2 \alpha^2} 2 \tfrac{F(\tfrac1{\sqrt{2\alpha}})}{\tfrac1{\sqrt{2\alpha}}}
   = -\tfrac1{\alpha} \sqrt{\tfrac2{\alpha}} F(\tfrac1{\sqrt{2\alpha}})
   \,. $$
-However, since $\alpha$ is nonnegative, it is typically parameterized via its logarithm
-and computed when needed. Thus the gradient w.r.t $\log \alpha$ is
+Since $\alpha$ is nonnegative, it is typically parameterized via its logarithm and computed
+when needed. Thus the gradient of \eqref{eq:ard-kl-div-real} w.r.t $\log \alpha$ is
 \begin{equation}  \label{eq:real-kl-div-deriv-log}
-  \frac{d}{d\log \alpha}
-    \tfrac12 \mathbb{E}_{z \sim \mathcal{N}(0,1)}
-    \log \lvert z + \tfrac1{\sqrt{\alpha}} \rvert^2
-    = \frac12 \frac{d\alpha}{d\log \alpha}
-      \frac{d}{d\alpha} \bigl(\mathbb{E}\cdots \bigr)
+  \frac{d \eqref{eq:ard-kl-div-real}}{d\log \alpha}
+  % \frac{d}{d\log \alpha}
+  %   \frac12 \mathbb{E}_{z \sim \mathcal{N}(0,1)}
+  %     \log \lvert z + \tfrac1{\sqrt{\alpha}} \rvert^2
+    % = \frac12 \frac{d\alpha}{d\log \alpha}
+    %   \frac{d}{d\alpha} \bigl(\mathbb{E}\cdots \bigr)
     % = - \frac\alpha2 \tfrac1{\alpha}
     %   \sqrt{\tfrac2{\alpha}} F(\tfrac1{\sqrt{2\alpha}})
-    = - \tfrac1{\sqrt{2\alpha}} F(\tfrac1{\sqrt{2\alpha}})
+    = - \frac1{\sqrt{2\alpha}} F\bigl(\tfrac1{\sqrt{2\alpha}}\bigr)
     \,.
 \end{equation}
 
 We replicated the simulation experiment in \citep{molchanov_variational_2017} and recovered
 the same nonlinear approximation result reported therein. We sampled $10^7$ draws of  and 
-The coefficients are within
-$1\%$ relative tolerance of the reported.
+The coefficients are within $1\%$ relative tolerance of the reported.
 $$
-- KL(\mathcal{N}(w \mid \mu, \alpha \mu^2) \|
-    \tfrac1{\lvert w \rvert})
+  \eqref{eq:ard-kl-div-real}
+% - KL(\mathcal{N}(w \mid \mu, \alpha \mu^2) \|
+%     \tfrac1{\lvert w \rvert})
+%   \approx
+%     k_1 \sigma(k_2 + k_3 \log \alpha)
+%     + C \big\vert_{C = -k1}
+%     - \tfrac12 \log (1 + e^{-\log \alpha})
   % = \tfrac12 \log \alpha
   %   - \mathbb{E}_{\xi \sim \mathcal{N}(1, \alpha)}
   %   \log{\lvert \xi \rvert} + C
   \approx
-    k_1 \sigma(k_2 + k_3 \log \alpha) + C \big\vert_{C = -k1}
-    - \tfrac12 \log (1 + e^{-\log \alpha})
+    \frac12 \log{\bigl(1 + e^{-\log \alpha}\bigr)}
+    + k_1 \sigma\bigl(- (k_2 + k_3 \log \alpha)\bigr)
+    % - k_1 \bigl(1 - \sigma(k_2 + k_3 \log \alpha)\bigr)
   \,. $$
 % in parctial implementations we suggest using softplus to numerically comptue the last
 % term, since it is typically implemented in a floating-point stable fashion.
-The numerically estimated derivative of the penalty term wrt $\log \alpha$ using forward
-differences seems to be following \eqref{eq:real-kl-div-deriv-log} very closely (up to
-sampling error) see fig.~\ref{fig:molchanov-derivative-replica}.
 
 \begin{figure}[!ht]
   \centering
@@ -1345,16 +1349,14 @@ we can essentially ignore it's forward pass value (level) and just compute its g
 (subgradient, normal cone) with respect the parameter of interest in sgd. (unless it is a
 part of a constraint, ie. downstream computation)
 
+The numerically estimated derivative of the penalty term wrt $\log \alpha$ using forward
+differences seems to be following \eqref{eq:real-kl-div-deriv-log} very closely (up to
+sampling error) see fig.~\ref{fig:molchanov-derivative-replica}.
+
 % subsection real-chisq-grad (end)
 
 \subsection{Backpropagation through $\cplx$-networks} % (fold)
 \label{sub:wirtinger_calculus}
-
-% TLDR: we use Wirtinger calculus!
-Following \citep{trabelsi_deep_2017}, we naturally identify $\cplx$ with $\real^2$ via $
-  z_\mathrm{r} + j z_\mathrm{i} \mapsto (z_\mathrm{r}, z_\mathrm{i})
-$, storing the real and imaginary parts in interleaved format, and emulate $\cplx$-algebra
-using $\real$-valued arithmetic. 
 
 % essential intro into Wirtinger calculus (CR)
 % https://math.stackexchange.com/a/444493
@@ -1364,20 +1366,7 @@ $, and regards $
   f\colon \cplx \to \cplx
 $ as an equivalent in algebraic sense function $F\colon \real^2 \to \cplx$ defined $
   f(z) = f(u + jv) = F(u, v)
-$. Under this identification, we define two formal derivative operators
-$
-  \tfrac{\partial}{\partial z}
-    = \tfrac12 \bigl(
-      \tfrac{\partial}{\partial u}
-      - j \tfrac{\partial}{\partial v}
-    \bigr)
-$ and $
-  \tfrac{\partial}{\partial \conj{z}}
-    = \tfrac12 \bigl(
-      \tfrac{\partial}{\partial u}
-      + j \tfrac{\partial}{\partial v}
-    \bigr)
-$ and the differential of $f$ at $z \in \cplx$ as
+$. Within this framework the differential of $f$ at $z \in \cplx$ is
 $$
 df(z) \big\vert_{z=u + jv}
   = \frac{\partial f}{\partial z} dz
@@ -1402,10 +1391,23 @@ df(z) \big\vert_{z=u + jv}
      + \frac{\partial F}{\partial v} dv
    = dF(u, v)
   \,, $$
-where $dz = du + j dv$ and $d\conj{z} = du - j dv$. This implies that the complex argument
-and its conjugate are treated as independent variables. Cauchy-Riemann conditions $
+with formally defined derivatives $
+  \tfrac{\partial}{\partial z}
+    = \tfrac12 \bigl(
+      \tfrac{\partial}{\partial u}
+      - j \tfrac{\partial}{\partial v}
+    \bigr)
+$ and $
+  \tfrac{\partial}{\partial \conj{z}}
+    = \tfrac12 \bigl(
+      \tfrac{\partial}{\partial u}
+      + j \tfrac{\partial}{\partial v}
+    \bigr)
+$, and differentials $dz = du + j dv$ and $d\conj{z} = du - j dv$. This implies that the
+complex argument and its conjugate are treated as independent variables. Cauchy-Riemann
+conditions $
   -j \tfrac{\partial F}{\partial v} = \tfrac{\partial F}{\partial u}
-$ impose a rigid structure on real and imaginary parts of $F$ and can be expressed as $
+$ scan be expressed as $
   \tfrac{\partial f}{\partial \conj{z}} = 0
 $ in this notation. Thus $\cplx\real$ calculus subsumes the usual $\cplx$-calculus on
 holomorphic functions, when $f(z)$, regarded as $f(z, \conj{z})$, is constant with respect
@@ -1456,7 +1458,12 @@ Thus, the gradient of $f$ at $z$ is given by $
   \nabla_z f(z)
     = \tfrac{\partial F}{\partial u}
       + j \tfrac{\partial F}{\partial v}
-$. Therefore, Wirtinger calculus makes it possible to reuse $\real$-backpropagation.
+$.
+
+Natural identification of $\cplx$ with $\real\times \real$, storing the real and imaginary
+parts in interleaved format, emulation of $\cplx$-algebra using $\real$-valued arithmetic,
+and Wirtinger calculus make it possible to reuse $\real$-backpropagation and existing
+auto-differentiation frameworks, \citep{trabelsi_deep_2017}.
 
 % subsection wirtinger_calculus (end)
 
