@@ -1252,18 +1252,19 @@ $ on $\mathbb{R}$ and $
     = \int_0^x t^{\alpha-1} dt
 $ for $\alpha\neq 0$ we get
 % by the monotone convergence theorem on ([0, x], \mathcal{B}([0, x]), dx)
-\begin{equation}  \label{eq:g-m-deriv-int-2}
+\begin{align}  \label{eq:g-m-deriv-int-2}
   \eqref{eq:g-m-deriv}
     % = x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
     %     \frac{x^{n + \tfrac{m}2}}{n!} (n + \tfrac{m}2)^{-1}
-    = x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
+    &= x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
         \frac1{n!} \int_0^x t^{n + \tfrac{m}2 - 1} dt
     % = x^{-\tfrac{m}2} e^{-x}
     %     \int_0^x t^{\tfrac{m}2 - 1} \sum_{n\geq 0} \frac{t^n}{n!} dt
-    = x^{-\tfrac{m}2} e^{-x}
+    \notag \\
+    &= x^{-\tfrac{m}2} e^{-x}
         \int_0^x t^{\tfrac{m}2 - 1} e^t dt
     \,.
-\end{equation}
+\end{align}
 Substitution $u^2 = t$ on $[0, \infty]$ with $2u du = dt$ yields
 \begin{equation}  \label{eq:g-m-deriv-int-3}
   \frac{d}{d x} g_m(x)
