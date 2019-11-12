@@ -436,23 +436,21 @@ version of the local reparameterization trick. Then we move on to choosing suita
 and then onward to deriving explicit expressions for the divergence penalties in \eqref{eq:elbo}
 in terms of special functions.
 
-%notation
-We use the following notation: $M^{\top}$ is the matrix transpose, $\conj{M}$ is elementwise
-complex conjugation, and $M^{\hop} = (\conj{M})^\top$ denotes Hermitian conjugate.
-
 \subsection{Complex Gaussians and Local Reparameterization} % (fold)
 \label{sub:c_gauss_and_local_rep}
 
-A random vector $z\in \cplx^m$ has complex Gaussian distribution, $
-  z \sim q(z) = \mathcal{N}^{\cplx}_m(\mu, \Gamma, C)
-$, with mean $\mu \in \cplx^m$ and $\cplx^{m\times m}$ covariance and relation matrices
+%notation
+In the following $M^{\top}$ is the matrix transpose, $\conj{M}$ is elementwise complex
+conjugation, and $M^{\hop} = (\conj{M})^\top$ denotes Hermitian conjugate.
+
+A vector $z\in \cplx^m$ has complex Gaussian distribution, $
+  q(z) = \mathcal{N}^{\cplx}_m(\mu, \Gamma, C)
+$ with mean $\mu \in \cplx^m$ and $\cplx^{m\times m}$ covariance and relation matrices
 $\Gamma$ and $C$, respectively, if
 \begin{equation}  \label{eq:cn-paired-real-density}
-  \Bigl(
-    \begin{smallmatrix}
-      \Re z \\ \Im z
-    \end{smallmatrix}
-  \Bigr)
+  \begin{pmatrix}
+    \Re z \\ \Im z
+  \end{pmatrix}
     \sim \mathcal{N}_{2 m}\biggl(
       \Bigl(
         \begin{smallmatrix}
@@ -468,7 +466,7 @@ $\Gamma$ and $C$, respectively, if
     \biggr)
     \,,
 \end{equation}
-provided they satisfy $\Gamma \succeq 0$, $\Gamma^{\hop} = \Gamma$, $C^\top = C$, and $
+provided $\Gamma \succeq 0$, $\Gamma^{\hop} = \Gamma$, $C^\top = C$, and $
   \conj{\Gamma} \succeq C^{\hop} \Gamma^{-1} C
 $. Matrices $\Gamma$ and $C$ are $
   \mathbb{E} (z - \mu)(z - \mu)^{\hop}
@@ -568,14 +566,14 @@ The entropy of a $\cplx$-Gaussian in terms of $\Gamma$ and $C$ is
     \,.
 \end{align}
 A $\cplx$-Gaussian vector $z$ is \textit{proper} if $z$ and $\conj{z}$ are uncorrelated, i.e.
-$C = 0$. The entropy of a proper $\cplx$-Gaussian is
+$C = 0$. From \eqref{eq:c-gauss-entropy-derivation} its entropy is
 \begin{equation}  \label{eq:cn-proper-entropy}
   % determinant commutes with complex conjugation, since it is multilinear
   \mathbb{H}(q)
     % = \tfrac12 \log \det{(\pi e \Gamma)} \det{(\pi e (\conj{\Gamma} - \conj{C} \Gamma^{-1} C))}
     = \tfrac12 \log \det{(\pi e \Gamma)} \det{(\pi e \conj{\Gamma})}
     % = \tfrac12 \log \det{(\pi e \Gamma)} \conj{\det{(\pi e \Gamma)}}
-  %  = \tfrac12 \log \bigl\lvert \det{(\pi e \Gamma)} \bigr\rvert^2
+    % = \tfrac12 \log \bigl\lvert \det{(\pi e \Gamma)} \bigr\rvert^2
     = \log \bigl\lvert \det{(\pi e \Gamma)} \bigr\rvert
     \,.
     \tag{\ref{eq:c-gauss-entropy-derivation}'}
@@ -619,28 +617,28 @@ where mean, \textit{variance} and \textit{relation} are given by matrices $
 $ with $\Sigma_{ij} \in \real$, and $
   \lvert C_{ij} \rvert^2 \leq \Sigma_{ij}
 $. Property \eqref{eq:cn-affine} and independence of $W$ imply that for any $x \in \cplx^m$
-and $b \in \cplx^n$ the output $y = W x + b$ is distributed like
+and $b \in \cplx^n$ the components of $y = W x + b$ are independent with
 \begin{equation}  \label{eq:cplx-gauss-trick}
   y_i
     \sim \mathcal{N}^{\cplx}
-      \bigl(
-        e_i^\top \mu x + b,
+      \Bigl(
+        % e_i^\top \mu x + b_i,
+        b_i + \sum_{j=1}^m \mu_{ij} x_j,
         \, \sum_{j=1}^m \Sigma_{ij} \lvert x_j \rvert^2,
         \, \sum_{j=1}^m C_{ij} x_j^2
-      \bigr)
+      \Bigr)
     \,.
 \end{equation}
 The trick requires three matrix operations: $\mu x + b$, $\Sigma \lvert x \rvert^2$ and
-$C x^2$ with the modulus and power applied elementwise. For a proper approximation
-\eqref{eq:c-gauss-vi} the relation coefficients are zero.
+$C x^2$ with the modulus and power applied elementwise.
 
 The trick and dropout can be applied to any layer, the output of which depends linearly
-on its parameters, e.g. convolutional layers, affine and bilinear transformations ($
-  y_j = x^\top W^{(j)} z + b_j
-$). Similar to $\real$ case, variational dropout for $\cplx$ convolutions draws independent
+on its parameters, e.g. convolutional layers, affine and bilinear transformations $
+  (x, z) \mapsto x^\top W^{(j)} z + b_j
+$. Similar to $\real$ case, variational dropout for $\cplx$ convolutions draws independent
 kernel $W$ for each spatial patch in the input, since a convolution is a matrix product
-of $W$, unrolled into a toeplitz matrix, and flattened intput $\vec{x}$. Weight sharing
-is essentially pushed to shared variational parameters $\theta$ in the approximation $q_\theta$.
+of $W$, unrolled into a toeplitz matrix, and flattened intput $x$. Weight sharing is
+essentially pushed to shared variational parameters $\theta$ in the approximation $q_\theta$.
 The rationale is to reduce correlation in the gradient estimator stemming from kernel weights
 being shared between overlapping patches, \citep{kingma_variational_2015,citation_needed}.
 Thus \eqref{eq:cplx-gauss-trick} requires computing $\cplx$ convolutions of $x$, complex
@@ -649,22 +647,29 @@ respectively.
 %
 \todo{other reasons for patch-independent weights}
 
+% subsection c_gauss_and_local_rep (end)
+
+\subsection{The choice of priors and Kullback-Leibler divergence} % (fold)
+\label{sub:priors_and_kullback_leibler_divergence}
+
 For $\cplx$-variational dropout we propose using mean-field proper $\cplx$-Gaussian approximate
 posterior, e.g. parameters $W \in \cplx^{n\times m}$ of a dense linear layer follow
 \begin{equation}  \label{eq:c-gauss-vi}
   % (we omit the subscript $m=1$ for brevity)
   W \sim q(W)
     % = \prod_{ij} q(W_{ij})
-    = \prod_{ij} \mathcal{N}^{\cplx}(W_{ij} \mid \mu_{ij}, \sigma^2_{ij}, 0)
+    = \prod_{ij} \mathcal{N}^{\cplx}(
+      W_{ij} \mid
+        \mu_{ij},
+        \alpha_{ij} \lvert \mu_{ij} \rvert^2,
+        % \sigma^2_{ij},
+        0
+    )
   \,,
 \end{equation}
-and we use similar factorized approximation for convolutions. We propose to MAP estimates,
-of the biases i.e. assume an independent fully factorized Dirac approximation.
-
-% subsection c_gauss_and_local_rep (end)
-
-\subsection{The choice of priors and Kullback-Leibler divergence} % (fold)
-\label{sub:priors_and_kullback_leibler_divergence}
+and we use similar factorized approximation for convolutions. For this approximation the
+relation coefficients \eqref{eq:cplx-gauss-trick} are zero. We use MAP estimates of bias
+terms, i.e. assume an independent fully factorized Dirac approximation.
 
 We consider two priors for Bayesian dropout: log-uniform and $\cplx$-Gaussian empirical
 Bayes, \citep{kingma_variational_2015,molchanov_variational_2017,kharitonov_variational_2018}.
@@ -885,10 +890,10 @@ which is a degenerate $\cplx$-Gaussian distribution. \eqref{eq:cplx-gauss-trick}
 \begin{equation}  \label{eq:real-scal-gauss-trick}
   y_i
     \sim \mathcal{N}^{\cplx}\bigl(
-      e_i^\top \mu x + b,
+      % e_i^\top \mu x + b,
+      b_i + \sum_{j=1}^m \mu_{ij} x_j,
       \, \sum_j \alpha_{ij} \lvert x_{ij} \mu_{ij}\rvert^2,
-      \, \sum_j \alpha_{ij} (x_{ij} \mu_{ij})^2,
-      \,
+      \, \sum_j \alpha_{ij} (x_{ij} \mu_{ij})^2
     \bigr)
     \,.
 \end{equation}
@@ -1015,12 +1020,11 @@ smooth approximation to $\ell_0$ norm, i.e. the expected number of nonzero param
 \subsection{Complex-valued local reparameterization} % (fold)
 \label{sub:complex_valued_local_reparameterization}
 
-
 %notation
-By $e_i$ we denote the $i$-th real unit vector of dimensionality \textit{conforming} to
-the matrix-vector expression it is used in. $\vec{M}$ denotes \textit{row-major} flattening
+By $e_i$ we denote the $i$-th real unit vector of dimensionality \textit{conforming} to the
+matrix-vector expression it is used in. Let $\vec{M}$ denote \textit{row-major} flattening
 of $M$ into a vector, i.e. in lexicographic order of its indices. $\diag{(\cdot)}$ embeds
-$\cplx^n$ into $n\times n$ diagonal matrices. $\otimes$ denotes the Kronecker product,
+$\cplx^n$ into $n\times n$ diagonal matrices, and $\otimes$ denotes the Kronecker product,
 for which we note the following identities $
   \vec{P Q R} = (P \otimes R^\top) \vec{Q}
 $, and $
@@ -1067,7 +1071,7 @@ are independent whence \eqref{eq:cn-affine} implies
   y_i
     \sim \mathcal{N}^{\cplx}
       \bigl(
-        e_i^\top \mu x + b,
+        e_i^\top \mu x + b_i,
         \, \sum_{j=1}^m \Sigma_{ij} \lvert x_j \rvert^2,
         \, \sum_{j=1}^m C_{ij} x_j^2
       \bigr)
