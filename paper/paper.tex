@@ -185,16 +185,16 @@ identity for well-behaved densities:
     % = \mathbb{E}_{q(\omega)} \log{p(D \mid \omega)}
     % + \mathbb{E}_{q(\omega)} \log \frac{q(\omega)}{p(\omega \mid D)}
   \log p(D)
-    - KL(q(\omega) \| p(\omega \mid D))
+    - KL(q \| p(\omega \mid D))
     \\ = \mathbb{E}_{q(\omega)} \log{p(D \mid \omega)}
-    - KL(q(\omega) \| \pi(\omega))
+    - KL(q \| \pi)
     \,.
 \end{multline}
 This identity yields an equivalent problem for \eqref{eq:variational-progam}:
 maximizing the \textit{evidence lower bound} (ELBO)
 \begin{equation}  \label{eq:elbo_general}
   \mathcal{L}(\theta; \phi, \lambda)
-    = - KL(q_{\theta}(\omega) \| \pi_{\lambda}(\omega))
+    = - KL(q_{\theta} \| \pi_{\lambda})
       + \mathbb{E}_{\omega \sim q_{\theta}}
         \log p_{\phi}(D \mid \omega)
       % \mathbb{E}_{\omega \sim q_{\theta}}
@@ -222,7 +222,7 @@ $ and differentiable $
 $, then the SGVB is
 \begin{equation}  \label{eq:sgvb}
   \widetilde{\mathcal{L}}(\theta; \phi, \lambda)
-    = - KL(q_{\theta}(\omega) \| \pi_{\lambda}(\omega))
+    = - KL(q_{\theta} \| \pi_{\lambda})
       % + \frac{N}{\lvert B \rvert} \sum_{i\in B}
         % \log p(z_i \mid \omega_i)b
       + \frac1{L} \sum_{l=1}^L
@@ -230,7 +230,7 @@ $, then the SGVB is
         % \log p_{\phi}(D \mid \omega_{l})
         %   \Big\vert_{\omega_{l} = g(\varepsilon_{l}; \theta)}
       % =
-      % - KL(q_{\theta}(\omega) \| \pi(\omega))
+      % - KL(q_{\theta} \| \pi)
       % + N \mathbb{E}_{B \sim \{D\}_M \otimes q_\theta^M}
         % \hat{\mathbb{E}}_{z,\omega \sim B}
           % \log p(z \mid \omega)
@@ -245,7 +245,7 @@ For the purposes of this study, we assume that the observed data is independent,
 use minibatch version of \eqref{eq:sgvb} with $L=1$:
 \begin{equation}  \label{eq:elbo}
   \widetilde{\mathcal{L}}(\theta; \phi, \lambda)
-    = - KL(q_{\theta}(\omega) \| \pi_{\lambda}(\omega))
+    = - KL(q_{\theta} \| \pi_{\lambda})
       + \frac{N}{M} \sum_{i=1}^M
         \log p_{\phi}(z_i \mid g(\varepsilon_i; \theta))
     \,,
@@ -290,7 +290,7 @@ $ and factorized log-uniform prior $\pi(\omega)$ with $
 $. This unravels the divergence term in \eqref{eq:elbo} into a sum of the following
 analytically intractable terms:
 \begin{equation}  \label{eq:improper-kl-div-real}
-  KL(q_\theta(\omega) \| \pi(\omega))
+  KL(q_\theta \| \pi)
     \propto
       \frac12 \mathbb{E}_{\varepsilon \sim \mathcal{N}(0, 1)}
         \log{\Bigl\lvert \tfrac1{\sqrt{\alpha}} + \varepsilon \Bigr\rvert^2}
@@ -322,7 +322,7 @@ Maximizing \eqref{eq:elbo} over $\lambda$, holding other parameters fixed, yield
   \tau^* = {(\mu^2 + \sigma^2)}^{-1}
 $, whence
 \begin{equation}  \label{eq:ard-kl-div-real}
-  KL(q_\theta(\omega) \| \pi(\omega))
+  KL(q_\theta \| \pi)
     = \log{\bigl(1 + \tfrac1{\alpha} \bigr)}
     \,.
 \end{equation}
@@ -702,7 +702,7 @@ Bayes, \citep{kingma_variational_2015,molchanov_variational_2017,kharitonov_vari
 For a fully factorized approximation $q(\omega)$ and factorized prior belief $\pi(\omega)$,
 the divergence term in ELBO \eqref{eq:elbo} is
 \begin{equation}  \label{eq:elbo-general-kl-div}
-  KL(q(\omega) \| \pi(\omega))
+  KL(q \| \pi)
     % = \mathbb{E}_{\oemga \sim q(\oemga)} \log \tfrac{q(\oemga)}{\pi(\oemga)}
     % = \sum_{ij} \mathbb{E}_{\omega_{ij} \sim q(\omega_{ij})}
     %   \log \tfrac{q(\omega_{ij})}{\pi(\omega_{ij})}
