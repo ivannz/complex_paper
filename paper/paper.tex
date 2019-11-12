@@ -843,6 +843,8 @@ Since $\mathop{Ei}(x)$ has simple analytic derivative and \eqref{eq:elbo} depend
 on \eqref{eq:c-vd-kl-div}, it is possible to backpropagate through the divergence without
 forward evaluation.
 % Gradient-based optimiziation of \eqref{eq:elbo} usually does not use the value of the objective. 
+% In stochastic gradient methods are concerned more with the gradient, induced by the objective
+% function, rather than its value.
 
 % subsubsection variational_dropout (end)
 
@@ -1249,14 +1251,7 @@ $ on $\mathbb{R}$ and $
   \tfrac{x^\alpha}{\alpha}
     = \int_0^x t^{\alpha-1} dt
 $ for $\alpha\neq 0$ we get
-\begin{equation}  \label{eq:g-m-deriv-int-1}
-  \sum_{n\geq 0} \int_0^x \frac{t^{n+\alpha-1}}{n!} dt
-    % = \int_0^x \sum_{n\geq 0} \frac{t^{n+\alpha-1}}{n!} dt
-    = \int_0^x t^{\alpha-1} e^t dt
-    \,,
-  % the MCT ([0, x], \mathcal{B}([0, x]), dx)
-\end{equation}
-by the monotone convergence theorem, whence
+% by the monotone convergence theorem on ([0, x], \mathcal{B}([0, x]), dx)
 \begin{equation}  \label{eq:g-m-deriv-int-2}
   \eqref{eq:g-m-deriv}
     % = x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
@@ -1269,7 +1264,7 @@ by the monotone convergence theorem, whence
         \int_0^x t^{\tfrac{m}2 - 1} e^t dt
     \,.
 \end{equation}
-The substitution $u^2 = t$ on $[0, \infty]$ with $2u du = dt$ yields
+Substitution $u^2 = t$ on $[0, \infty]$ with $2u du = dt$ yields
 \begin{equation}  \label{eq:g-m-deriv-int-3}
   \frac{d}{d x} g_m(x)
     % = x^{-\tfrac{m}2} e^{-x}
@@ -1278,34 +1273,27 @@ The substitution $u^2 = t$ on $[0, \infty]$ with $2u du = dt$ yields
         \int_0^{\sqrt{x}} u^{m - 1} e^{u^2} du
     \,.
 \end{equation}
-In particular, for $m=1$ we get
-\begin{equation}  \label{eq:g-m-series-one}
-  g_1(x)
-    = - \gamma - 2 \log{2}
-    + e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} \sum_{p=1}^n \frac2{2p - 1}
-    \,,
-\end{equation}
-and the derivative \eqref{eq:g-m-deriv} can be computed thus
+In particular, the derivative of \eqref{eq:g-m-series} for $m=1$ is
 \begin{equation}  \label{eq:g-m-deriv-one}
   \frac{d}{d x} g_1(x)
-    = 2 \tfrac{F(\sqrt{x})}{\sqrt{x}}
+    = 2 \frac{F(\sqrt{x})}{\sqrt{x}}
     \,,
 \end{equation}
 using $
   F \colon \mathbb{R} \to \mathbb{R}
   \colon x \mapsto e^{-x^2} \int_0^x e^{u^2} du
 $ Dawson's integral (special function).
-
-The derivative of \eqref{eq:ard-kl-div-real} with respect to $\alpha$ is
+%
+Hence, the derivative of \eqref{eq:ard-kl-div-real} with respect to $\alpha$ is
 $$
-\tfrac{d}{d \alpha} g_1(\tfrac1{2\alpha})
-  = -\tfrac1{2 \alpha^2} g_1'(\tfrac1{2\alpha})
-  % = -\tfrac1{2 \alpha^2} 2 \tfrac{F(\sqrt{\tfrac1{2\alpha}})}{\sqrt{\tfrac1{2\alpha}}}
-  % = -\tfrac1{2 \alpha^2} 2 \tfrac{F(\tfrac1{\sqrt{2\alpha}})}{\tfrac1{\sqrt{2\alpha}}}
-  = -\tfrac1{\alpha} \sqrt{\tfrac2{\alpha}} F(\tfrac1{\sqrt{2\alpha}})
+\frac{d}{d \alpha} g_1(\tfrac1{2\alpha})
+  = -\frac1{2 \alpha^2} g_1'(\tfrac1{2\alpha})
+  % = -\frac1{2 \alpha^2} 2 \tfrac{F(\sqrt{\tfrac1{2\alpha}})}{\sqrt{\tfrac1{2\alpha}}}
+  % = -\frac1{2 \alpha^2} 2 \tfrac{F(\tfrac1{\sqrt{2\alpha}})}{\tfrac1{\sqrt{2\alpha}}}
+  = -\frac1{\alpha} \sqrt{\frac2{\alpha}} F(\tfrac1{\sqrt{2\alpha}})
   \,. $$
-Since $\alpha$ is nonnegative, it is typically parameterized via its logarithm and computed
-when needed. Thus the gradient of \eqref{eq:ard-kl-div-real} w.r.t $\log \alpha$ is
+Finally, since $\alpha$ is nonnegative, it is typically parameterized via its logarithm.
+The gradient of \eqref{eq:ard-kl-div-real} w.r.t $\log \alpha$ is
 \begin{equation}  \label{eq:real-kl-div-deriv-log}
   \frac{d \eqref{eq:ard-kl-div-real}}{d\log \alpha}
   % \frac{d}{d\log \alpha}
@@ -1319,10 +1307,11 @@ when needed. Thus the gradient of \eqref{eq:ard-kl-div-real} w.r.t $\log \alpha$
     \,.
 \end{equation}
 
-We replicated the simulation experiment in \citep{molchanov_variational_2017} and recovered
-the same nonlinear approximation result reported therein. We sampled $10^7$ draws of  and 
-The coefficients are within $1\%$ relative tolerance of the reported.
-$$
+We compute the Monte-Carlo estimator of \eqref{eq:ard-kl-div-real} on a sample of $10^7$
+draws over an equally spaced grid of $\log \alpha$ in $[-12, +12]$ of size $4096$. The optimal
+coefficients of the regression, proposed by \citep{molchanov_variational_2017}, are within
+$1\%$ relative tolerance of the reported therein.
+\begin{equation}  \label{eq:ard-kl-div-real-approx}
   \eqref{eq:ard-kl-div-real}
 % - KL(\mathcal{N}(w \mid \mu, \alpha \mu^2) \|
 %     \tfrac1{\lvert w \rvert})
@@ -1337,9 +1326,15 @@ $$
     \frac12 \log{\bigl(1 + e^{-\log \alpha}\bigr)}
     + k_1 \sigma\bigl(- (k_2 + k_3 \log \alpha)\bigr)
     % - k_1 \bigl(1 - \sigma(k_2 + k_3 \log \alpha)\bigr)
-  \,. $$
+  \,,
+\end{equation}
 % in parctial implementations we suggest using softplus to numerically comptue the last
 % term, since it is typically implemented in a floating-point stable fashion.
+The numerically estimated derivative of the penalty term wrt $\log \alpha$ using forward
+differences seems to be following \eqref{eq:real-kl-div-deriv-log} very closely (up to
+sampling error) see fig.~\ref{fig:molchanov-derivative-replica}. The derivative of
+\eqref{eq:ard-kl-div-real-approx} with respect to $\log \alpha$ appears to be very close
+to \eqref{eq:real-kl-div-deriv-log}.
 
 \begin{figure}[!ht]
   \centering
@@ -1348,17 +1343,6 @@ $$
   MC estimate, and exact derivative using \eqref{eq:real-kl-div-deriv-log}.}
   \label{fig:molchanov-derivative-replica}
 \end{figure}
-
-Now in SGD (and specifically in SGVB) we are concerned more with the gradient field, induced
-by the potential (which is the loss function), rather than the value itself. Thus, as far as
-the regularizing penalty term is concerned, which is used to regularize the loss objective,
-we can essentially ignore it's forward pass value (level) and just compute its gradient
-(subgradient, normal cone) with respect the parameter of interest in sgd. (unless it is a
-part of a constraint, ie. downstream computation)
-
-The numerically estimated derivative of the penalty term wrt $\log \alpha$ using forward
-differences seems to be following \eqref{eq:real-kl-div-deriv-log} very closely (up to
-sampling error) see fig.~\ref{fig:molchanov-derivative-replica}.
 
 % subsection real-chisq-grad (end)
 
