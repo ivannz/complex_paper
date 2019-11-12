@@ -171,8 +171,8 @@ Kullback-Leibler divergence of density $q$ from $p$ is
 % and, despite it not being a metric and requiring distributions with nested support,
 and is the natural choice for $\rho$, the main reason being that it satisfies the following
 identity for well-behaved densities:
-\begin{equation}  \label{eq:kl-div-master}
-  \log p(D)
+\begin{multline}  \label{eq:kl-div-master}
+  % \log p(D)
     % = \mathbb{E}_{q(\omega)} \log \frac{p(D, \omega)}{p(\omega \mid D)}
     % = \mathbb{E}_{q(\omega)} \log \frac{
     %   p(D \mid \omega) \pi(\omega)
@@ -181,32 +181,28 @@ identity for well-behaved densities:
     %   p(D \mid \omega) \pi(\omega)
     % }{q(\omega)}
     % + \mathbb{E}_{q(\omega)} \log \frac{q(\omega)}{p(\omega \mid D)}
-    % = \mathbb{E}_{q(\omega)} \log{p(D \mid \omega)}
     % - \mathbb{E}_{q(\omega)} \log \frac{q(\omega)}{\pi(\omega)}
+    % = \mathbb{E}_{q(\omega)} \log{p(D \mid \omega)}
     % + \mathbb{E}_{q(\omega)} \log \frac{q(\omega)}{p(\omega \mid D)}
-    = \mathbb{E}_{q(\omega)} \log{p(D \mid \omega)}
+  \log p(D)
+    - KL(q(\omega) \| p(\omega \mid D))
+    \\ = \mathbb{E}_{q(\omega)} \log{p(D \mid \omega)}
     - KL(q(\omega) \| \pi(\omega))
-    + KL(q(\omega) \| p(\omega \mid D))
     \,.
-\end{equation}
+\end{multline}
 This identity yields an equivalent problem for \eqref{eq:variational-progam}:
 maximizing the \textit{evidence lower bound} (ELBO)
 \begin{equation}  \label{eq:elbo_general}
-\begin{aligned}
-  & \underset{\theta, \phi, \lambda}{\text{maximize}}
-    & \mathcal{L}(\theta; \phi, \lambda)
-      & = \mathbb{E}_{\omega \sim q_{\theta}}
-          \log p_{\phi}(D \mid \omega)
-        - KL(q_{\theta}(\omega) \| \pi_{\lambda}(\omega))
-        % \mathbb{E}_{\omega \sim q_{\theta}}
-          % \log\frac{q_\theta(\omega)}{\pi_{\lambda}(\omega)}
-  % \\
-  % & &
-  %     & = \mathbb{E}_{\omega \sim q_{\theta}}
-  %         \log{p_{\phi}(D \mid \omega) \pi_{\lambda}(\omega)}
-  %       + \mathbb{H}(q_{\theta})
+  \mathcal{L}(\theta; \phi, \lambda)
+    = - KL(q_{\theta}(\omega) \| \pi_{\lambda}(\omega))
+      + \mathbb{E}_{\omega \sim q_{\theta}}
+        \log p_{\phi}(D \mid \omega)
+      % \mathbb{E}_{\omega \sim q_{\theta}}
+        % \log\frac{q_\theta(\omega)}{\pi_{\lambda}(\omega)}
+  % = \mathbb{E}_{\omega \sim q_{\theta}}
+  %     \log{p_{\phi}(D \mid \omega) \pi_{\lambda}(\omega)}
+  %   + \mathbb{H}(q_{\theta})
   \,,
-\end{aligned}
 \end{equation}
 where the prior and likelihood are allowed to depend on explicit parameters. The most
 commonly used algorithm to optimize \eqref{eq:elbo_general} is EM-algorithm. Other
@@ -230,8 +226,9 @@ $, then the SGVB is
       % + \frac{N}{\lvert B \rvert} \sum_{i\in B}
         % \log p(z_i \mid \omega_i)b
       + \frac1{L} \sum_{l=1}^L
-        \log p_{\phi}(D \mid \omega_{il})
-          \Big\vert_{\omega_{l} = g(\varepsilon_{l}; \theta)}
+        \log p_{\phi}(D \mid g(\varepsilon_{l}; \theta))
+        % \log p_{\phi}(D \mid \omega_{l})
+        %   \Big\vert_{\omega_{l} = g(\varepsilon_{l}; \theta)}
       % =
       % - KL(q_{\theta}(\omega) \| \pi(\omega))
       % + N \mathbb{E}_{B \sim \{D\}_M \otimes q_\theta^M}
