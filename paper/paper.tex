@@ -1074,7 +1074,7 @@ Its density is
     %         2 \Gamma(n + \tfrac{m}2)
     %     }
     = \frac12 e^{- \tfrac{x + \lambda}2} \bigl(\tfrac{x}2\bigr)^{\tfrac{m}2 - 1}
-      \sum_{n \geq 0} \tfrac{
+      \sum_{n \geq 0} \frac{
         \bigl(\tfrac{x \lambda}4\bigr)^n
       }{
         n! \Gamma(n + \tfrac{m}2)
@@ -1108,18 +1108,22 @@ Its density is
 %           \bigl( \tfrac{s}2 \bigr)^{2n}
 %       }{n! \Gamma(n + k + 1)}
 %   \,. $$
-In \eqref{eq:ard-kl-div-real} we need $
+The expectation $
   \mathbb{E}_{W\sim \chi^2_m(\lambda)} \log W
-$:
-\begin{align}
+$, needed in \eqref{eq:ard-kl-div-real}, by integrating power series \eqref{eq:nonchisq-density}
+with substitution $x \to 2u$ equals
+\begin{multline}  \label{eq:exp-log-chisq-proof}
     % &= \int_0^\infty f_W(x) \log x dx
     % \notag \\
-    &= \frac12 e^{- \tfrac\lambda2}
-    \int_0^\infty \sum_{n \geq 0} \biggl(
-        \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
-        \tfrac{e^{- \tfrac{x}2}}{\Gamma(n + \tfrac{m}2)}
-        \bigl(\tfrac{x}2\bigr)^{n + \tfrac{m}2 - 1}
-    \biggr) \log{(x)} dx
+    % &\frac12 e^{- \tfrac\lambda2}
+    % \int_0^\infty \sum_{n \geq 0} \biggl(
+    %     \frac{
+    %       e^{- \tfrac{x}2} \bigl(\tfrac\lambda2\bigr)^n
+    %     }{
+    %       n! \Gamma(n + \tfrac{m}2)
+    %     }
+    %     \bigl(\tfrac{x}2\bigr)^{n + \tfrac{m}2 - 1}
+    % \biggr) \log{(x)} dx
     % = [\text{ absolute summability and Fubini, or any other conv. thm for integrals of non-negative integrals}]
     % = e^{- \tfrac\lambda2} \sum_{n \geq 0}
     %     \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
@@ -1128,28 +1132,30 @@ $:
     %     e^{- \tfrac{x}2} \bigl(\tfrac{x}2\bigr)^{n + \tfrac{m}2 - 1}
     %     (\log2 + \log \tfrac{x}2) \tfrac{dx}2
     % = [u = \tfrac{x}2]
-    \notag \\
-    &= e^{- \tfrac\lambda2} \sum_{n \geq 0}
-        \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
-    \tfrac1{\Gamma(n + \tfrac{m}2)}
+    % \notag \\
+    e^{- \tfrac\lambda2} \sum_{n \geq 0}
+        \frac{\bigl(\tfrac\lambda2\bigr)^n}{
+          n! \Gamma(n + \tfrac{m}2)
+        }
     \int_0^\infty
         e^{- u} u^{n + \tfrac{m}2 - 1}
-        (\log2 + \log u) du
+        \log{(2 u)} du
     % = [\text{definitions:} \Gamma, \psi]
     % = e^{- \tfrac\lambda2} \sum_{n \geq 0}
     %     \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
     % (\psi(n + \tfrac{m}2) + \log2)
-    \notag \\
-    &= \log{2}
+    % \notag
+    \\
+    = \log{2}
     + e^{- \tfrac\lambda2} \sum_{n \geq 0}
-        \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
+        \frac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
         \psi(n + \tfrac{m}2)
     \,,
-\end{align}
+\end{multline}
 where $\psi(x)$ is the digamma function, i.e.
 \begin{equation}  \label{eq:digamma}
   \psi(x)
-    = \frac{d}{dx} \log \Gamma(x)
+    % = \frac{d}{dx} \log \Gamma(x)
     = \frac1{\Gamma(x)}
       \int_0^\infty
         u^{x-1} e^{-u} \log{u}
@@ -1174,7 +1180,7 @@ $ ($\gamma$ is Euler's constant). If we put
 then the desired expectation in \eqref{eq:ard-kl-div-real} equals $
   \log{2} + g_1(\tfrac1{2\alpha})
 $.
-
+%
 % We can differentiate the series in $g_m(x)$, since the sum converges on $\mathbb{R}$.
 % Indeed, it is a power series featuring nonnegative coefficients, which is dominated by $
 %   \sum_{n \geq 1} \tfrac{x^n}{n!} \log{(n+\tfrac{m}2)}
@@ -1222,8 +1228,8 @@ $.
 % the power series (everywhere on the convergence region). And the convergence
 % regions of derivative (integral) coincide with the region of the original
 % power series.
-
-Differentiating the series within $g_m$ yields
+%
+Differentiating the power series within $g_m$ yields
 \begin{equation}  \label{eq:g-m-deriv}
   \frac{d}{d x} g_m(x)
     % = e^{-x} \sum_{n\geq 1} \frac{x^{n-1}}{(n-1)!} \psi(n + \tfrac{m}2) - g_m(x)
@@ -1232,16 +1238,17 @@ Differentiating the series within $g_m$ yields
     %     \psi(n + \tfrac{m}2 + 1) - \psi(n + \tfrac{m}2)
     % )
     % = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} \tfrac1{n + \tfrac{m}2}
-    = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} (n + \tfrac{m}2)^{-1}
+    % = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} (n + \tfrac{m}2)^{-1}
+    = x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
+        \frac{x^{n + \tfrac{m}2}}{n!} (n + \tfrac{m}2)^{-1}
     \,.
 \end{equation}
-Since $
+From $
     e^t  = \sum_{n\geq 0} \tfrac{t^n}{n!}
-$ on $\mathbb{R}$, for $\alpha\neq 0$ we have
-% $
-%   \int_0^x t^{\alpha-1} dt
-%     = \tfrac{x^\alpha}{\alpha}
-% $ and
+$ on $\mathbb{R}$ and $
+  \tfrac{x^\alpha}{\alpha}
+    = \int_0^x t^{\alpha-1} dt
+$ for $\alpha\neq 0$ we get
 \begin{equation}  \label{eq:g-m-deriv-int-1}
   \sum_{n\geq 0} \int_0^x \frac{t^{n+\alpha-1}}{n!} dt
     % = \int_0^x \sum_{n\geq 0} \frac{t^{n+\alpha-1}}{n!} dt
@@ -1252,10 +1259,10 @@ $ on $\mathbb{R}$, for $\alpha\neq 0$ we have
 by the monotone convergence theorem, whence
 \begin{equation}  \label{eq:g-m-deriv-int-2}
   \eqref{eq:g-m-deriv}
-    = x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
-        \frac{x^{n + \tfrac{m}2}}{n!} (n + \tfrac{m}2)^{-1}
     % = x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
-    %     \frac1{n!} \int_0^x t^{n + \tfrac{m}2 - 1} dt
+    %     \frac{x^{n + \tfrac{m}2}}{n!} (n + \tfrac{m}2)^{-1}
+    = x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
+        \frac1{n!} \int_0^x t^{n + \tfrac{m}2 - 1} dt
     % = x^{-\tfrac{m}2} e^{-x}
     %     \int_0^x t^{\tfrac{m}2 - 1} \sum_{n\geq 0} \frac{t^n}{n!} dt
     = x^{-\tfrac{m}2} e^{-x}
@@ -1366,9 +1373,9 @@ $, and regards $
   f\colon \cplx \to \cplx
 $ as an equivalent in algebraic sense function $F\colon \real^2 \to \cplx$ defined $
   f(z) = f(u + jv) = F(u, v)
-$. Within this framework the differential of $f$ at $z \in \cplx$ is
+$. Within this framework the differential of $f$ at $z = u + jv \in \cplx$ is
 $$
-df(z) \big\vert_{z=u + jv}
+df(z)
   = \frac{\partial f}{\partial z} dz
     + \frac{\partial f}{\partial \conj{z}} d\conj{z}
    % = \frac12\bigl(
