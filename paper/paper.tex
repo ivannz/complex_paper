@@ -438,18 +438,7 @@ in terms of special functions.
 
 %notation
 We use the following notation: $M^{\top}$ is the matrix transpose, $\conj{M}$ is elementwise
-complex conjugation, and $M^{\hop} = (\conj{M})^\top$ denotes Hermitian conjugate. By $e_i$ we
-denote the $i$-th real unit vector of dimensionality \textit{conforming} to the matrix-vector
-expression it is used in. $\vec{M}$ denotes \textit{row-major} flattening of $M$ into a vector,
-i.e. in lexicographic order of its indices. $\diag{(\cdot)}$ embeds $\cplx^n$ into $n\times n$
-diagonal matrices. $\otimes$ denotes the Kronecker product, for which we note the following
-identities $
-  \vec{P Q R} = (P \otimes R^\top) \vec{Q}
-$, and $
-  (P \otimes R) (C \otimes S) = P Q \otimes R S
-$, \citep{petersen_matrix_2012}.
-% It follows from the definition of the Kronecker product
-% of $P$ and $R^\top$ and the row-major order vectorization.
+complex conjugation, and $M^{\hop} = (\conj{M})^\top$ denotes Hermitian conjugate.
 
 \subsection{Complex Gaussians and Local Reparameterization} % (fold)
 \label{sub:c_gauss_and_local_rep}
@@ -614,54 +603,23 @@ $C = 0$. The entropy of a proper $\cplx$-Gaussian is
 %       \end{pmatrix}
 %   \,. $$
 
-In $\cplx$-variational dropout we use mean-field proper $\cplx$-Gaussian approximate
-posterior: for a dense linear layer parameters $W \in \cplx^{n\times m}$ follow
-\begin{equation}  \label{eq:c-gauss-vi}
-  % (we omit the subscript $m=1$ for brevity)
-  W \sim q(W)
-    % = \prod_{ij} q(W_{ij})
-    = \prod_{ij} \mathcal{N}^{\cplx}(W_{ij} \mid \mu_{ij}, \sigma^2_{ij}, 0)
-  \,,
-\end{equation}
-and we use similar factorized approximation for convolutions. We propose to MAP estimates,
-of the biases i.e. assume an independent fully factorized Dirac approximation.
-
 The local reparameterization trick provides both faster computations, and better statistical
-efficiency of the SGVB gradient estimator, \citep{wang_fast_2013,kingma_variational_2015}. A
-general mean field $\cplx$-Gaussian approximation \eqref{eq:c-gauss-vi} for $
-  W \in \cplx^{n\times m}
-$ is
+efficiency of the SGVB gradient estimator, \citep{wang_fast_2013,kingma_variational_2015}.
+We assume that weights $W \in \cplx^{n\times m}$ of a dense linear layer are drawn from a
+mean field $\cplx$-Gaussian approximate posterior
 \begin{equation}  \label{eq:c-gauss-vi-general}
-  \vec{W}
-    \sim \mathcal{N}^{\cplx}_{nm} \bigl(
-      \vec{\mu}, \diag{\vec{\Sigma}}, \diag{\vec{C}}
+  W_{ij}
+    \sim \mathcal{N}^{\cplx} \bigl(
+      \mu_{ij}, \Sigma_{ij}, C_{ij}
     \bigr)
   \,,
 \end{equation}
-where mean, \textit{variance} and relation are given by matrices $
+where mean, \textit{variance} and \textit{relation} are given by matrices $
   \mu, \Sigma, C \in \cplx^{n\times m}
-$ with $\Sigma_{ij} \geq 0$, and $
+$ with $\Sigma_{ij} \in \real$, and $
   \lvert C_{ij} \rvert^2 \leq \Sigma_{ij}
-$. For any $x \in \cplx^m$ and $b\in \cplx^n$ $
-  y = W x + b
-    = (I_n \otimes x^\top) \vec{W} + b
-$, whence the covariance and relation matrices of $y$ are
-\begin{align}
-  (I \otimes x^\top) \diag{\vec{\Sigma}} (I \otimes x^\top)^{\hop}
-    % = \sum_{ij} (I \otimes x^\top) e_i \otimes e_j
-    %   \Sigma_{ij} (e_i \otimes e_j)^\top (I \otimes x^\top)^{\hop}
-    % = \sum_{ij} (e_i \otimes x^\top e_j)
-    %   \Sigma_{ij} (e_i \otimes x^\top e_j)^{\hop}
-    % = \sum_{ij} (e_i \otimes x_j) \Sigma_{ij} (e_i^\top \otimes \conj{x}_j)
-    & = \sum_{i=1}^n (e_i e_i^\top) \sum_{j=1}^m \Sigma_{ij} x_j \conj{x}_j
-    \,,  \label{eq:cn-gauss-lrt-cov} \\
-  (I \otimes x^\top) \diag{\vec{C}} (I \otimes x^\top)^\top
-    % = \sum_{ij} (e_i \otimes x_j) C_{ij} (e_i \otimes x_j)^\top
-    & = \sum_{i=1}^n (e_i e_i^\top) \sum_{j=1}^m C_{ij} x_j^2
-    \,.  \label{eq:cn-gauss-lrt-rel}
-\end{align}
-Since \eqref{eq:cn-gauss-lrt-cov} and \eqref{eq:cn-gauss-lrt-rel} are diagnal, $(y_i)_{i=1}^n$
-are independent whence \eqref{eq:cn-affine} implies
+$. Property \eqref{eq:cn-affine} and independence of $W$ imply that for any $x \in \cplx^m$
+and $b \in \cplx^n$ the output $y = W x + b$ is distributed like
 \begin{equation}  \label{eq:cplx-gauss-trick}
   y_i
     \sim \mathcal{N}^{\cplx}
@@ -690,6 +648,18 @@ square $x^2$, and amplitude $\lvert x \rvert^2$ with the mean, relation, and var
 respectively.
 %
 \todo{other reasons for patch-independent weights}
+
+For $\cplx$-variational dropout we propose using mean-field proper $\cplx$-Gaussian approximate
+posterior, e.g. parameters $W \in \cplx^{n\times m}$ of a dense linear layer follow
+\begin{equation}  \label{eq:c-gauss-vi}
+  % (we omit the subscript $m=1$ for brevity)
+  W \sim q(W)
+    % = \prod_{ij} q(W_{ij})
+    = \prod_{ij} \mathcal{N}^{\cplx}(W_{ij} \mid \mu_{ij}, \sigma^2_{ij}, 0)
+  \,,
+\end{equation}
+and we use similar factorized approximation for convolutions. We propose to MAP estimates,
+of the biases i.e. assume an independent fully factorized Dirac approximation.
 
 % subsection c_gauss_and_local_rep (end)
 
@@ -1041,6 +1011,71 @@ smooth approximation to $\ell_0$ norm, i.e. the expected number of nonzero param
 
 \section{Appendix} % (fold)
 \label{sec:appendix}
+
+\subsection{Complex-valued local reparameterization} % (fold)
+\label{sub:complex_valued_local_reparameterization}
+
+
+%notation
+By $e_i$ we denote the $i$-th real unit vector of dimensionality \textit{conforming} to
+the matrix-vector expression it is used in. $\vec{M}$ denotes \textit{row-major} flattening
+of $M$ into a vector, i.e. in lexicographic order of its indices. $\diag{(\cdot)}$ embeds
+$\cplx^n$ into $n\times n$ diagonal matrices. $\otimes$ denotes the Kronecker product,
+for which we note the following identities $
+  \vec{P Q R} = (P \otimes R^\top) \vec{Q}
+$, and $
+  (P \otimes R) (C \otimes S) = P Q \otimes R S
+$, \citep{petersen_matrix_2012}.
+% It follows from the definition of the Kronecker product
+% of $P$ and $R^\top$ and the row-major order vectorization.
+
+If we assume a mean field $\cplx$-Gaussian approximate posteriror for $
+  W \in \cplx^{n\times m}
+$, then
+\begin{equation}  \label{eq:c-gauss-vi-general}
+  \vec{W}
+    \sim \mathcal{N}^{\cplx}_{nm} \bigl(
+      \vec{\mu}, \diag{\vec{\Sigma}}, \diag{\vec{C}}
+    \bigr)
+  \,,
+\end{equation}
+where mean, \textit{variance} and relation are given by matrices $
+  \mu, \Sigma, C \in \cplx^{n\times m}
+$ with $\Sigma_{ij} \geq 0$, and $
+  \lvert C_{ij} \rvert^2 \leq \Sigma_{ij}
+$. For any $x \in \cplx^m$ and $b\in \cplx^n$ $
+  y = W x + b
+    = (I_n \otimes x^\top) \vec{W} + b
+$, whence the covariance and relation matrices of $y$ are
+\begin{align}
+  (I \otimes x^\top) \diag{\vec{\Sigma}} (I \otimes x^\top)^{\hop}
+    % = \sum_{ij} (I \otimes x^\top) e_i \otimes e_j
+    %   \Sigma_{ij} (e_i \otimes e_j)^\top (I \otimes x^\top)^{\hop}
+    % = \sum_{ij} (e_i \otimes x^\top e_j)
+    %   \Sigma_{ij} (e_i \otimes x^\top e_j)^{\hop}
+    % = \sum_{ij} (e_i \otimes x_j) \Sigma_{ij} (e_i^\top \otimes \conj{x}_j)
+    & = \sum_{i=1}^n (e_i e_i^\top) \sum_{j=1}^m \Sigma_{ij} x_j \conj{x}_j
+    \,,  \label{eq:cn-gauss-lrt-cov} \\
+  (I \otimes x^\top) \diag{\vec{C}} (I \otimes x^\top)^\top
+    % = \sum_{ij} (e_i \otimes x_j) C_{ij} (e_i \otimes x_j)^\top
+    & = \sum_{i=1}^n (e_i e_i^\top) \sum_{j=1}^m C_{ij} x_j^2
+    \,.  \label{eq:cn-gauss-lrt-rel}
+\end{align}
+Since \eqref{eq:cn-gauss-lrt-cov} and \eqref{eq:cn-gauss-lrt-rel} are diagonal, $(y_i)_{i=1}^n$
+are independent whence \eqref{eq:cn-affine} implies
+\begin{equation}  \label{eq:cplx-gauss-trick}
+  y_i
+    \sim \mathcal{N}^{\cplx}
+      \bigl(
+        e_i^\top \mu x + b,
+        \, \sum_{j=1}^m \Sigma_{ij} \lvert x_j \rvert^2,
+        \, \sum_{j=1}^m C_{ij} x_j^2
+      \bigr)
+    \,.
+\end{equation}
+Hence \eqref{eq:cplx-gauss-trick} folows.
+
+% subsection complex_valued_local_reparameterization (end)
 
 \subsection{Gradient of the KL-divergence in $\real$ case} % (fold)
 \label{sub:real-chisq-grad}  % gradient_of_the_kl_divergence_in_R_case
