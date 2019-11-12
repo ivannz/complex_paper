@@ -239,7 +239,7 @@ $, then the SGVB is
 where $
   (\varepsilon_{l})_{l=1}^L
 $ is an iid sample from $p_\varepsilon$. Intractable KL-divergence terms can be replaced
-by differentiable unbiased Monte-Carlo estimators, \citep{kingma_auto-encoding_2014}.
+by differentiable unbiased sampling estimators, \citep{kingma_auto-encoding_2014}.
 %
 For the purposes of this study, we assume that the observed data is independent, and
 use minibatch version of \eqref{eq:sgvb} with $L=1$:
@@ -379,28 +379,24 @@ $\cplx$-valued activations, complex batch-normalization and suitable weight init
 Their approach makes a complex-valued network into an intricately connected $\real$-valued
 computational graph that respects $\cplx$-algebra.
 
-In particular, linear layers
-$
-  L \colon \cplx^{\mathrm{[in]}}
-    \to \cplx^{\mathrm{[out]}}
+In particular, natural identification of $\cplx$ and $\real^2$ implies that linear layers $
+  L \colon \cplx^m \to \cplx^n
 $ act upon their inputs as follows:
 \begin{equation}  \label{eq:cplx-lin-op}
-  \real^{2 \times \mathrm{[in]}}
-    \to \real^{2 \times \mathrm{[out]}}
-    \colon (x_r, x_i)
+  {(\real^n)}^{2}
+    \to {(\real^m)}^{2}
+    \colon (u, v)
       \mapsto \Bigl(
-        L_r x_r - L_i x_i,
-        L_r x_i + L_i x_r
+        P u - Q v,
+        P v + Q u
       \Bigr)
     \,,
 \end{equation}
 where $
-  L_r, L_i
-    \colon \real^{\mathrm{[in]}}
-      \to \real^{\mathrm{[out]}}
-$ are unique operators that make up $L = L_r + j L_i$. A $\cplx$-convolutional layer with
-kernel $W$ can be implemented as two $\real$-convolutions with kernels $\Re{W}$ and $\Im{W}$
-using \eqref{eq:cplx-lin-op}. Algebraic operations, trigonometric functions, are implemented
+  P, Q \colon \real^{n} \to \real^{m}
+$ are unique operators such that $L = P + j Q$. A $\cplx$-convolutional layer with kernel
+$W$ can be implemented as two $\real$-convolutions with kernels $\Re{W}$ and $\Im{W}$ using
+\eqref{eq:cplx-lin-op}. Algebraic operations, trigonometric functions, are implemented
 through operations in $\real^2$. Activations, considered in \citep{trabelsi_deep_2017} include
 independent componentwise application of $\real$-valued non-linearities, $
   z = u + j v
@@ -463,18 +459,23 @@ A random vector $z\in \cplx^m$ has complex Gaussian distribution, $
 $, with mean $\mu \in \cplx^m$ and $\cplx^{m\times m}$ covariance and relation matrices
 $\Gamma$ and $C$, respectively, if
 \begin{equation}  \label{eq:cn-paired-real-density}
-  \begin{pmatrix}
-    \Re z \\ \Im z
-  \end{pmatrix}
+  \Bigl(
+    \begin{smallmatrix}
+      \Re z \\ \Im z
+    \end{smallmatrix}
+  \Bigr)
     \sim \mathcal{N}_{2 m}\biggl(
-      \begin{pmatrix}
-        \Re \mu \\ \Im \mu
-      \end{pmatrix},
-      \frac12
-      \begin{pmatrix}
-        \Re{(\Gamma + C)} & - \Im{(\Gamma - C)} \\
-        \Im{(\Gamma + C)} &   \Re{(\Gamma - C)}
-      \end{pmatrix}
+      \Bigl(
+        \begin{smallmatrix}
+          \Re \mu \\ \Im \mu
+        \end{smallmatrix}
+      \Bigr),
+      \tfrac12 \Bigl(
+        \begin{smallmatrix}
+          \Re{(\Gamma + C)} & \Im{(C - \Gamma)} \\
+          \Im{(\Gamma + C)} & \Re{(\Gamma - C)}
+        \end{smallmatrix}
+      \Bigr)
     \biggr)
     \,,
 \end{equation}
@@ -502,8 +503,7 @@ and $b \in \cplx^{n}$
   \,.
 \end{equation}
 %
-From \eqref{eq:cn-paired-real-density} the entropy of a $\cplx$-Gaussian in terms of
-$\Gamma$ and $C$ is
+The entropy of a $\cplx$-Gaussian in terms of $\Gamma$ and $C$ is
 \begin{align}  \label{eq:c-gauss-entropy-derivation}
   \mathbb{H}(q)
     & = - \mathbb{E}_{z \sim q} \log{q(z)}
@@ -578,8 +578,8 @@ $\Gamma$ and $C$ is
       \det{(\pi e (\conj{\Gamma} - \conj{C} \Gamma^{-1} C))}
     \,.
 \end{align}
-A $\cplx$-Gaussian vector $z$ is \textit{proper}, if $z$ and $\conj{z}$ are uncorrelated, i.e.
-$C = 0$. The entropy of proper $\cplx$-Gaussians is
+A $\cplx$-Gaussian vector $z$ is \textit{proper} if $z$ and $\conj{z}$ are uncorrelated, i.e.
+$C = 0$. The entropy of a proper $\cplx$-Gaussian is
 \begin{equation}  \label{eq:cn-proper-entropy}
   % determinant commutes with complex conjugation, since it is multilinear
   \mathbb{H}(q)
@@ -588,7 +588,8 @@ $C = 0$. The entropy of proper $\cplx$-Gaussians is
     % = \tfrac12 \log \det{(\pi e \Gamma)} \conj{\det{(\pi e \Gamma)}}
   %  = \tfrac12 \log \bigl\lvert \det{(\pi e \Gamma)} \bigr\rvert^2
     = \log \bigl\lvert \det{(\pi e \Gamma)} \bigr\rvert
-    \tag{\ref{eq:c-gauss-entropy-derivation}'}\,.
+    \,.
+    \tag{\ref{eq:c-gauss-entropy-derivation}'}
 \end{equation}
 %
 % The roles of $\Gamma$ and $C$ are more evident in univariate case: here $
@@ -613,18 +614,16 @@ $C = 0$. The entropy of proper $\cplx$-Gaussians is
 %       \end{pmatrix}
 %   \,. $$
 
-In $\cplx$-variational dropout we use mean-field proper $\cplx$-Gaussian variational
-approximation. Specifically, parameters $W \in \cplx^{n\times m}$ of a dense layer follow
+In $\cplx$-variational dropout we use mean-field proper $\cplx$-Gaussian approximate
+posterior: for a dense linear layer parameters $W \in \cplx^{n\times m}$ follow
 \begin{equation}  \label{eq:c-gauss-vi}
   % (we omit the subscript $m=1$ for brevity)
   W \sim q(W)
-    = \prod_{ij} q(W_{ij})
-  \,,\,
-    q(W_{ij})
-      = \mathcal{N}^{\cplx}(W_{ij} \mid \mu_{ij}, \sigma^2_{ij}, 0)
+    % = \prod_{ij} q(W_{ij})
+    = \prod_{ij} \mathcal{N}^{\cplx}(W_{ij} \mid \mu_{ij}, \sigma^2_{ij}, 0)
   \,,
 \end{equation}
-and we use similar factorized approximation for convolution. We propose to MAP estimates,
+and we use similar factorized approximation for convolutions. We propose to MAP estimates,
 of the biases i.e. assume an independent fully factorized Dirac approximation.
 
 The local reparameterization trick provides both faster computations, and better statistical
