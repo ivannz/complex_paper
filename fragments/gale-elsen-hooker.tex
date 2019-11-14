@@ -1,0 +1,77 @@
+Deep networks achieve state-of-the-art performance on many practical tasks, including
+image recognition \citep{citation_needed}, speech synthesis \citep{citation_needed},
+automatic translation \citep{citation_needed}. Although performance tends to improve
+with the model size, training and deploying large models becomes challenging. Several
+aprroaches tackling this are being acitvely developed: model compression \citep{pruning},
+distillation \citep{distill} and sparsification. The latter one essentially reduces
+the numerical and storage complexity by zeroing as many parameters of the model as
+possbile without significant performance loss. This has foremost importance in resource
+constrained applications, such as embedded systems and mobile devices.
+
+sparisity inducing methods impose structure on the topology of sparse weights
+unstructured -- gives the achievable maximum of the compression-accuracy tradeoff, but
+poses challenges in practical implementations (popr chace performance, almost as if
+random access model).
+
+Learnt Sparse topology can be trained from scratch to full performance (this is what
+we use in train-compressed phase). reinitialization or continuation. But Gale et al.
+faield to replicate successfull training from scratch (even for longer training), and
+the results were worse than mag-prune. the likely reason is the complexity of the task
+and scale of the models.
+
+Sparsification techniques demonstrated deliver sota compression on small models / datasets,
+perform inconsistently, and that simple heiristic approaches yield better results with less
+computational costs. And provide strong counterexamples to reusability of the learnt sparse
+topology.
+
+% their paper
+goal: apply sparsity inducing techniques to large-scale models and datasets
+\citet{galehooker} raise an important issue that all sparsification techniques have been
+propsed and tested on relatively small models, and skew towards convolutional architectures.
+Sparsification is like architecture search: the space being the connectivity the computational
+graph of the model. Evaluate smooth $\ell_0$ regularization \citep{louizos}, variational
+dropout \citep{kingma2015} and magnitude pruning \citep{zhu-gupta2017} \ref{datasets}.
+
+Show that var-dropout and $\ell_0$ demonstrate inconsistent performance on large-scale tasks
+in contrast to magnitude pruning, i.e removing small weights $\ell_1$ hard thresholding.
+
+($\ell_0$ regularization) explicitly penalizes the expected number of non-zero parameters
+by using multiplicative noise drawn from hard-concrete distribution, that allows differentiating
+through sampling.
+
+(var-dropout) var inference over a fully factorized Gaussian posterior over the weights under
+log-uniform prior. Local reparameterization to move noise from parameters to intermediate activations
+and apply additive noise to further reduce the variance of the gradient. Verify the implementation
+by reproducing the results of the original paper \citep{molchanovetal2017}.
+
+(mag-pruning) reactivation of masked weights during training based on grads and sorting schedule.
+
+(random pruning) does not permit reactivation, gives lower bound to sparsity-accuracy trade off.
+
+% datasets and experiment setup
+Constant number of training steps, extensive hyperparameter tuning
+
+(random) Benchmark aginst random weight pruning
+
+(resnet) ResNet-50 (He et al. 2016) on ImageNet. 128k iter x 1024 batch 
+SGD w. mom; lr ramp-up 5ep. up 0.4, ÷ 10 every 30ep, see TF resnet-50
+Sparsify conv and fc layers. Vardropout experimetns used batches of size 32 over 32 accel.
+
+(xformer) Neural Machine Translation Transformer (Vasawi et al.2017) on WMT 2014 Eng-Ger dual corpus
+standard procedire from (Vasawi et al.2017) without checkpoint averaging. Sparsify fc (attn) and
+embedding layers.
+
+% analysis
+per layer sparsity and dependence on the hyperparameters: nonuniform sparsity is key to
+high compression (He et al. 2018).
+
+(xformer) More param in embedding, FFN an output of attn, less param in key-value of attn.
+
+(resnet) unenven distribution of sparsity through the network
+
+%% in my paper
+We use the following three stage-process: train for better initial weights, sparsify
+and then fine tune the sparsified model.
+
+these are the techniques for cplx-sparsification. THey alllow this tradeoff on such and
+such models.
