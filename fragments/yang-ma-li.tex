@@ -1,0 +1,30 @@
+Speech recognition, signal processing, audio transcription all use FFT to get
+spectral input, which is complex.
+
+cplx-nets have rich represeantaiton
+
+(lit-review)
+attn and xfromer gained prominence in seq. modelling especially with long
+temporal dependencies [10-13]
+
+cplx-feed forward and cplx-lstm (with unitary matrix constraints) [see. 3-10]
+cplx-conv and BN [18]
+cplx-recurrent [5-7,9,10] merging FT and seq modelling [8]
+
+(cplx)
+natural representation of complex numbers as real pairs
+emulate complex algebra and operations using paired reals
+
+(attn)
+Q, K, V = X W_Q, X W_K, X W_V
+A = Q K^T V
+
+use min-max attn instead of softmax (grad explosion !!)
+are matrices W cplx?
+
+% datasets
+MusicNet : audio (signal) to symbols (labels), resampling 44khz to 11khz according to
+[18], then real signal to cplx via FT
+
+in-phase quadratic (private dataset): classify device by WIFI signal, resample to
+balance devices.
