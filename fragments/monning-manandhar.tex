@@ -1,0 +1,62 @@
+the paper studies capacity of simple complex networks
+conclude that cplx nets perform not better than real-valued netowrks with similar capacity.
+Observe synchronisation of real and imaginary parts in real valued tasks, but observe subpar
+performance of cplx netowrks of equal capacity, sensetivity ot initialization. Isues due to 
+singularities (poles) -- avoidable by constraining function value, normalizing weights or
+gradients. Found that using relus is stabler and allows insight transfer from the vast literature
+on real nets to complex domain. Recommend using cplx only if the data naturally or meaningfully
+maps into cplx plane. and the net should reflect real-imag interaction
+
+
+ensure comparability of architectures with respect to model size and capacity: doubling of
+the number of parameters implies that one should keep the number of numerical parameters as
+close as possible whn comparing real and complex nets. This ensures that performance differences
+are due to use of cplx numbers rather than doubling of the number of parameters.
+1) fixed number of real-valued parameters per layer
+2) fixed budget of real-valued parameters per network
+
+
+(lit-review) formally described in [8], complex versions of backpropagation in [6, 10, 19],
+ides were even extended to quaternions [4, 3], complex valued RNN [5, 29] with unitary matrices
+to tackle vanishing/exploding gradient problems. Complex convolutions [26], and complex attention
+layers for complex-valeud transformer achitectures [ynag-ma-li]
+Complex version of  batch-normalisation and weight initialization [26] (analogue of glorot xavier)
+
+cplx-nets had limited popularity: less intuitive architecutres, increased numerical complexity (in
+paired real -- instead of a single up to four multiplications are required, and two additions).
+% due to them not being true cplx and just paired real computational graphs
+
+
+(tasks) processing and analysis of compelx-valued data or data with intuitive mapping to
+complex numbers. Images and signals in spectral representation. [15] show superiority of complex
+nets to such tasks.
+
+
+(datasets) MNIST; synthetic-1 (quadrant of the sum of cplx); synthetic-2 (same af synth-1 but for real)
+
+
+(cplx) activation function can be C->C or C->R. cplx-differentiable -- exists limit in
+C-field -- holomorhpic. Wirtinger CR calculus -- chosing a different basis of partial derivatives
+CR improves statbility of the training process.
+
+Activations: separate application to real and imaginary part, or more sophisticated, which uses
+interaction between cplx and its conjugate, be it polar or paired representation. modReLU, hyperbolic
+functions, complex modulus (absolute value), softmax based on squared modulus
+
+simple doubling in insufficient: we also need to duplicate the parameters and enforce skew symmetric
+constraint ([[re, -im], [im, re]])
+
+complex-valued loss functions need a notion of ordering (what does it mean to minimize it,
+how is it related to ERM and stat learning)
+
+
+[03] Aizenberg (2007) Multilayer feedfroward network on multi-valued neurons and back prop
+[04] Aizenberg (1992) Cnn based on muli-valeud neurons 
+[05] Arjovsky, Shah (2015) Unitary evolution recurrent neural networks
+[06] Benvenuto, Piazza (1992) complex backprop algorithm
+[08] Clarke (1990) Generalization on neural networks to compelx plane
+[10] Gergious Koutsougeras (1992) Complex domain backpropagation
+[15] Hirose (2009) Cmoplex valued neural networks
+[19] Nitta (1993) A back-propagation algorithm for compelx numbered neural networks
+[26] Trabelsi (2017) Deep complex networks
+[29] Wisdom Powers (2016) Full-capacity unitary recurrent neural networks
