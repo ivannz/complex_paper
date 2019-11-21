@@ -53,14 +53,42 @@
 
 % general intro text with motivation
 Deep neural networks are an integral part of machine learning and data science toolset
-for practical data-driven problem solving. Despite recent advances in generalization
+for practical data-driven problem solving. With continual miniaturization ever more
+applications can be found in embeded systems. Common embedded applications include
+on-device image recognition and signal processing. Despite recent advances in generalization
 and optimization theory specific to deep networks, deploying in actual embedded hardware
-remains a challenge. Solving the storage and compute constraints encourages development
-of model compression and sparsification methods, that focus on favourable tradeoff between
-performance and size. Most popular techniques include weight pruning \citep{citation_needed},
-model quantization from IEEE754 floating point to integer-based arithmetic \citep{citation_needed},
+remains a challenge due to storage, real-time throughput, and numerical computational
+compelexity restrictions.
+
+These applications establish a need for sparsification and model compression techniques.
+However audio or radio frequiency signal analysis is inherently complex-valued, yet
+$\cplx$-valued models and neural networks and, in particular, comprssion methods tailored
+to $\cplx$-networks remain a niche field of research. Although computational efficiency
+reduction methods such as quantization and integer-based arithmetic appear to be directly
+transferrable to $\cplx$-field, \citep{citation_needed}, the most promising methods,
+\citep{gale_state_2019} such as weight pruning \citep{zuo_compression_2019}, bayesian 
+dropout \citep{kingma_variational_2015}, and \citep{louizos_learning_2017} require
+additional considerations.
+
+
+% on sparsification
+Solving the storage and compute constraints encourages development of model compression
+and sparsification methods, that focus on favourable tradeoff between performance and size.
+%
+Most popular techniques include
+model quantization from IEEE754,
 and dropout. The key assumption is that the more explicitly zero parameters there is,
 the less computations is needed.
+
+
+\citet{monning_evaluation_2018} state,
+that $\cplx$-networks have less intuitive architectures, inherently higher numerical
+complexity due to multiplication in $\cplx$, that requires 3-4 floating point multiplications,
+dependening on the implementation.
+
+
+% due to them not being true cplx and just paired real computational graphs
+
 
 % on dropout
 Dropout, \citep{hinton_improving_2012}, prevents overfitting by injecting multiplicative
@@ -86,6 +114,14 @@ observations into posterior belief. Under suitable modelling and prior assumptio
 methods can be used towards model sparsification, \citep{kingma_variational_2015,molchanov_variational_2017},
 and \citep{kharitonov_variational_2018}.
 
+% out contribution
+Inspired by variational sparsification techniques we develop bayesian dropout for $\cplx$-vlaued
+networks.
+
+
+
+\citep{yang_complex_2019,monning_evaluation_2018}
+
 % complex nets and related stuff
 data that is naturally complex-valued
 studies have shown a potentially richer representation of complex nets
@@ -108,7 +144,6 @@ the network with complex numbers
 
 that operates on the Fourier transform input speech, acoustic, of radio signals.
 
-
 papers related to complex-valued distributions \citep{pav_moments_2015,taubock_complex-valued_2012},
 and \citep{karseras_caution:_2014}
 
@@ -119,6 +154,7 @@ pervasiveness of $\cplx$-valued data in digital signal processing \citep{citatio
 acoustic and radio signal analysis \citep{citation_needed}, and quantum systems modelling
 \citep{citation_needed}, etc. All these applications require compliance with algebraic
 operations in the field of complex numbers.
+
 
 
 The paper is structured as follows. In sec.~\ref{sec:bayesian_dropout} we review Bayesian
@@ -274,6 +310,7 @@ for a random subsample $(z_i)_{i=1}^M$ from $D$ and iid $
 $.
 %
 \todo{DSVI}
+\citep{titsias_doubly_2014}
 
 \subsection{Dropout} % (fold)
 \label{sub:dropout}
