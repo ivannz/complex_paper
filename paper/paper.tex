@@ -51,6 +51,7 @@
 \section{Introduction} % (fold)
 \label{sec:introduction}
 
+% general intro text with motivation
 Deep neural networks are an integral part of machine learning and data science toolset
 for practical data-driven problem solving. Despite recent advances in generalization
 and optimization theory specific to deep networks, deploying in actual embedded hardware
@@ -61,10 +62,28 @@ model quantization from IEEE754 floating point to integer-based arithmetic \cite
 and dropout. The key assumption is that the more explicitly zero parameters there is,
 the less computations is needed.
 
-Bayesian Inference is a principled framework of reasoning about uncertainty. The core principle
-is updating prior beliefs in accordance with the likelihood of empirical observations into
-posterior belief. Under suitable modelling and prior assumptions, Bayesian methods can be
-used towards model sparsification, \citep{kingma_variational_2015,molchanov_variational_2017},
+% on dropout
+Dropout, \citep{hinton_improving_2012}, prevents overfitting by injecting multiplicative
+binary noise into layer's weights, thereby breaking up co-adaptations that could occur
+during training. \citet{wang_fast_2013} argue that the overall effect of binary dropout
+on the intermediate outputs via the Central Limit Theorem can be approximated by a Gaussian
+with weight-input dependent mean and variance. \citet{srivastava_dropout_2014} propse
+using independent $\mathcal{N}(1,1)$ noise, arguing that higher entroy of a Gaussian has
+better regularizing effect. In multitask learning \citet{cheung_superposition_2019}
+has shown the possiblity of storing task-specific parameters in non-destructive superposition
+within a single network. Their argument implies that if the single task setting is viewed
+as replicated mutlitask learning, then by sampling uncorrelated weight masks dropout acts
+as superposition method, which better utilizes the learnig capacity of the network.
+% many identical copies of the same task; \cite[Appendix A.1]{cheung_superposition_2019}
+
+% segue into bayesian inference
+Dropout resembles averaging models with shared parameters: each model is weighted equally
+since masks are randomly sampled, unlike bayesian model averaging, which weighs accoring to
+the posterior distribution. \citet{kingma_variational_2015} specifically consider dropout
+as a Bayesian inference technique. Bayesian Inference as a principled framework of reasoning
+about uncertainty, updates prior beliefs in accordance with the likelihood of empirical
+observations into posterior belief. Under suitable modelling and prior assumptions, Bayesian
+methods can be used towards model sparsification, \citep{kingma_variational_2015,molchanov_variational_2017},
 and \citep{kharitonov_variational_2018}.
 
 % complex nets and related stuff
