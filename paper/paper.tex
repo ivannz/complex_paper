@@ -60,6 +60,8 @@ and optimization theory specific to deep networks, deploying in actual embedded 
 remains a challenge due to storage, real-time throughput, and numerical computational
 complexity restrictions. Therefore compression methods for achieving high model sparsity
 and numerical efficiency without losing much in performance are especially relevant.
+% Solving the storage and compute constraints encourages development of model compression
+% and sparsification methods, that focus on favourable tradeoff between performance and size.
 
 Signal processing, specifically, audio or radio frequency signal analysis is inherently
 complex-valued, yet $\cplx$-valued models and neural networks, and, in particular, compression
@@ -69,8 +71,80 @@ and distillation \citep{distillation} appear to be immediately applicable to $\c
 %
 Some model sparsification methods, e.g. magnitude pruning \citep{zuo_compression_2019}, which
 reactivates zeroed parameters based on gradients, and sparsity inducing regularizers, can be
-adapted directly to $\cplx$-valued models. Other methods -- require additional considerations.
+adapted directly to $\cplx$-valued models. Other methods require additional considerations.
+% the more explicitly zero parameters there is, the less computations is needed.
 
+%%% >>>> (cplx)
+% complex nets and related stuff
+% cplx domain models
+% (cplx-transformer) yang-ma-li.tex
+% (cplx capacity) monning-manandhar.tex
+\citet{monning_evaluation_2018} state,
+that $\cplx$-networks have less intuitive architectures, inherently higher numerical
+complexity due to multiplication in $\cplx$, that requires 3-4 floating point multiplications,
+dependening on the implementation.
+% due to them not being true cplx and just paired real computational graphs
+
+\citep{yang_complex_2019,monning_evaluation_2018}
+
+data that is naturally complex-valued
+studies have shown a potentially richer representation of complex nets
+\citep{hirose2003,fijulamin2009}
+% [3] Akira Hirose, Complex-valued neural networks: theories and applications, vol. 5, World Scientific, 2003.
+% [4] Md Faijul Amin and Kazuyuki Murase, “Single-layered complex-valued neural network for real-valued classification problems,” Neurocomputing, vol. 72, no. 4-6, pp. 945–955, 2009.
+
+the complex version of backpropagation algorithm  was proposed because of
+its richer representational capacity.
+% Nevio Benvenuto and Francesco Piazza, “On the complex backpropagation algorithm,” IEEE Transactions on Signal Processing, vol. 40, no. 4, pp. 967–969, 1992.
+
+\citep{yang_complex_2019} develop complex transformer, with $\cplx$-attention and complex
+encoder-decoder, and apply it to music transcription and wireless signal classification.
+
+that interfaces the rest of
+$\cplx$-valued
+the network with complex numbers
+
+that operates on the Fourier transform input speech, acoustic, of radio signals.
+
+papers related to complex-valued distributions \citep{pav_moments_2015,taubock_complex-valued_2012},
+and \citep{karseras_caution:_2014}
+
+Application of complex-valued networks is not new, \citep{citation_needed}. More recently
+they were applied to music transcription and speech recognition \citep{trabelsi_deep_2017},
+and \citep{yang_complex_2019}. The key motivation behind adoption of $\cplx$-networks is
+pervasiveness of $\cplx$-valued data in digital signal processing \citep{citation_needed},
+acoustic and radio signal analysis \citep{citation_needed}, and quantum systems modelling
+\citep{citation_needed}, etc. All these applications require compliance with algebraic
+operations in the field of complex numbers.
+%%% <<<< (cplx)
+
+% on dropout
+Dropout, \citep{hinton_improving_2012}, prevents overfitting by injecting multiplicative
+binary noise into layer's weights, thereby breaking up co-adaptations that could occur
+during training. \citet{wang_fast_2013} argue that the overall effect of binary dropout
+on the intermediate outputs via the Central Limit Theorem can be approximated by a Gaussian
+with weight-input dependent mean and variance. \citet{srivastava_dropout_2014} propose
+using independent $\mathcal{N}(1,1)$ noise, arguing that higher entropy of a Gaussian has
+better regularizing effect. In multitask learning \citet{cheung_superposition_2019}
+has shown the possibility of storing task-specific parameters in non-destructive superposition
+within a single network. Their argument implies that if the single task setting is viewed
+as replicated mutlitask learning, then by sampling uncorrelated weight masks dropout acts
+as superposition method, which better utilizes the learning capacity of the network.
+% many identical copies of the same task; \cite[Appendix A.1]{cheung_superposition_2019}
+% (fast dropout gauss-approx) wang-manning.tex
+% (gauss dropout) srivastava-et-al.tex
+
+% segue into bayesian inference
+Dropout resembles averaging models with shared parameters: each model is weighted equally
+since masks are randomly sampled, unlike bayesian model averaging, which weighs according to
+the posterior distribution. \citet{kingma_variational_2015} specifically consider dropout
+as a Bayesian inference technique. Bayesian Inference as a principled framework of reasoning
+about uncertainty, updates prior beliefs in accordance with the likelihood of empirical
+observations into posterior belief. Under suitable modelling and prior assumptions, Bayesian
+methods can be used towards model sparsification, \citep{kingma_variational_2015,molchanov_variational_2017},
+and \citep{kharitonov_variational_2018}.
+
+% (sparsity tech large-scale models) gale-elsen-hooker.tex
 \citet{gale_state_2019} compare variational dropout \citep{kingma_variational_2015}, $\ell_0$
 regularization \citep{louizos_learning_2017} and magnitude pruning on large-scale models.
 Their results suggest that although var-dropout may achieve good accuracy-sparsity balance
@@ -89,94 +163,10 @@ the model, which is essential for better compression \verify{(He et al., 2018)}.
 Therefore it appears that Bayesian and stochastic sparsification techniques can be useful
 for models in $\cplx$ domain. \verify{$\ell_0$ -- stoch?}
 
-% on sparsification
-Solving the storage and compute constraints encourages development of model compression
-and sparsification methods, that focus on favourable tradeoff between performance and size.
-%
-Most popular techniques include
-model quantization from IEEE754,
-and dropout. 
 
-The key assumption is that the more explicitly zero parameters there is,
-the less computations is needed.
-
-
-
-\citet{monning_evaluation_2018} state,
-that $\cplx$-networks have less intuitive architectures, inherently higher numerical
-complexity due to multiplication in $\cplx$, that requires 3-4 floating point multiplications,
-dependening on the implementation.
-
-
-% due to them not being true cplx and just paired real computational graphs
-
-
-% on dropout
-Dropout, \citep{hinton_improving_2012}, prevents overfitting by injecting multiplicative
-binary noise into layer's weights, thereby breaking up co-adaptations that could occur
-during training. \citet{wang_fast_2013} argue that the overall effect of binary dropout
-on the intermediate outputs via the Central Limit Theorem can be approximated by a Gaussian
-with weight-input dependent mean and variance. \citet{srivastava_dropout_2014} propose
-using independent $\mathcal{N}(1,1)$ noise, arguing that higher entropy of a Gaussian has
-better regularizing effect. In multitask learning \citet{cheung_superposition_2019}
-has shown the possibility of storing task-specific parameters in non-destructive superposition
-within a single network. Their argument implies that if the single task setting is viewed
-as replicated mutlitask learning, then by sampling uncorrelated weight masks dropout acts
-as superposition method, which better utilizes the learning capacity of the network.
-% many identical copies of the same task; \cite[Appendix A.1]{cheung_superposition_2019}
-
-% segue into bayesian inference
-Dropout resembles averaging models with shared parameters: each model is weighted equally
-since masks are randomly sampled, unlike bayesian model averaging, which weighs according to
-the posterior distribution. \citet{kingma_variational_2015} specifically consider dropout
-as a Bayesian inference technique. Bayesian Inference as a principled framework of reasoning
-about uncertainty, updates prior beliefs in accordance with the likelihood of empirical
-observations into posterior belief. Under suitable modelling and prior assumptions, Bayesian
-methods can be used towards model sparsification, \citep{kingma_variational_2015,molchanov_variational_2017},
-and \citep{kharitonov_variational_2018}.
-
-% out contribution
-Inspired by variational sparsification techniques we develop bayesian dropout for $\cplx$-vlaued
+% our contribution
+Inspired by variational sparsification we develop bayesian dropout for $\cplx$-valued
 networks.
-
-
-
-\citep{yang_complex_2019,monning_evaluation_2018}
-
-% complex nets and related stuff
-data that is naturally complex-valued
-studies have shown a potentially richer representation of complex nets
-\citep{hirose2003,fijulamin2009}
-% [3] Akira Hirose, Complex-valued neural networks: theories and applications, vol. 5, World Scientific, 2003.
-% [4] Md Faijul Amin and Kazuyuki Murase, “Single-layered complex-valued neural network for real-valued classification problems,” Neurocomputing, vol. 72, no. 4-6, pp. 945–955, 2009.
-
-the complex version of backpropagation algorithm  was proposed because of
-its richer representational capacity.
-% Nevio Benvenuto and Francesco Piazza, “On the complex backpropagation algorithm,” IEEE Transactions on Signal Processing, vol. 40, no. 4, pp. 967–969, 1992.
-
-
-\citep{yang_complex_2019} develop complex transformer, with $\cplx$-attention and complex
-encoder-decoder, and apply it to music transcription and wireless signal classification.
-
-that interfaces the rest of
-$\cplx$-valued
-the network with complex numbers
-
-
-that operates on the Fourier transform input speech, acoustic, of radio signals.
-
-papers related to complex-valued distributions \citep{pav_moments_2015,taubock_complex-valued_2012},
-and \citep{karseras_caution:_2014}
-
-Application of complex-valued networks is not new, \citep{citation_needed}. More recently
-they were applied to music transcription and speech recognition \citep{trabelsi_deep_2017},
-and \citep{yang_complex_2019}. The key motivation behind adoption of $\cplx$-networks is
-pervasiveness of $\cplx$-valued data in digital signal processing \citep{citation_needed},
-acoustic and radio signal analysis \citep{citation_needed}, and quantum systems modelling
-\citep{citation_needed}, etc. All these applications require compliance with algebraic
-operations in the field of complex numbers.
-
-
 
 The paper is structured as follows. In sec.~\ref{sec:bayesian_dropout} we review Bayesian
 dropout techniques, and ins sec.~\ref{sec:c_valued_networks} we provide a brief summary of
@@ -330,6 +320,7 @@ for a random subsample $(z_i)_{i=1}^M$ from $D$ and iid $
   (\varepsilon_i)_{i=1}^M \sim p_\varepsilon
 $.
 %
+% (DSVI) titsias-lazaro.tex
 \todo{DSVI}
 \citep{titsias_doubly_2014}
 
