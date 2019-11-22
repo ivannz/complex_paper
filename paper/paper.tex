@@ -54,22 +54,40 @@
 % general intro text with motivation
 Deep neural networks are an integral part of machine learning and data science toolset
 for practical data-driven problem solving. With continual miniaturization ever more
-applications can be found in embeded systems. Common embedded applications include
+applications can be found in embedded systems. Common embedded applications include
 on-device image recognition and signal processing. Despite recent advances in generalization
 and optimization theory specific to deep networks, deploying in actual embedded hardware
 remains a challenge due to storage, real-time throughput, and numerical computational
-compelexity restrictions.
+complexity restrictions. Therefore compression methods for achieving high model sparsity
+and numerical efficiency without losing much in performance are especially relevant.
 
-These applications establish a need for sparsification and model compression techniques.
-However audio or radio frequiency signal analysis is inherently complex-valued, yet
-$\cplx$-valued models and neural networks and, in particular, comprssion methods tailored
-to $\cplx$-networks remain a niche field of research. Although computational efficiency
-reduction methods such as quantization and integer-based arithmetic appear to be directly
-transferrable to $\cplx$-field, \citep{citation_needed}, the most promising methods,
-\citep{gale_state_2019} such as weight pruning \citep{zuo_compression_2019}, bayesian 
-dropout \citep{kingma_variational_2015}, and \citep{louizos_learning_2017} require
-additional considerations.
+Signal processing, specifically, audio or radio frequency signal analysis is inherently
+complex-valued, yet $\cplx$-valued models and neural networks, and, in particular, compression
+methods tailored to $\cplx$-domain remain a niche field of research. Computational efficiency
+reduction methods such as quantization, integer-based arithmetic \citep{citation_needed},
+and distillation \citep{distillation} appear to be immediately applicable to $\cplx$-field.
+%
+Some model sparsification methods, e.g. magnitude pruning \citep{zuo_compression_2019}, which
+reactivates zeroed parameters based on gradients, and sparsity inducing regularizers, can be
+adapted directly to $\cplx$-valued models. Other methods -- require additional considerations.
 
+\citet{gale_state_2019} compare variational dropout \citep{kingma_variational_2015}, $\ell_0$
+regularization \citep{louizos_learning_2017} and magnitude pruning on large-scale models.
+Their results suggest that although var-dropout may achieve good accuracy-sparsity balance
+and outperform pruning on the studied architectures, overall pruning is preferable due to
+simplicity and speed. They also conclude that, although dropout and $\ell_0$ yield less
+consistent performance and are more complex, they induce non-uniform sparsity throughout
+the model, which is essential for better compression \verify{(He et al., 2018)}.
+%
+% Magnitude pruning induces user-specified sparsity distributions.
+%
+% L0 and dropout work in the low-to-mid sparsity range, variational dropout consistently
+% ranked behind L0 on Transformer, and was bested by magnitude pruning for sparsity
+% levels of 80\% and up. Variational dropout consistently produces models on-par or better
+% than magnitude pruning on ResNet-50, and l0 fails to produce sparse models at all.
+%
+Therefore it appears that Bayesian and stochastic sparsification techniques can be useful
+for models in $\cplx$ domain. \verify{$\ell_0$ -- stoch?}
 
 % on sparsification
 Solving the storage and compute constraints encourages development of model compression
@@ -77,8 +95,11 @@ and sparsification methods, that focus on favourable tradeoff between performanc
 %
 Most popular techniques include
 model quantization from IEEE754,
-and dropout. The key assumption is that the more explicitly zero parameters there is,
+and dropout. 
+
+The key assumption is that the more explicitly zero parameters there is,
 the less computations is needed.
+
 
 
 \citet{monning_evaluation_2018} state,
@@ -95,18 +116,18 @@ Dropout, \citep{hinton_improving_2012}, prevents overfitting by injecting multip
 binary noise into layer's weights, thereby breaking up co-adaptations that could occur
 during training. \citet{wang_fast_2013} argue that the overall effect of binary dropout
 on the intermediate outputs via the Central Limit Theorem can be approximated by a Gaussian
-with weight-input dependent mean and variance. \citet{srivastava_dropout_2014} propse
-using independent $\mathcal{N}(1,1)$ noise, arguing that higher entroy of a Gaussian has
+with weight-input dependent mean and variance. \citet{srivastava_dropout_2014} propose
+using independent $\mathcal{N}(1,1)$ noise, arguing that higher entropy of a Gaussian has
 better regularizing effect. In multitask learning \citet{cheung_superposition_2019}
-has shown the possiblity of storing task-specific parameters in non-destructive superposition
+has shown the possibility of storing task-specific parameters in non-destructive superposition
 within a single network. Their argument implies that if the single task setting is viewed
 as replicated mutlitask learning, then by sampling uncorrelated weight masks dropout acts
-as superposition method, which better utilizes the learnig capacity of the network.
+as superposition method, which better utilizes the learning capacity of the network.
 % many identical copies of the same task; \cite[Appendix A.1]{cheung_superposition_2019}
 
 % segue into bayesian inference
 Dropout resembles averaging models with shared parameters: each model is weighted equally
-since masks are randomly sampled, unlike bayesian model averaging, which weighs accoring to
+since masks are randomly sampled, unlike bayesian model averaging, which weighs according to
 the posterior distribution. \citet{kingma_variational_2015} specifically consider dropout
 as a Bayesian inference technique. Bayesian Inference as a principled framework of reasoning
 about uncertainty, updates prior beliefs in accordance with the likelihood of empirical
