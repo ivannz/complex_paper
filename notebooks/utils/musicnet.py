@@ -8,10 +8,7 @@ import numpy as np
 import torch
 import torch.utils.data
 
-# from functools import lru_cache
-
 from ncls import NCLS64
-from intervaltree import IntervalTree
 from resampy import resample
 
 
@@ -58,7 +55,7 @@ class MusicNetHDF5(torch.utils.data.Dataset):
     stride : int, default=1
         The stride of the sliding window.
     """
-    def __init__(self, hdf5, window=4096, stride=512, verbose=False):
+    def __init__(self, hdf5, window=4096, stride=512):
         # ensure an open HDF5 handle
         assert isinstance(hdf5, h5py.File) and hdf5.id
 
@@ -67,9 +64,7 @@ class MusicNetHDF5(torch.utils.data.Dataset):
 
         # build object and label lookup
         intervals, n_samples = [], 0
-        groups = tqdm.tqdm(hdf5.items(), disable=not verbose,
-                           desc="building lookup")
-        for ix, (key, group) in enumerate(groups):
+        for ix, (key, group) in enumerate(hdf5.items()):
             obj, label = group["data"], group["labels"]
 
             # collect notes
@@ -95,7 +90,7 @@ class MusicNetHDF5(torch.utils.data.Dataset):
 
         # preallocate `note_id` one-hots
         self.onehots, self.n_classes = {}, max(note_ids) - min(note_ids) + 1
-        eye = np.eye(self.n_classes, dtype=np.float32)
+        eye = np.eye(self.n_classes, dtype=np.bool)
         for j, note in enumerate(sorted(note_ids)):
             self.onehots[note] = eye[j]
 
@@ -112,14 +107,14 @@ class MusicNetHDF5(torch.utils.data.Dataset):
 
         # fetch data and construct labels: random access is slow
         obj, lab = self.objects[key], self.labels[key]
-        data = obj[ix:ix + self.window]
+        data = obj[ix:ix + self.window].astype(np.float32)
 
         midp = ix + self.window // 2
         labels = lab.find_overlap(midp, midp + 1)
         onehot = sum((self.onehots[note_id] for a, b, note_id in labels),
-                     np.zeros(self.n_classes, dtype=np.float32))
+                     np.zeros(self.n_classes, dtype=np.bool))
 
-        return data, onehot
+        return data, onehot.astype(np.int32)
 
     def __len__(self):
         return self.n_samples
