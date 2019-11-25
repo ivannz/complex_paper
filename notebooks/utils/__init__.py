@@ -1,1 +1,1 @@
-from .musicnet import MuscNetHDF5
+from .musicnet import MusicNetHDF5

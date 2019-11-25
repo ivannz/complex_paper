@@ -43,7 +43,7 @@ def resample_h5(file_in, file_out, frame_rate_in, frame_rate_out):
     return file_out
 
 
-class MuscNetHDF5(torch.utils.data.Dataset):
+class MusicNetHDF5(torch.utils.data.Dataset):
     """Dataset access to MusicNet sotred in HDF5 file.
 
     Parameters
@@ -65,26 +65,33 @@ class MuscNetHDF5(torch.utils.data.Dataset):
         # has to get note_ids from somewhere
         note_ids = set()  # OVERRIDE!
 
-        # build data lookup and label tree (O(n log n))
-        self.intervals, self.labels, self.total = IntervalTree(), {}, 0
-        for key, group in tqdm.tqdm(hdf5.items(), disable=not verbose,
-                                    desc="building lookup"):
-            obj, lab = group["data"], group["labels"]
-
-            # cache hdf5 group objects (stores references to hdf5 objects!)
-            strided_size = ((len(obj) - window + 1) + stride - 1) // stride
-            self.intervals[self.total:self.total + strided_size] = key, obj
-            self.total += strided_size
+        # build object and label lookup
+        intervals, n_samples = [], 0
+        groups = tqdm.tqdm(hdf5.items(), disable=not verbose,
+                           desc="building lookup")
+        for ix, (key, group) in enumerate(groups):
+            obj, label = group["data"], group["labels"]
 
             # collect notes
-            note_ids.update(lab["note_id"])
+            note_ids.update(label["note_id"])
 
-            # construct a fast lookup of music notes: a Nested Containment List
-            #  is much faster than Interval Tree.
-            self.labels[key] = NCLS64(
-                np.array(lab["start_time"], dtype=np.int64),  # start
-                np.array(lab["end_time"], dtype=np.int64),    # end
-                np.array(lab["note_id"], dtype=np.int64))     # payload id
+            # construct a fast lookup of music notes: a Nested
+            #  Containment List is much faster than Interval Tree.
+            tree = NCLS64(np.int64(label["start_time"]),  # start
+                          np.int64(label["end_time"]),    # end
+                          np.int64(label["note_id"]))     # payload
+
+            # cache hdf5 objects (stores references to hdf5 objects!)
+            strided_size = ((len(obj) - window + 1) + stride - 1) // stride
+            intervals.append((n_samples, n_samples + strided_size, obj, tree))
+
+            n_samples += strided_size
+
+        # build the object lookup
+        beg, end, self.objects, self.labels = zip(*intervals)
+        self.intervals = NCLS64(np.int64(beg), np.int64(end),
+                                np.int64(np.r_[:len(self.objects)]))
+        self.n_samples = n_samples
 
         # preallocate `note_id` one-hots
         self.onehots, self.n_classes = {}, max(note_ids) - min(note_ids) + 1
@@ -95,22 +102,24 @@ class MuscNetHDF5(torch.utils.data.Dataset):
         self.hdf5, self.window, self.stride = hdf5, window, stride
 
     def __getitem__(self, index):
-        index = self.total + index if index < 0 else index
+        index = self.n_samples + index if index < 0 else index
+        intervals = self.intervals.find_overlap(index, index + 1)
+        if not intervals:
+            raise KeyError
 
-        # raises KeyError if the query is empty
-        interval = self.intervals.at(index).pop()
-        ix = (index - interval.begin) * self.stride
+        beg, end, key = next(intervals)
+        ix = (index - beg) * self.stride
 
         # fetch data and construct labels: random access is slow
-        key, obj = interval.data
+        obj, lab = self.objects[key], self.labels[key]
         data = obj[ix:ix + self.window]
 
         midp = ix + self.window // 2
-        labels = self.labels[key].find_overlap(midp, midp + 1)
+        labels = lab.find_overlap(midp, midp + 1)
         onehot = sum((self.onehots[note_id] for a, b, note_id in labels),
                      np.zeros(self.n_classes, dtype=np.float32))
 
         return data, onehot
 
     def __len__(self):
-        return self.total
+        return self.n_samples
