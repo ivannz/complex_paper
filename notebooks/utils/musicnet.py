@@ -12,7 +12,7 @@ from ncls import NCLS64
 from resampy import resample
 
 
-def resample_h5(file_in, file_out, frame_rate_in, frame_rate_out):
+def resample_h5(file_in, file_out, frame_rate_in, frame_rate_out, keys=None):
     # Authors: Dmitriy Serdyuk
     # (2019-11-24) changed to hdf5 supports
     print(f""".. resampling {file_in} ({frame_rate_in}Hz) """
@@ -24,7 +24,11 @@ def resample_h5(file_in, file_out, frame_rate_in, frame_rate_out):
         ratio = frame_rate_out / float(frame_rate_in)
 
         # pour from h5_in to h5_out
-        for key, group in tqdm.tqdm(h5_in.items()):
+        items = h5_in.items()
+        if keys is not None:
+            items = [(k, h5_in[k]) for k in keys]
+
+        for key, group in tqdm.tqdm(items):
 
             # resample the waveform
             data = resample(np.array(group["data"]),
