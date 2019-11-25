@@ -10,6 +10,7 @@ import torch.utils.data
 
 # from functools import lru_cache
 
+from ncls import NCLS64
 from intervaltree import IntervalTree
 from resampy import resample
 
@@ -66,31 +67,30 @@ class MuscNetHDF5(torch.utils.data.Dataset):
 
         # build data lookup and label tree (O(n log n))
         self.intervals, self.labels, self.total = IntervalTree(), {}, 0
-        for key, group in tqdm.tqdm(hdf5.items(), desc="building lookup",
-                                    disable=not verbose):
+        for key, group in tqdm.tqdm(hdf5.items(), disable=not verbose,
+                                    desc="building lookup"):
             obj, lab = group["data"], group["labels"]
 
             # cache hdf5 group objects (stores references to hdf5 objects!)
             strided_size = ((len(obj) - window + 1) + stride - 1) // stride
             self.intervals[self.total:self.total + strided_size] = key, obj
-
             self.total += strided_size
 
             # collect notes
             note_ids.update(lab["note_id"])
 
-            # expensive construction (rebuilding is faster than pickling)
-            tree = IntervalTree.from_tuples(lab["start_time", "end_time", "note_id"])
-
-            # all covering empty-class
-            tree.addi(0, len(obj), None)  # (float("-inf"), float("+inf"), None)
-            self.labels[key] = tree
+            # construct a fast lookup of music notes: a Nested Containment List
+            #  is much faster than Interval Tree.
+            self.labels[key] = NCLS64(
+                np.array(lab["start_time"], dtype=np.int64),  # start
+                np.array(lab["end_time"], dtype=np.int64),    # end
+                np.array(lab["note_id"], dtype=np.int64))     # payload id
 
         # preallocate `note_id` one-hots
-        n_classes = max(note_ids) - min(note_ids) + 1
-        self.onehots = {None: np.zeros((1, n_classes))}
+        self.onehots, self.n_classes = {}, max(note_ids) - min(note_ids) + 1
+        eye = np.eye(self.n_classes, dtype=np.float32)
         for j, note in enumerate(sorted(note_ids)):
-            self.onehots[note] = np.eye(1, n_classes, k=j, dtype=np.float32)
+            self.onehots[note] = eye[j]
 
         self.hdf5, self.window, self.stride = hdf5, window, stride
 
@@ -105,10 +105,12 @@ class MuscNetHDF5(torch.utils.data.Dataset):
         key, obj = interval.data
         data = obj[ix:ix + self.window]
 
-        labels = self.labels[key].at(ix + self.window // 2)
-        onehot = sum(self.onehots[lab.data] for lab in labels)
+        midp = ix + self.window // 2
+        labels = self.labels[key].find_overlap(midp, midp + 1)
+        onehot = sum((self.onehots[note_id] for a, b, note_id in labels),
+                     np.zeros(self.n_classes, dtype=np.float32))
 
-        return data, onehot[0]
+        return data, onehot
 
     def __len__(self):
         return self.total
