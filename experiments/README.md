@@ -63,13 +63,13 @@ Makes heavy use of [cplxmodule](https://github.com/ivannz/cplxmodule.git).
 
 Real networks ordinary network in real domain
 * (existing) **torch.nn**: BatchNorm1d; **cplxmodule.relevance**: Linear{ARD, Masked};
-* (missing) **cplxmodule.relevance**: Conv1d{ARD, Masked} (see `mlss2019`)
+* (~missing~ fixed) **cplxmodule.relevance**: Conv1d{ARD, Masked} (see `mlss2019`)
 
 Complex-valued networks uxing `Cplx` form `cplxmodule`
 * (existing) **cplxmodule.layers**: CplxConv1d, CplxLinear, RealToCplx, AsTypeCplx, CplxToReal;
   **cplxmodule.relevance**: CplxLinear{ARD, Masked}
-* (missing) **cplxmodule.relevance**: CplxConv1d{ARD, Masked};
-  **cplxmodule.layers**: CplxBatchNorm1d
+* (~missing~ fixed) **cplxmodule.relevance**: CplxConv1d{ARD, Masked}
+* (missing) **cplxmodule.layers**: CplxBatchNorm1d
 
 
 * raw signal: 
