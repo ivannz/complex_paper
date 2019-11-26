@@ -93,7 +93,8 @@ class DeepConvNet(BodyMixin, torch.nn.Module):
                 n_seq = (n_seq - 2 + 1 + 2 - 1) // 2
 
         self.body = torch.nn.Sequential(OrderedDict([
-            ("block00", self.one_block(  2,  64, n_ker[0], n_str[0],  True)),
+            ("block00", self.one_block(
+                                n_channels,  64, n_ker[0], n_str[0],  True)),
             ("block01", self.one_block( 64,  64, n_ker[1], n_str[1],  True)),
             ("block02", self.one_block( 64, 128, n_ker[2], n_str[2],  True)),
             ("block03", self.one_block(128, 128, n_ker[3], n_str[3],  True)),
