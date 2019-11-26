@@ -58,23 +58,18 @@ class MusicNetHDF5(torch.utils.data.Dataset):
     def __init__(self, hdf5, window=4096, stride=512):
         # ensure an open HDF5 handle
         assert isinstance(hdf5, h5py.File) and hdf5.id
-
-        # has to get note_ids from somewhere
-        note_ids = set()  # OVERRIDE!
+        # assumes note_ids 21..105, i.e. 84 class labels
 
         # build object and label lookup
         intervals, n_samples = [], 0
         for ix, (key, group) in enumerate(hdf5.items()):
             obj, label = group["data"], group["labels"]
 
-            # collect notes
-            note_ids.update(label["note_id"])
-
             # construct a fast lookup of music notes: a Nested
             #  Containment List is much faster than Interval Tree.
-            tree = NCLS64(np.int64(label["start_time"]),  # start
-                          np.int64(label["end_time"]),    # end
-                          np.int64(label["note_id"]))     # payload
+            tree = NCLS64(np.int64(label["start_time"]),    # start
+                          np.int64(label["end_time"]),      # end
+                          np.int64(label["note_id"] - 21))  # note - 21 (base)
 
             # cache hdf5 objects (stores references to hdf5 objects!)
             strided_size = ((len(obj) - window + 1) + stride - 1) // stride
@@ -88,21 +83,15 @@ class MusicNetHDF5(torch.utils.data.Dataset):
                                 np.int64(np.r_[:len(self.objects)]))
         self.n_samples = n_samples
 
-        # preallocate `note_id` one-hots
-        self.onehots, self.n_classes = {}, max(note_ids) - min(note_ids) + 1
-        eye = np.eye(self.n_classes, dtype=np.bool)
-        for j, note in enumerate(sorted(note_ids)):
-            self.onehots[note] = eye[j]
-
         self.hdf5, self.window, self.stride = hdf5, window, stride
 
     def __getitem__(self, index):
         index = self.n_samples + index if index < 0 else index
-        intervals = self.intervals.find_overlap(index, index + 1)
-        if not intervals:
+        interval = next(self.intervals.find_overlap(index, index + 1), None)
+        if interval is None:
             raise KeyError
 
-        beg, end, key = next(intervals)
+        beg, _, key = interval
         ix = (index - beg) * self.stride
 
         # fetch data and construct labels: random access is slow
@@ -110,11 +99,11 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         data = obj[ix:ix + self.window].astype(np.float32)
 
         midp = ix + self.window // 2
-        labels = lab.find_overlap(midp, midp + 1)
-        onehot = sum((self.onehots[note_id] for a, b, note_id in labels),
-                     np.zeros(self.n_classes, dtype=np.bool))
+        notes = np.zeros(84, np.float32)  # n_classes assumption
+        for b, e, j in lab.find_overlap(midp, midp + 1):
+            notes[j] = 1
 
-        return data, onehot.astype(np.int32)
+        return data, notes
 
     def __len__(self):
         return self.n_samples
