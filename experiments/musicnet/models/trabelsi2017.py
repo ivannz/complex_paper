@@ -1,4 +1,4 @@
-"""Reimplementation of model used by Trabelsi et al. (2019)
+"""Reimplementation of model used by Trabelsi et al. (2017)
 """
 import torch
 
