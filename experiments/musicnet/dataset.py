@@ -58,8 +58,14 @@ class MusicNetHDF5(torch.utils.data.Dataset):
 
     stride : int, default=1
         The stride of the sliding window.
+
+    at : int, or None, default=None
+        The index within the `window` at which the targets are collected.
+        Should be thought of as the offset to time `t` in the window. Midpoint
+        of the window by default (None).
     """
-    def __init__(self, hdf5, window=4096, stride=512):
+
+    def __init__(self, hdf5, window=4096, stride=512, at=None):
         # ensure an open HDF5 handle
         assert isinstance(hdf5, h5py.File) and hdf5.id
         # assumes note_ids 21..105, i.e. 84 class labels
@@ -75,17 +81,27 @@ class MusicNetHDF5(torch.utils.data.Dataset):
                           np.int64(label["end_time"]),      # end
                           np.int64(label["note_id"] - 21))  # note - 21 (base)
 
-            # cache hdf5 objects (stores references to hdf5 objects!)
+            # the number of full valid windows fitting into the signal
             strided_size = ((len(obj) - window + 1) + stride - 1) // stride
+
+            # (TODO) initial offset and padding
+
+            # cache hdf5 objects (stores references to hdf5 objects!)
             intervals.append((n_samples, n_samples + strided_size, obj, tree))
 
             n_samples += strided_size
+
+        self.n_samples, self.n_outputs = n_samples, 84
 
         # build the object lookup
         beg, end, self.objects, self.labels = zip(*intervals)
         self.intervals = NCLS64(np.int64(beg), np.int64(end),
                                 np.int64(np.r_[:len(self.objects)]))
-        self.n_samples = n_samples
+        self.keys = dict(zip(hdf5.keys(), zip(beg, end)))
+
+        # midpoint by default
+        at = (window // 2) if at is None else at
+        self.at = (window + at) if at < 0 else at
 
         self.hdf5, self.window, self.stride = hdf5, window, stride
 
@@ -102,9 +118,8 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         obj, lab = self.objects[key], self.labels[key]
         data = obj[ix:ix + self.window].astype(np.float32)
 
-        midp = ix + self.window // 2
-        notes = np.zeros(84, np.float32)  # n_classes assumption
-        for b, e, j in lab.find_overlap(midp, midp + 1):
+        notes = np.zeros(self.n_outputs, np.float32)
+        for b, e, j in lab.find_overlap(ix + self.at, ix + self.at + 1):
             notes[j] = 1
 
         return data, notes
