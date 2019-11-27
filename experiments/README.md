@@ -45,7 +45,9 @@ $x_t = (x_{ti})_{i=1}^w \in \mathbb{R}^w$:
 * (STFT) perform batched Short Time Fourier Transform with windows of size **l=120**
 overlaping by **o=60** to get $z_t \in \mathbb{C}^{\tfrac{l+2}2 \times \tfrac{w+l-o}{l-o}}$,
 where the first dimension of $z_t$ are frequencies and the last is the window times.
-**NOTE** they treat times as features and frequencies as sequences!
+**NOTE** they treat times as features and frequencies as sequences
+[dataset.py#L179](https://github.com/ChihebTrabelsi/deep_complex_networks/blob/master/musicnet/musicnet/dataset.py#L179)
+(see `check_original_transforms.ipynb`)
 
 Inputs in different models
 * (FFT, STFT)
