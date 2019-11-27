@@ -55,20 +55,35 @@ Inputs in different models
   * ($\mathbb{C}^w$): $z_t = (1 + 1j) x_t$ (train.py#L190 due to broadcasting)
   * ($\mathbb{R}^w$): $x_t$
 
+
+### Yang et al. (2019)
+
+Propose complex-valued attention layer and develop complex-domain transformer.
+
+
 ### Current Paper
 
 Makes heavy use of [cplxmodule](https://github.com/ivannz/cplxmodule.git).
+
+#### Planned experiments
+
+We use MusicNet (Thickstun et al., 2017) with preprocessin as in (Trabelsi et al., 2019).
+Motivated by the experiments in (Gale et al., 2019) we test complex-domain compression on
+transformer and deep convolutional network architectures in application to the same task.
+We expect differing sparsity patterns between these architectures.
+
+##### Experiemntal setup
 
 #### Components
 
 Real networks ordinary network in real domain
 * (existing) **torch.nn**: BatchNorm1d; **cplxmodule.relevance**: Linear{ARD, Masked};
-* (~missing~ fixed) **cplxmodule.relevance**: Conv1d{ARD, Masked} (see `mlss2019`)
+* (~missing~ fixed) **cplxmodule.relevance**: Conv1d{ARD, Masked}, Conv2d{ARD, Masked} (see `mlss2019`)
 
 Complex-valued networks uxing `Cplx` form `cplxmodule`
 * (existing) **cplxmodule.layers**: CplxConv1d, CplxLinear, RealToCplx, AsTypeCplx, CplxToReal;
   **cplxmodule.relevance**: CplxLinear{ARD, Masked}
-* (~missing~ fixed) **cplxmodule.relevance**: CplxConv1d{ARD, Masked}
+* (~missing~ fixed) **cplxmodule.relevance**: CplxConv1d{ARD, Masked},  CplxConv2d{ARD, Masked}
 * (missing) **cplxmodule.layers**: CplxBatchNorm1d
 
 
