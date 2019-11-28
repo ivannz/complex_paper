@@ -54,7 +54,7 @@ Inputs in different models
   * ($\mathbb{C}^w$): $z_t$
   * ($\mathbb{R}^w$): $\lvert z_t \rvert = (\lvert z_{ti} \rvert)\_{i=1}^w$
 * (raw)
-  * ($\mathbb{C}^w$): $z_t = (1 + 1j) x_t$ (train.py#L190 due to broadcasting)
+  * ($\mathbb{C}^w$): $z_t = x_t$ (train.py#L190 forces one trailing channel!)
   * ($\mathbb{R}^w$): $x_t$
 
 Since the dataset is severely imbalanced in each musical note, the performance is measured using
