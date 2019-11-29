@@ -133,3 +133,46 @@ class MusicNetHDF5(torch.utils.data.Dataset):
 
     def __dir__(self):
         return list(self.keys)
+
+    def fetch_data_slice(self, index):
+        assert isinstance(index, slice)
+
+        i0, i1, stride = index.indices(self.n_samples)
+        if (stride > 0 and i0 >= i1) or (stride < 0 and i0 <= i1):
+            return np.empty((0, self.window), self.dtype)
+
+        # read a contiguous slice from the dataset (waveform)
+        chunks = []
+        base, k0 = -1, bisect_right(self.indptr, i0) - 1
+        for ii in range(i0, i1, stride):
+            if stride > 0 and self.indptr[k0 + 1] <= ii:
+                base, k0 = -1, k0 + 1
+
+            elif stride < 0 and ii < self.indptr[k0]:
+                base, k0 = -1, k0 - 1
+
+            if base < 0:
+                # h5py caches chunks, so adjacent reads are not reloaded.
+                obj, base = self.objects[k0], self.indptr[k0]
+
+            ix = (ii - base) * self.stride
+            chunks.append(obj[ix:ix + self.window].astype(self.dtype))
+
+        # Making a strided view us pointless since slices
+        #  across boundaries would have to be collated anyway.
+        return np.stack(chunks, axis=0)
+
+    def fetch_data_key(self, key):
+        if key not in self.keys:
+            raise KeyError(f"`{key}` not found")
+
+        key = self.keys[key]
+        data = self.objects[key][:].astype(self.dtype)
+
+        *head, stride = data.strides
+        stride = *head, self.stride * stride, stride
+
+        beg, end = self.indptr[key], self.indptr[key+1]
+        shape = *data.shape[:-1], end - beg, self.window
+
+        return as_strided(data, shape, stride, writeable=False)
