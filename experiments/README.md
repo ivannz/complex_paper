@@ -57,10 +57,27 @@ Inputs in different models
   * ($\mathbb{C}^w$): $z_t = (1 + 1j) x_t$ (train.py#L190 due to broadcasting)
   * ($\mathbb{R}^w$): $x_t$
 
+Since the dataset is severely imbalanced in each musical note, the performance is measured using
+the area under precision-recall curve, or average precision score.
+On [callbacks.py#L90](https://github.com/ChihebTrabelsi/deep_complex_networks/blob/master/musicnet/musicnet/callbacks.py#L90)
+the scores and targets are flattened, so the AP-score is computed as if every note is the same class.
+(**NOTE** can this approach misrepresent tthe perfromance?)
+
+No explicit early stopping is in their code, but they do checkpointing every epoch.
+
 
 ### Yang et al. (2019)
 
 Propose complex-valued attention layer and develop complex-domain transformer.
+
+#### Specifics
+
+AP-score is measured via `.flatten()`
+[train.py#L103](https://github.com/muqiaoy/dl_signal/blob/master/transformer/train.py#L103)
+By default they clip grads to `0.35`. Batch size `16` and `2k` epochs.
+
+Use fft features with complex-valued output. Use differrent strides for training (512) and
+testing (128) [parse_file.py#L34](https://github.com/muqiaoy/dl_signal/blob/master/music/parse_file.py#L34).
 
 
 ### Current Paper
