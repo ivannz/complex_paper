@@ -12,6 +12,8 @@ from ncls import NCLS64
 from resampy import resample
 from bisect import bisect_right
 
+from numpy.lib.stride_tricks import as_strided
+
 
 def resample_h5(file_in, file_out, frame_rate_in, frame_rate_out, keys=None):
     # Authors: Dmitriy Serdyuk
@@ -64,9 +66,13 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         The index within the `window` at which the targets are collected.
         Should be thought of as the offset to time `t` in the window. Midpoint
         of the window by default (None).
+
+    dtype : np.dtype, default=np.float32
+        The data typee of the waveform windows and targets. Defautls ot float32
+        for easier compatibility with torch.
     """
 
-    def __init__(self, hdf5, window=4096, stride=512, at=None):
+    def __init__(self, hdf5, window=4096, stride=512, at=None, dtype=np.float32):
         # ensure an open HDF5 handle
         assert isinstance(hdf5, h5py.File) and hdf5.id
         # assumes note_ids 21..105, i.e. 84 class labels
@@ -101,6 +107,7 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         self.at = (window + at) if at < 0 else at
 
         self.hdf5, self.window, self.stride = hdf5, window, stride
+        self.dtype = dtype
 
     def __getitem__(self, index):
         index = self.n_samples + index if index < 0 else index
@@ -112,9 +119,9 @@ class MusicNetHDF5(torch.utils.data.Dataset):
 
         # fetch data and construct labels: random access is slow
         obj, lab = self.objects[key], self.labels[key]
-        data = obj[ix:ix + self.window].astype(np.float32)
+        data = obj[ix:ix + self.window].astype(self.dtype)
 
-        notes = np.zeros(self.n_outputs, np.float32)
+        notes = np.zeros(self.n_outputs, self.dtype)
         for b, e, j in lab.find_overlap(ix + self.at, ix + self.at + 1):
             notes[j] = 1
 
@@ -122,3 +129,6 @@ class MusicNetHDF5(torch.utils.data.Dataset):
 
     def __len__(self):
         return self.n_samples
+
+    def __dir__(self):
+        return list(self.keys)
