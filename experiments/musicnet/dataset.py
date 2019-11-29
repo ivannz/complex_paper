@@ -10,6 +10,9 @@ import torch.utils.data
 
 from ncls import NCLS64
 from resampy import resample
+from bisect import bisect_right
+
+from numpy.lib.stride_tricks import as_strided
 
 
 def resample_h5(file_in, file_out, frame_rate_in, frame_rate_out, keys=None):
@@ -63,15 +66,19 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         The index within the `window` at which the targets are collected.
         Should be thought of as the offset to time `t` in the window. Midpoint
         of the window by default (None).
+
+    dtype : np.dtype, default=np.float32
+        The data typee of the waveform windows and targets. Defautls ot float32
+        for easier compatibility with torch.
     """
 
-    def __init__(self, hdf5, window=4096, stride=512, at=None):
+    def __init__(self, hdf5, window=4096, stride=512, at=None, dtype=np.float32):
         # ensure an open HDF5 handle
         assert isinstance(hdf5, h5py.File) and hdf5.id
         # assumes note_ids 21..105, i.e. 84 class labels
 
         # build object and label lookup
-        intervals, n_samples = [], 0
+        indptr, references = [0], []
         for ix, (key, group) in enumerate(hdf5.items()):
             obj, label = group["data"], group["labels"]
 
@@ -81,44 +88,47 @@ class MusicNetHDF5(torch.utils.data.Dataset):
                           np.int64(label["end_time"]),      # end
                           np.int64(label["note_id"] - 21))  # note - 21 (base)
 
-            # the number of full valid windows fitting into the signal
-            strided_size = ((len(obj) - window + 1) + stride - 1) // stride
-
-            # (TODO) initial offset and padding
-
             # cache hdf5 objects (stores references to hdf5 objects!)
-            intervals.append((n_samples, n_samples + strided_size, obj, tree))
+            references.append((obj, tree))
 
-            n_samples += strided_size
+            # the number of full valid windows fitting into the signal
+            # (TODO) initial offset and padding
+            strided_size = ((len(obj) - window + 1) + stride - 1) // stride
+            indptr.append(indptr[-1] + strided_size)
 
-        self.n_samples, self.n_outputs = n_samples, 84
+        self.n_samples, self.n_outputs = indptr[-1], 84
+        self.objects, self.labels = zip(*references)
+        self.indptr = tuple(indptr)
 
-        # build the object lookup
-        beg, end, self.objects, self.labels = zip(*intervals)
-        self.intervals = NCLS64(np.int64(beg), np.int64(end),
-                                np.int64(np.r_[:len(self.objects)]))
-        self.keys = dict(zip(hdf5.keys(), zip(beg, end)))
+        self.keys = dict(zip(hdf5.keys(), range(len(self.objects))))
+        self.limits = dict(zip(hdf5.keys(), zip(indptr, indptr[1:])))
 
         # midpoint by default
         at = (window // 2) if at is None else at
         self.at = (window + at) if at < 0 else at
 
         self.hdf5, self.window, self.stride = hdf5, window, stride
+        self.dtype = dtype
 
     def __getitem__(self, index):
+        if isinstance(index, slice):
+            return self.fetch_data_slice(index)
+
+        elif not isinstance(index, int):
+            return self.fetch_data_key(index)
+
         index = self.n_samples + index if index < 0 else index
-        interval = next(self.intervals.find_overlap(index, index + 1), None)
-        if interval is None:
+        key = bisect_right(self.indptr, index) - 1  # a[:k] <= v < a[k:]
+        if not (0 <= key < len(self.objects)):
             raise KeyError
 
-        beg, _, key = interval
-        ix = (index - beg) * self.stride
+        ix = (index - self.indptr[key]) * self.stride
 
         # fetch data and construct labels: random access is slow
         obj, lab = self.objects[key], self.labels[key]
-        data = obj[ix:ix + self.window].astype(np.float32)
+        data = obj[ix:ix + self.window].astype(self.dtype)
 
-        notes = np.zeros(self.n_outputs, np.float32)
+        notes = np.zeros(self.n_outputs, self.dtype)
         for b, e, j in lab.find_overlap(ix + self.at, ix + self.at + 1):
             notes[j] = 1
 
@@ -126,3 +136,57 @@ class MusicNetHDF5(torch.utils.data.Dataset):
 
     def __len__(self):
         return self.n_samples
+
+    def __dir__(self):
+        return list(self.keys)
+
+    def fetch_data_slice(self, index):
+        assert isinstance(index, slice)
+
+        i0, i1, stride = index.indices(self.n_samples)
+        # Such n, that i0 .. i0 + n s < i1 <= i0 + (n+1) s when s > 0, or
+        #  i0 .. i0 + n s > i1 >= i0 + (n+1) s if s < 0.
+        size = (i1 - i0 + stride + (+1 if stride < 0 else -1)) // stride
+        if size <= 0:
+            return np.empty((0, self.window), self.dtype)
+
+        # Making a strided view us pointless, since slices across boundaries
+        #  would have to be collated anyway
+        chunks = np.empty((size, self.window), self.dtype)
+
+        # read a contiguous slice from the dataset (waveform)
+        base, k0 = -1, bisect_right(self.indptr, i0) - 1
+        for j, ii in enumerate(range(i0, i1, stride)):
+            if stride > 0 and self.indptr[k0 + 1] <= ii:
+                base = -1
+                while self.indptr[k0 + 1] <= ii:
+                    k0 += 1
+
+            elif stride < 0 and ii < self.indptr[k0]:
+                base = -1
+                while ii < self.indptr[k0]:
+                    k0 -= 1
+
+            if base < 0:
+                # h5py caches chunks, so adjacent reads are not reloaded.
+                obj, base = self.objects[k0], self.indptr[k0]
+
+            ix = (ii - base) * self.stride
+            chunks[j] = obj[ix:ix + self.window]
+
+        return chunks
+
+    def fetch_data_key(self, key):
+        if key not in self.keys:
+            raise KeyError(f"`{key}` not found")
+
+        key = self.keys[key]
+        data = self.objects[key][:].astype(self.dtype)
+
+        *head, stride = data.strides
+        stride = *head, self.stride * stride, stride
+
+        beg, end = self.indptr[key], self.indptr[key+1]
+        shape = *data.shape[:-1], end - beg, self.window
+
+        return as_strided(data, shape, stride, writeable=False)
