@@ -111,6 +111,12 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         self.dtype = dtype
 
     def __getitem__(self, index):
+        if isinstance(index, slice):
+            return self.fetch_data_slice(index)
+
+        elif not isinstance(index, int):
+            return self.fetch_data_key(index)
+
         index = self.n_samples + index if index < 0 else index
         key = bisect_right(self.indptr, index) - 1  # a[:k] <= v < a[k:]
         if not (0 <= key < len(self.objects)):
