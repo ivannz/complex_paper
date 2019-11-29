@@ -100,7 +100,8 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         self.objects, self.labels = zip(*references)
         self.indptr = tuple(indptr)
 
-        self.keys = dict(zip(hdf5.keys(), zip(indptr, indptr[1:])))
+        self.keys = dict(zip(hdf5.keys(), range(len(self.objects))))
+        self.limits = dict(zip(hdf5.keys(), zip(indptr, indptr[1:])))
 
         # midpoint by default
         at = (window // 2) if at is None else at
