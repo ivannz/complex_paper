@@ -190,3 +190,6 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         shape = *data.shape[:-1], end - beg, self.window
 
         return as_strided(data, shape, stride, writeable=False)
+
+    def __repr__(self):
+        return repr(self.hdf5)
