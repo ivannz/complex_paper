@@ -152,10 +152,14 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         base, k0 = -1, bisect_right(self.indptr, i0) - 1
         for ii in range(i0, i1, stride):
             if stride > 0 and self.indptr[k0 + 1] <= ii:
-                base, k0 = -1, k0 + 1
+                base = -1
+                while self.indptr[k0 + 1] <= ii:
+                    k0 += 1
 
             elif stride < 0 and ii < self.indptr[k0]:
-                base, k0 = -1, k0 - 1
+                base = -1
+                while ii < self.indptr[k0]:
+                    k0 -= 1
 
             if base < 0:
                 # h5py caches chunks, so adjacent reads are not reloaded.
