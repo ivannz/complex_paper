@@ -10,6 +10,7 @@ import torch.utils.data
 
 from ncls import NCLS64
 from resampy import resample
+from bisect import bisect_right
 
 
 def resample_h5(file_in, file_out, frame_rate_in, frame_rate_out, keys=None):
@@ -71,7 +72,7 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         # assumes note_ids 21..105, i.e. 84 class labels
 
         # build object and label lookup
-        intervals, n_samples = [], 0
+        indptr, references = [0], []
         for ix, (key, group) in enumerate(hdf5.items()):
             obj, label = group["data"], group["labels"]
 
@@ -81,23 +82,19 @@ class MusicNetHDF5(torch.utils.data.Dataset):
                           np.int64(label["end_time"]),      # end
                           np.int64(label["note_id"] - 21))  # note - 21 (base)
 
-            # the number of full valid windows fitting into the signal
-            strided_size = ((len(obj) - window + 1) + stride - 1) // stride
-
-            # (TODO) initial offset and padding
-
             # cache hdf5 objects (stores references to hdf5 objects!)
-            intervals.append((n_samples, n_samples + strided_size, obj, tree))
+            references.append((obj, tree))
 
-            n_samples += strided_size
+            # the number of full valid windows fitting into the signal
+            # (TODO) initial offset and padding
+            strided_size = ((len(obj) - window + 1) + stride - 1) // stride
+            indptr.append(indptr[-1] + strided_size)
 
-        self.n_samples, self.n_outputs = n_samples, 84
+        self.n_samples, self.n_outputs = indptr[-1], 84
+        self.objects, self.labels = zip(*references)
+        self.indptr = tuple(indptr)
 
-        # build the object lookup
-        beg, end, self.objects, self.labels = zip(*intervals)
-        self.intervals = NCLS64(np.int64(beg), np.int64(end),
-                                np.int64(np.r_[:len(self.objects)]))
-        self.keys = dict(zip(hdf5.keys(), zip(beg, end)))
+        self.keys = dict(zip(hdf5.keys(), zip(indptr, indptr[1:])))
 
         # midpoint by default
         at = (window // 2) if at is None else at
@@ -107,12 +104,11 @@ class MusicNetHDF5(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         index = self.n_samples + index if index < 0 else index
-        interval = next(self.intervals.find_overlap(index, index + 1), None)
-        if interval is None:
+        key = bisect_right(self.indptr, index) - 1  # a[:k] <= v < a[k:]
+        if not (0 <= key < len(self.objects)):
             raise KeyError
 
-        beg, _, key = interval
-        ix = (index - beg) * self.stride
+        ix = (index - self.indptr[key]) * self.stride
 
         # fetch data and construct labels: random access is slow
         obj, lab = self.objects[key], self.labels[key]
