@@ -76,6 +76,8 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         # ensure an open HDF5 handle
         assert isinstance(hdf5, h5py.File) and hdf5.id
         # assumes note_ids 21..105, i.e. 84 class labels
+        self.n_outputs, base_note_id = 84, 21
+        self.probability = np.zeros((len(hdf5), self.n_outputs))
 
         # build object and label lookup
         indptr, references = [0], []
@@ -84,9 +86,16 @@ class MusicNetHDF5(torch.utils.data.Dataset):
 
             # construct a fast lookup of music notes: a Nested
             #  Containment List is much faster than Interval Tree.
-            tree = NCLS64(np.int64(label["start_time"]),    # start
-                          np.int64(label["end_time"]),      # end
-                          np.int64(label["note_id"] - 21))  # note - 21 (base)
+            note_id = label["note_id"] - base_note_id
+            start_time, end_time = label["start_time"], label["end_time"]
+            tree = NCLS64(np.int64(start_time), np.int64(end_time),
+                          np.int64(note_id))
+
+            # Estimate the probability of a musical note playing
+            #  at a randomly picked sample within the composition
+            counts = np.bincount(note_id, minlength=self.n_outputs,
+                                 weights=end_time - start_time)
+            self.probability[ix] = counts / float(len(obj))
 
             # cache hdf5 objects (stores references to hdf5 objects!)
             references.append((obj, tree))
@@ -96,11 +105,10 @@ class MusicNetHDF5(torch.utils.data.Dataset):
             strided_size = ((len(obj) - window + 1) + stride - 1) // stride
             indptr.append(indptr[-1] + strided_size)
 
-        self.n_samples, self.n_outputs = indptr[-1], 84
+        self.n_samples, self.indptr = indptr[-1], tuple(indptr)
         self.objects, self.labels = zip(*references)
-        self.indptr = tuple(indptr)
 
-        self.keys = dict(zip(hdf5.keys(), range(len(self.objects))))
+        self.keys = dict(zip(hdf5.keys(), range(len(hdf5))))
         self.limits = dict(zip(hdf5.keys(), zip(indptr, indptr[1:])))
 
         # midpoint by default
