@@ -144,13 +144,19 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         assert isinstance(index, slice)
 
         i0, i1, stride = index.indices(self.n_samples)
-        if (stride > 0 and i0 >= i1) or (stride < 0 and i0 <= i1):
+        # Such n, that i0 .. i0 + n s < i1 <= i0 + (n+1) s when s > 0, or
+        #  i0 .. i0 + n s > i1 >= i0 + (n+1) s if s < 0.
+        size = (i1 - i0 + stride + (+1 if stride < 0 else -1)) // stride
+        if size <= 0:
             return np.empty((0, self.window), self.dtype)
 
+        # Making a strided view us pointless, since slices across boundaries
+        #  would have to be collated anyway
+        chunks = np.empty((size, self.window), self.dtype)
+
         # read a contiguous slice from the dataset (waveform)
-        chunks = []
         base, k0 = -1, bisect_right(self.indptr, i0) - 1
-        for ii in range(i0, i1, stride):
+        for j, ii in enumerate(range(i0, i1, stride)):
             if stride > 0 and self.indptr[k0 + 1] <= ii:
                 base = -1
                 while self.indptr[k0 + 1] <= ii:
@@ -166,11 +172,9 @@ class MusicNetHDF5(torch.utils.data.Dataset):
                 obj, base = self.objects[k0], self.indptr[k0]
 
             ix = (ii - base) * self.stride
-            chunks.append(obj[ix:ix + self.window].astype(self.dtype))
+            chunks[j] = obj[ix:ix + self.window]
 
-        # Making a strided view us pointless since slices
-        #  across boundaries would have to be collated anyway.
-        return np.stack(chunks, axis=0)
+        return chunks
 
     def fetch_data_key(self, key):
         if key not in self.keys:
