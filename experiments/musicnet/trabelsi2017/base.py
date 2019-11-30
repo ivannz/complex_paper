@@ -69,13 +69,12 @@ class ShallowConvNet(BodyMixin, torch.nn.Module):
 class DeepConvNet(BodyMixin, torch.nn.Module):
     Linear = torch.nn.Linear
     Conv1d = torch.nn.Conv1d
-    BatchNorm1d = torch.nn.BatchNorm1d
 
     @classmethod
     def one_block(cls, in_features, out_features, kernel, stride, full=True):
         layers = [("conv", cls.Conv1d(in_features, out_features, kernel, stride))]
         if full:
-            layers.append(("btch", cls.BatchNorm1d(out_features)))
+            layers.append(("btch", torch.nn.BatchNorm1d(out_features)))
 
         layers.append(("relu", torch.nn.ReLU()))
         if full:
