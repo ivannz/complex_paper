@@ -92,7 +92,7 @@ def fit(model, objective, feed, optim, sched=None, n_epochs=100,
     # Collect histories of objective's components and the norm of the gradient
     *term_values, grad_norms = [np.empty(0)] * (len(objective.terms) + 1)
     if history:
-        *term_values, grad = map(np.array, zip(*history))
+        *term_values, grad_norms = map(np.array, zip(*history))
 
     history = dict(zip(objective.terms, term_values))
     history.update({"|g|": grad_norms})
