@@ -1,3 +1,4 @@
+"""Handy weighted composite objectives and penalties."""
 import ast
 import operator
 
@@ -97,22 +98,22 @@ class BaseCompositeObjective(Module):
 
     Parameters
     ----------
-    **variables : keyword arguments
+    **terms : keyword arguments
         A mapping of the variable names to objective terms.
     """
 
-    def __init__(self, **variables):
+    def __init__(self, **terms):
         from torch.nn.modules.loss import _Loss  # import locally
         assert all(isinstance(term, (_Loss, BaseObjective,
                                      BaseCompositeObjective))
-                   for term in variables.values())
+                   for term in terms.values())
 
         super().__init__()
 
-        self.variables = variables
+        self.terms = torch.nn.ModuleDict(terms)
 
     def extra_repr(self):
-        return repr(list(self.variables))
+        return repr(list(self.terms))
 
     def forward(self, module, input, target, output=None):
         """Evaluate the terms of the objective.
@@ -138,7 +139,7 @@ class BaseCompositeObjective(Module):
         # evaluate the components and cache the most recent values
         components = {}
         output = module(input) if output is None else output
-        for name, term in self.variables.items():
+        for name, term in self.terms.items():
             if isinstance(term, (BaseObjective, BaseCompositeObjective)):
                 components[name] = term(module, input, target, output)
 
@@ -157,13 +158,13 @@ class WeightedObjective(BaseCompositeObjective):
     weights : mapping
         A mapping from variable names to weight values.
 
-    **variables : keyword arguments
+    **terms : keyword arguments
         A mapping of the variable names to objective terms.
     """
 
-    def __init__(self, weights, **variables):
-        assert not (weights.keys() - variables.keys())
-        super().__init__(**variables)
+    def __init__(self, weights, **terms):
+        assert not (weights.keys() - terms.keys())
+        super().__init__(**terms)
 
         self.weights = weights
 
@@ -251,13 +252,13 @@ class ExpressionObjective(BaseCompositeObjective):
         terms. Allowed to include arithmetic binary and unary operators,
         numeric constants and syntactically valid variable names.
 
-    **variables : keyword arguments
+    **terms : keyword arguments
         A mapping of the variable names to objective terms.
     """
 
-    def __init__(self, expression, **variables):
-        ScalarExpression.validate(expression, **variables)
-        super().__init__(**variables)
+    def __init__(self, expression, **terms):
+        ScalarExpression.validate(expression, **terms)
+        super().__init__(**terms)
 
         self.expression = expression
         self.compiled = compile(expression, str(self), mode="eval", optimize=2)
