@@ -118,6 +118,7 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         return list(self.keys)
 
     def fetch_data_slice(self, index):
+        """Get a slice of waveform data spanning across different keys."""
         assert isinstance(index, slice)
 
         i0, i1, stride = index.indices(self.n_samples)
@@ -154,6 +155,7 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         return chunks
 
     def fetch_data_key(self, key):
+        """Get the waveform data pertaining to one key."""
         if key not in self.keys:
             raise KeyError(f"`{key}` not found")
 
