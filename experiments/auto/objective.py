@@ -37,7 +37,7 @@ class BaseObjective(Module):
 
         self.reduction = reduction
 
-    def forward(self, *, module=None, input=None, output=None, target=None):
+    def forward(self, module, input=None, target=None, output=None):
         """Forward prototype.
 
         Keyword Arguments
@@ -49,11 +49,11 @@ class BaseObjective(Module):
         input : torch.Tensor, or tuple thereof
             The input.
 
-        output : torch.Tensor, or tuple thereof
-            The precomputed forward pass of through the model.
-
         target : torch.Tensor, or tuple thereof
             The targets.
+
+        output : torch.Tensor, or tuple thereof
+            The precomputed forward pass of through the model.
         """
         raise NotImplementedError
 
@@ -79,7 +79,7 @@ class ARDPenaltyObjective(BaseObjective):
             coef = coef.get
         self.coef = coef if callable(coef) else lambda n: coef
 
-    def forward(self, *, module, input=None, output=None, target=None):
+    def forward(self, module, input=None, target=None, output=None):
         """Reimplements `named_penalties` with non-uniform coefficients."""
         # get names of variational modules and pre-fetch coefficients
         ardmods = dict(named_ard_modules(module))
@@ -90,6 +90,89 @@ class ARDPenaltyObjective(BaseObjective):
         # lazy-compute the weighted sum
         coefs = [1. if C is None else C for C in map(coef_fn, ardmods)]
         return sum(C * fn(m.penalty) for C, m in zip(coefs, ardmods.values()) if C > 0)
+
+
+class BaseCompositeObjective(Module):
+    """Differentiable objective defined as a weighted sum.
+
+    Parameters
+    ----------
+    **variables : keyword arguments
+        A mapping of the variable names to objective terms.
+    """
+
+    def __init__(self, **variables):
+        from torch.nn.modules.loss import _Loss  # import locally
+        assert all(isinstance(term, (_Loss, BaseObjective,
+                                     BaseCompositeObjective))
+                   for term in variables.values())
+
+        super().__init__()
+
+        self.variables = variables
+
+    def extra_repr(self):
+        return repr(list(self.variables))
+
+    def forward(self, module, input, target, output=None):
+        """Evaluate the terms of the objective.
+
+        Parameters
+        ----------
+        module : torch.nn.Module
+            The module, which to evaluate with. Passed as is to `BaseObjective`
+            subclasses, so that they can access meta information within the
+            module.
+
+        input : torch.Tensor, or tuple thereof
+            The inputs corresponding to the target.
+
+        target : torch.Tensor, or tuple thereof
+            The target outputs of the model.
+
+        Details
+        -------
+        Precomputes the output of the module on the given input.
+        """
+
+        # evaluate the components and cache the most recent values
+        components = {}
+        output = module(input) if output is None else output
+        for name, term in self.variables.items():
+            if isinstance(term, (BaseObjective, BaseCompositeObjective)):
+                components[name] = term(module, input, target, output)
+
+            else:
+                components[name] = term(output, target)
+
+        self.component_values_ = tuple(map(float, components.values()))
+        return components
+
+
+class WeightedObjective(BaseCompositeObjective):
+    """Differentiable objective defined as a weighted sum.
+
+    Parameters
+    ----------
+    weights : mapping
+        A mapping from variable names to weight values.
+
+    **variables : keyword arguments
+        A mapping of the variable names to objective terms.
+    """
+
+    def __init__(self, weights, **variables):
+        assert not (weights.keys() - variables.keys())
+        super().__init__(**variables)
+
+        self.weights = weights
+
+    def extra_repr(self):
+        return repr(self.weights)
+
+    def forward(self, module, input, target, output=None):
+        components = super().forward(module, input, target, output)
+        return sum(C * components[name] for name, C in self.weights.items())
 
 
 class ScalarExpression(ast.NodeVisitor):
@@ -158,7 +241,7 @@ class ScalarExpression(ast.NodeVisitor):
         return self.namespace[node.id]
 
 
-class ExpressionObjective(Module):
+class ExpressionObjective(BaseCompositeObjective):
     """Differentiable objective defined though a valid arithmetic expression.
 
     Parameters
@@ -168,58 +251,21 @@ class ExpressionObjective(Module):
         terms. Allowed to include arithmetic binary and unary operators,
         numeric constants and syntactically valid variable names.
 
-    reduction : str, default="mean"
-        The reduction method, for compatibility with Loss.
+    **variables : keyword arguments
+        A mapping of the variable names to objective terms.
     """
 
     def __init__(self, expression, **variables):
-        from torch.nn.modules.loss import _Loss  # import locally
-
-        assert all(isinstance(term, (_Loss, BaseObjective))
-                   for term in variables.values())
         ScalarExpression.validate(expression, **variables)
-        super().__init__()
+        super().__init__(**variables)
 
-        self.expression = compile(expression, str(self),
-                                  mode="eval", optimize=2)
-        self.variables = variables
+        self.expression = expression
+        self.compiled = compile(expression, str(self), mode="eval", optimize=2)
 
-    def evaluate(self, module, input, target):
-        """Evaluate the terms of the objective.
+    def extra_repr(self):
+        return repr(self.expression)
 
-        Parameters
-        ----------
-        module : torch.nn.Module
-            The module, which to evaluate with. Passed as is to `BaseObjective`
-            subclasses, so that they can access meta information within the
-            module.
-
-        input : torch.Tensor, or tuple thereof
-            The inputs corresponding to the target.
-
-        target : torch.Tensor, or tuple thereof
-            The target outputs of the model.
-
-        Details
-        -------
-        Precomputes the output of the module on the given input.
-        """
-
-        terms, output = {}, module(input)
-        for name, term in self.variables.items():
-            if isinstance(term, BaseObjective):
-                terms[name] = term(module=module, input=input,
-                                   output=output, target=target)
-
-            else:
-                terms[name] = term(output, target)
-
-        return terms
-
-    def forward(self, module, input, target):
-        # evaluate the components and cache the most recent values
-        components = self.evaluate(module, input, target)
-        self.component_values_ = tuple(map(float, components.values()))
-
-        # Evaluate a safe arithmetic expression with the components' values
-        return eval(self.expression, components)
+    def forward(self, module, input, target, output=None):
+        """Evaluate a safe arithmetic expression with the components' values"""
+        components = super().forward(module, input, target, output)
+        return eval(self.compiled, components)
