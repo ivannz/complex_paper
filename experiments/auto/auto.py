@@ -40,38 +40,37 @@ def get_criterion(**options):
     return get_instance(**options)
 
 
-def fit(model, feed, optim, criterion, penalty=None, sched=None,
-        n_epochs=100, klw=1e-2, grad_clip=0., verbose=True):
+def fit(model, objective, feed, optim, sched=None, n_epochs=100,
+        grad_clip=0., verbose=True):
     from torch.optim.lr_scheduler import ReduceLROnPlateau
     from torch.nn.utils import clip_grad_norm_
 
-    model.train()
     history, abort = [], False
     with tqdm.tqdm(range(n_epochs), disable=not verbose) as bar, \
             DelayedKeyboardInterrupt("ignore") as stop:
+
+        model.train()
         for epoch in bar:
-            epoch_loss, kl_d, grad_norm = [], 0., float("nan")
+            epoch_loss, grad_norm = [], float("nan")
             for data, target in feed:
                 optim.zero_grad()
 
-                # get loss and penalty
-                crit = criterion(model(data), target)
-                if penalty is not None:
-                    kl_d = penalty(model)
-                loss = crit + klw * kl_d
-
+                # Compute the composite objective and record the components
+                loss = objective(model, data, target)
                 loss.backward()
                 if grad_clip > 0:
                     grad_norm = clip_grad_norm_(model.parameters(), grad_clip)
 
+                epoch_loss.append(float(loss))
+                history.append((*objective.component_values_, grad_norm))
+
                 optim.step()
                 if verbose:
-                    bar.set_postfix_str(
-                        f"{float(crit):.3e} {float(kl_d):.3e} |g| {grad_norm:.1e}"
-                    )
+                    # format the components of the loss objective
+                    terms = map("{:.2e}".format, history[-1][:-1])
+                    status = repr(tuple(terms)).replace("'", "")
 
-                history.append((float(crit), float(kl_d)))
-                epoch_loss.append(float(loss))
+                    bar.set_postfix_str(f"{status} |g| {grad_norm:.1e}")
 
                 # abort on nan -- no need to waste compute
                 abort = np.isnan(epoch_loss[-1])
@@ -90,4 +89,12 @@ def fit(model, feed, optim, criterion, penalty=None, sched=None,
         # end for
     # end with
 
-    return model.eval(), history, bool(abort or stop)
+    # Collect histories of objective's components and the norm of the gradient
+    *term_values, grad_norms = [np.empty(0)] * (len(objective.terms) + 1)
+    if history:
+        *term_values, grad = map(np.array, zip(*history))
+
+    history = dict(zip(objective.terms, term_values))
+    history.update({"|g|": grad_norms})
+
+    return model.eval(), bool(abort or stop), history
