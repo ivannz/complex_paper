@@ -1,46 +1,225 @@
+import ast
+import operator
+
 import torch
 
-from itertools import chain
-from torch.nn.modules.loss import _Loss
+from torch.nn.modules import Module
 from cplxmodule.relevance.base import BaseARD
 
 
 def named_ard_modules(module, prefix=""):
-    for name, mod in module.named_modules(prefix=prefix):
-        if isinstance(mod, BaseARD):
-            yield name, mod
+    """Generator of named variational dropout modules."""
+    for name, submod in module.named_modules(prefix=prefix):
+        if isinstance(submod, BaseARD):
+            yield name, submod
 
 
-class Penalty(_Loss):
-    def __init__(self, mean):
+class BaseObjective(Module):
+    """Base class for objective functions.
+
+    Parameters
+    ----------
+    reduction : str, default="mean"
+        The reduction method, for compatibility with Loss.
+    """
+
+    def __init__(self, reduction="mean"):
         super().__init__()
-        self.reduction = torch.mean if mean else torch.sum
+        if reduction == "mean":
+            self.reduce_fn = torch.mean
 
-    def forward(self, module, input=None, target=None):
+        elif reduction == "sum":
+            self.reduce_fn = torch.sum
+
+        else:
+            raise ValueError(f"`reduction` must be 'mean' or "
+                             f"'sum'. Got '{reduction}'.")
+
+        self.reduction = reduction
+
+    def forward(self, *, module=None, input=None, output=None, target=None):
+        """Forward prototype.
+
+        Keyword Arguments
+        -----------------
+        module : torch.nn.Module
+            The module for which to compute the penalty, in case special
+            layers and hooks are used.
+
+        input : torch.Tensor, or tuple thereof
+            The input.
+
+        output : torch.Tensor, or tuple thereof
+            The precomputed forward pass of through the model.
+
+        target : torch.Tensor, or tuple thereof
+            The targets.
+        """
         raise NotImplementedError
 
 
-class ARDPenalty(Penalty):
-    def __init__(self, coef=1., mean=False):
-        super().__init__(mean=mean)
-        if isinstance(coef, float):
-            self.coef = lambda n: coef
+class ARDPenaltyObjective(BaseObjective):
+    """Penalty for variational dropout modules.
 
-        elif isinstance(coef, dict):
-            self.coef = coef.get
+    Parameters
+    ----------
+    coef : dict, callable, or float
+        The coefficients for the variational submodules. A dictionary
+        keeps the constant weight for each variational submodule, a
+        constant specifies a uniform coefficient for all penalties,
+        and a callable specifies a dynamically computed coefficient.
 
-        elif callable(coef):
-            self.coef = coef
+    reduction : str, default="mean"
+        The reduction method, for compatibility with Loss.
+    """
 
-    def forward(self, module, input=None, target=None):
+    def __init__(self, coef=1., reduction="sum"):
+        super().__init__(reduction=reduction)
+        if isinstance(coef, dict):
+            coef = coef.get
+        self.coef = coef if callable(coef) else lambda n: coef
+
+    def forward(self, *, module, input=None, output=None, target=None):
         """Reimplements `named_penalties` with non-uniform coefficients."""
         # get names of variational modules and pre-fetch coefficients
-        submods = dict(named_ard_modules(module))
-        # names, submods = zip(*named_ard_modules(module))  # can't handle empty iterators
-        weights = (weight if weight is not None else 1.
-                   for weight in map(self.coef, submods.keys()))
+        ardmods = dict(named_ard_modules(module))
+        coef_fn, fn = self.coef, self.reduce_fn
+        if isinstance(coef_fn, (int, float)) and coef_fn > 0:
+            return coef_fn * sum(fn(mod.penalty) for mod in ardmods.values())
 
         # lazy-compute the weighted sum
-        return sum(weight * self.reduction(mod.penalty)
-                   for mod, weight in zip(submods.values(), weights)
-                   if weight > 0)
+        coefs = [1. if C is None else C for C in map(coef_fn, ardmods)]
+        return sum(C * fn(m.penalty) for C, m in zip(coefs, ardmods.values()) if C > 0)
+
+
+class ScalarExpression(ast.NodeVisitor):
+    """Evaluate a simple arithmetic expression within a namespace."""
+    operators = {
+        ast.Add:  operator.add,
+        ast.UAdd: operator.pos,
+        ast.Sub:  operator.sub,
+        ast.USub: operator.neg,
+        ast.Mult: operator.mul,
+        ast.Div:  operator.truediv,
+    }
+
+    @classmethod
+    def validate(cls, expression, **namespace):
+        """Validate a scalar expression with specified variables.
+
+        Details
+        -------
+        All variables in the namespace assume a test value of float(1),
+        and then the expression is parsed and its syntax tree validated
+        for non-arithmetic operations, e.g. indexing or calling, and
+        non-variables, like containers or other rich objects.
+        """
+        try:
+            visitor = cls(**dict.fromkeys(namespace, 1.))
+            visitor.visit(ast.parse(expression, mode="eval").body)
+
+        except SyntaxError:
+            raise RuntimeError(f"Bad expression `{expression}`") from None
+
+        except KeyError as e:
+            msg = f"{repr(e.args)} not found among {repr(list(namespace))}"
+            raise RuntimeError(msg) from None
+
+    def __init__(self, **namespace):
+        self.namespace = namespace
+
+    def generic_visit(self, node):
+        """Raise a SyntaxError on unhandled nodes."""
+        raise SyntaxError()
+
+    def resolve_op(self, node):
+        try:
+            return self.operators[type(node.op)]
+
+        except KeyError:
+            raise SyntaxError() from None
+
+    def visit_UnaryOp(self, node):
+        """Evaluate a unary +,- on the node's child."""
+        op = self.resolve_op(node)
+        return op(self.visit(node.operand))
+
+    def visit_BinOp(self, node):
+        """Evaluate a binary +, -, *, / on the node's children."""
+        op = self.resolve_op(node)
+        return op(self.visit(node.left), self.visit(node.right))
+
+    def visit_Num(self, node):
+        """Evaluate a numeric constant, i.e. int, float, or complex."""
+        return node.n
+
+    def visit_Name(self, node):
+        """Fetch a variable from the namespace."""
+        return self.namespace[node.id]
+
+
+class ExpressionObjective(Module):
+    """Differentiable objective defined though a valid arithmetic expression.
+
+    Parameters
+    ----------
+    expression : str
+        A valid pythonic expression that involves variables, specified in
+        terms. Allowed to include arithmetic binary and unary operators,
+        numeric constants and syntactically valid variable names.
+
+    reduction : str, default="mean"
+        The reduction method, for compatibility with Loss.
+    """
+
+    def __init__(self, expression, **variables):
+        from torch.nn.modules.loss import _Loss  # import locally
+
+        assert all(isinstance(term, (_Loss, BaseObjective))
+                   for term in variables.values())
+        ScalarExpression.validate(expression, **variables)
+        super().__init__()
+
+        self.expression = compile(expression, str(self),
+                                  mode="eval", optimize=2)
+        self.variables = variables
+
+    def evaluate(self, module, input, target):
+        """Evaluate the terms of the objective.
+
+        Parameters
+        ----------
+        module : torch.nn.Module
+            The module, which to evaluate with. Passed as is to `BaseObjective`
+            subclasses, so that they can access meta information within the
+            module.
+
+        input : torch.Tensor, or tuple thereof
+            The inputs corresponding to the target.
+
+        target : torch.Tensor, or tuple thereof
+            The target outputs of the model.
+
+        Details
+        -------
+        Precomputes the output of the module on the given input.
+        """
+
+        terms, output = {}, module(input)
+        for name, term in self.variables.items():
+            if isinstance(term, BaseObjective):
+                terms[name] = term(module=module, input=input,
+                                   output=output, target=target)
+
+            else:
+                terms[name] = term(output, target)
+
+        return terms
+
+    def forward(self, module, input, target):
+        # evaluate the components and cache the most recent values
+        components = self.evaluate(module, input, target)
+        self.component_values_ = tuple(map(float, components.values()))
+
+        # Evaluate a safe arithmetic expression with the components' values
+        return eval(self.expression, components)
