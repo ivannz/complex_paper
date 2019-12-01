@@ -114,6 +114,7 @@ def get_instance(*args, cls, **options):
 
 
 def join(*, left, right, how="inner", f=None):
+    """SQL-like join of two dictionaries."""
     assert isinstance(left, dict) and isinstance(right, dict)
 
     if how == "left":
@@ -125,7 +126,7 @@ def join(*, left, right, how="inner", f=None):
     elif how == "inner":
         key = left.keys() & right.keys()
 
-    else:
+    else:  # how == "outer"
         key = left.keys() | right.keys()
 
     def f_or_none(x):
@@ -134,7 +135,13 @@ def join(*, left, right, how="inner", f=None):
     return {k: (f_or_none(left.get(k)), f_or_none(right.get(k))) for k in key}
 
 
-def deploy_optimizer(mapper, *, target, source=None, copy_lr=False):
+def deploy_optimizer(mapper, *, target, source=None):
+    """Copy common state from the `source` to the `target` optimizer.
+
+    Note
+    ----
+    Neither learning rate settings nor parameter groups are compied.
+    """
     if source is None:
         return target
 
@@ -152,9 +159,6 @@ def deploy_optimizer(mapper, *, target, source=None, copy_lr=False):
     d_target["state"].update({
         mapper[k]: v for k, v in d_source["state"].items() if k in mapper
     })
-
-    # copy the learning rate
-    assert not copy_lr
 
     target.load_state_dict(d_target)
     return target
