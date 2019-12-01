@@ -9,6 +9,9 @@ from bisect import bisect_right
 
 from numpy.lib.stride_tricks import as_strided
 
+from scipy.fftpack import fft  # Fourier features
+from scipy.signal import stft  # Short-time Fourtier Transform
+
 
 class MusicNetHDF5(torch.utils.data.Dataset):
     """Dataset access to MusicNet stored in HDF5 file.
@@ -172,3 +175,78 @@ class MusicNetHDF5(torch.utils.data.Dataset):
 
     def __repr__(self):
         return repr(self.hdf5)
+
+
+class MusicNetWaveformCollation(object):
+    """Batch collation with on-the-fly feature processing transforms.
+
+    Parameters
+    ----------
+    kind : str, default='fft'
+        The kind of features to compute: 'raw' -- the raw signal waveform,
+        'fft' -- fourier trasnform, 'stft' -- short time fourier transform.
+        'stft-swap' is same as 'stft', but has freq and times axes swapped
+        for compatibility with the original experiments of Trabesli et al.
+        (2017), where the frequencies and times are swapped in Keras.
+
+    cplx : bool, default=True
+        Whether to return complex features in re-im format stacked along
+        the 2nd to last axis, or return real valued features. The nature
+        of the latter depend on the `kind` parameter: if `kind` is 'raw'
+        then the waveform is just returned as is, otherwise the magnitude
+        of complex numbers is returned.
+    """
+
+    def __init__(self, kind="fft", cplx=True):
+        assert kind in ("raw", "fft", "stft", "stft-swap")
+        self.kind, self.cplx = kind, cplx
+
+    def __call__(self, batch):
+        """Arrange each piece into a tensor with batch in the zeroth dimension.
+
+        Details
+        -------
+        Expects numpy ndarray(s) in batch. Feature generation was put here to
+        streamline fourier feature generation, albeit in numpy.
+        """
+
+        # collate in numpy (on CPU) by stacking along axis 0
+        signal, *rest = map(np.stack, zip(*batch))
+
+        # produce features fft/stft/raw
+        if self.kind == "raw":
+            z = signal[..., np.newaxis, :]
+
+        elif self.kind == "fft":
+            # z is complex64 B x 1 x [window]
+            z = fft(signal[..., np.newaxis, :], axis=-1)
+
+        else:  # self.kind in ("stft", "stft-swap")
+            # z is complex64 B x [freq] x [times] (window 4096 -> 70 times)
+            _, _, z = stft(signal, fs=11000, nperseg=120, noverlap=60, axis=-1,
+                           # fix defaults for posterity: windowing and padding
+                           window='hann', boundary='zeros', padded=True,
+                           detrend=False, return_onesided=True)
+
+            # Convolutions expect: B x C x L in torch, B x L x C in keras
+            # data_format defaults to'channels_last' (esp. 1d)
+            if self.kind == "stft-swap":
+                z = z.swapaxes(2, 1)
+            # https://keras.io/layers/convolutional/
+            # https://pytorch.org/docs/1.3.0/nn.html#torch.nn.Conv1d
+
+        # embed features real/cplx
+        if not self.cplx and self.kind == "raw":
+            # z is raw real signal and NO cplx was requested
+            data = z
+
+        elif self.cplx:
+            # stack real-imag parts along the second to last axis (channels)
+            # (NB) np.float is real, but subclass of complex, so imag is zero
+            data = np.concatenate([z.real, z.imag], axis=-2)
+
+        else:  # kind in ("stft", "fft", "stft-swap")
+            # z is complex (after fourier), so get the magnitude
+            data = np.abs(z)
+
+        return [*map(torch.from_numpy, (data, *rest))]

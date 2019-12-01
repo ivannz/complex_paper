@@ -5,6 +5,59 @@ import gzip
 import torch
 import importlib
 
+from torch.utils.data import DataLoader
+
+
+def feed_mover(feed, **kwargs):
+    """Transfer to device and type cast the batches from the feed on the fly.
+
+    Parameters
+    ----------
+    feed : torch.utils.data.DataLoader
+        The data loader instance draw batches from.
+
+    **kwargs : keyword arguments
+        The keyword arguments for the method `torch.Tensor.to()`.
+
+    Yields
+    ------
+    batch : iterable
+        An iterable that consitutes the batch.
+    """
+
+    if not kwargs:
+        yield from feed
+        return
+
+    for batch in feed:
+        yield [b.to(**kwargs) for b in batch]
+
+
+def feed_limiter(feed, max=-1):
+    """Limit the number of batches requested from the feed.
+
+    Parameters
+    ----------
+    feed : torch.utils.data.DataLoader
+        The data loader instance draw batches from.
+
+    max : int, default=-1
+        The limit on the number of batches generated.
+        Disabled if `max` is negative.
+
+    Yields
+    ------
+    batch : iterable
+        An iterable that consitutes the batch.
+    """
+
+    if max < 0:
+        yield from feed
+        return
+
+    for batch, _ in zip(feed, range(max)):
+        yield batch
+
 
 def save_snapshot(filename, **kwargs):
     with gzip.open(filename, "wb", compresslevel=5) as fout:
