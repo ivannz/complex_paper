@@ -10,6 +10,8 @@ import numpy as np
 
 from setuptools._vendor.packaging.version import Version
 from .utils import feed_limiter, feed_mover
+from .utils import save_snapshot, load_snapshot
+from .utils import join, deploy_optimizer
 
 
 def defaults(options):
@@ -81,8 +83,9 @@ class FeedWrapper(object):
         return len(self.feed)
 
 
-def run(options, verbose=True):
+def run(options, folder, suffix, verbose=True):
     options = defaults(options)
+    options_backup = copy.deepcopy(options)
 
     # placement (dtype / device) and sparsity settings
     threshold = options["threshold"]  # log(p/(1-p)), p=dropout rate
@@ -98,13 +101,56 @@ def run(options, verbose=True):
 
     model_factory = get_model_factory(options["model"])
 
-    model, optim = None, None
-    for stage, settings in options["stages"].itmes():
+    stages = options["stages"]
+    model, optim, mapper = None, None, {}
+    for n_stage, stage in enumerate(options["stage-order"]):
+        settings = stages[stage]
+        stage_backup = stage, copy.deepcopy(settings)
+
+        # `.load_state_dict()` automatically moves to device and casts
         new_model = get_model(model_factory, settings["model"]).to(**devtype)
+
+        # base lr is specified in the optimizer settings
         new_optim = get_optimizer(new_model, **settings["optimizer"])
 
+        # name-id mapping for copying optimizer states
+        new_mapper = {k: id(p) for k, p in new_model.named_parameters()}
+
+        # check optimizer class and restart flag (`new_optim` exists anyway)
+        restart = settings["restart"] or not isinstance(optim, new_optim.__class__)
+
         # <stage continuation>
-        model, optim = new_model, new_optim
+        optim_state = {}
+        if settings["snapshot"] is not None:
+            # Cold: parameters and buffers are loaded from some snapshot
+            state = load_snapshot(settings["snapshot"])
+
+            state_dict = state["model"]
+            mapper = state.get("mapper", {})
+            optim_state = state.get("optimizer", {})
+
+            new_model.load_state_dict(state_dict, strict=True)
+
+            del state
+
+        elif model is not None:
+            # Warm: the previous model provides the parameters
+            raise NotImplementedError
+
+        else:
+            raise NotImplementedError
+
+        # pass on the state of the optimizer
+        if optim_state and not restart:
+            # construct a map of id-s from `source` (left) to `target` (right)
+            mapping = join(right=new_mapper, left=mapper, how="inner")
+            deploy_optimizer(dict(mapping.values()),
+                             source=optim_state,
+                             target=new_optim)
+            del mapping
+        del optim_state
+
+        model, optim, mapper = new_model, new_optim, new_mapper
 
         # train
         objective = get_objective(objective_terms, settings["objective"]).to(**devtype)
@@ -113,10 +159,28 @@ def run(options, verbose=True):
         sched = get_scheduler(optim, **settings["lr_scheduler"])
 
         model.train()
-        model, state, history = fit(
+        model, success, history = fit(
             model, objective, feed, optim, sched,
             n_epochs=settings["n_epochs"], grad_clip=settings["grad_clip"],
             verbose=verbose)
+
+        # <performance assessment>
+        model.eval()
+
+        # save snapshot
+        status = "" if success else "TERMINATED "
+        final_snapshot = save_snapshot(
+            os.path.join(folder, f"{status}{n_stage}-{stage} {suffix}.gz"),
+            model=model.state_dict(),
+            optimizer=optim.state_dict() if success else None,
+            history=history,
+            options=options_backup,
+            stage=stage_backup,
+            __version__=__version__
+        )
+
+        # offload model back to cpu
+        model.cpu()
 
     return
 

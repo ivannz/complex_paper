@@ -68,6 +68,15 @@ def save_snapshot(filename, **kwargs):
     return filename
 
 
+def load_snapshot(filename):
+    with gzip.open(filename, "rb") as fin:
+        state = torch.load(fin, map_location=torch.device("cpu"))
+
+    # verify
+
+    return state
+
+
 def param_apply(param, **mapper):
     result = {}
     for name, value in param.items():
@@ -102,3 +111,50 @@ def get_class(klass):
 def get_instance(*args, cls, **options):
     """Locate and create a `cls` instance."""
     return get_class(cls)(*args, **options)
+
+
+def join(*, left, right, how="inner", f=None):
+    assert isinstance(left, dict) and isinstance(right, dict)
+
+    if how == "left":
+        key = left.keys()
+
+    elif how == "right":
+        key = right.keys()
+
+    elif how == "inner":
+        key = left.keys() & right.keys()
+
+    else:
+        key = left.keys() | right.keys()
+
+    def f_or_none(x):
+        return None if x is None else (x if not callable(f) else f(x))
+
+    return {k: (f_or_none(left.get(k)), f_or_none(right.get(k))) for k in key}
+
+
+def deploy_optimizer(mapper, *, target, source=None, copy_lr=False):
+    if source is None:
+        return target
+
+    if isinstance(source, torch.optim.Optimizer):
+        d_source = source.state_dict()
+    elif isinstance(source, dict):
+        d_source = source
+    else:
+        raise TypeError(f"`source` must be a dict or an oprimizer. "
+                        f"Got {type(source).__name__}.")
+
+    d_target = target.state_dict()
+
+    # transfer the state
+    d_target["state"].update({
+        mapper[k]: v for k, v in d_source["state"].items() if k in mapper
+    })
+
+    # copy the learning rate
+    assert not copy_lr
+
+    target.load_state_dict(d_target)
+    return target
