@@ -1,7 +1,5 @@
 import os
 import copy
-import time
-import gzip
 import tqdm
 import math
 import json
@@ -11,39 +9,15 @@ import numpy as np
 
 from setuptools._vendor.packaging.version import Version
 
-from .delayed import DelayedKeyboardInterrupt
-from .utils import get_instance
 
-
-__version__ = "0.1s"
-
-
-def save_snapshot(filename, **kwargs):
-    with gzip.open(filename, "wb", compresslevel=5) as fout:
-        torch.save(dict(kwargs, **{
-            "__version__": __version__,
-            "__timestamp__": time.strftime("%Y%m%d-%H%M%S"),
-        }), fout, pickle_protocol=3)
-
-    return filename
-
-
-def get_optimizer(parameters, *, lr, **options):
-    return get_instance(parameters, lr=lr, **options)
-
-
-def get_scheduler(optimizer, **options):
-    return get_instance(optimizer, **options)
-
-
-def get_criterion(**options):
-    return get_instance(**options)
+__version__ = "0.1"
 
 
 def fit(model, objective, feed, optim, sched=None, n_epochs=100,
         grad_clip=0., verbose=True):
     from torch.optim.lr_scheduler import ReduceLROnPlateau
     from torch.nn.utils import clip_grad_norm_
+    from .delayed import DelayedKeyboardInterrupt
 
     history, abort = [], False
     with tqdm.tqdm(range(n_epochs), disable=not verbose) as bar, \

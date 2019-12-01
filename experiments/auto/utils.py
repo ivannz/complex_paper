@@ -6,34 +6,33 @@ import torch
 import importlib
 
 
-def recipe_param(recipe, **defaults):
-    param = {}
-    if recipe and isinstance(recipe[-1], dict):
-        *recipe, param = recipe
+def save_snapshot(filename, **kwargs):
+    with gzip.open(filename, "wb", compresslevel=5) as fout:
+        torch.save(dict(kwargs, **{
+            "__timestamp__": time.strftime("%Y%m%d-%H%M%S"),
+        }), fout, pickle_protocol=3)
 
-    return recipe, {**defaults, **param}
+    return filename
 
 
-def recipe_param_apply(recipe, **mapper):
-    def apply(param):
-        return {
-            name: mapper.get(name, lambda v: v)(value) or value
-            for name, value in param.items()
-        }
+def param_apply(param, **mapper):
+    result = {}
+    for name, value in param.items():
+        if value is not None:
+            fn = mapper.get(name)
+            retvalue = fn(value) if callable(fn) else value
+            value = value if retvalue is None else retvalue
 
-    def walk(recipe):
-        if isinstance(recipe, (tuple, list)) and recipe:
-            param = {}
-            if isinstance(recipe[-1], dict):
-                *recipe, param = recipe
+        result[name] = value
 
-            return (*map(walk, recipe), apply(param))
-        return recipe
-
-    return walk(recipe)
+    return result
 
 
 def get_class(klass):
+    """Parse the specified type-string, import it and return the type."""
+    if isinstance(klass, type):
+        return klass
+
     if not isinstance(klass, str):
         return None
 
@@ -47,20 +46,6 @@ def get_class(klass):
     return getattr(importlib.import_module(module), klass)
 
 
-def get_instance(*args, **options):
-    factory = get_class(options.pop("class"))
-    return factory(*args, **options)
-
-
-def get_model_factory(**options):
-    from functools import partial
-    from .. import models
-
-    options.pop("repr", None)
-
-    klass = options.pop("class")
-    factory = get_class(klass) or getattr(models, klass)
-
-    recipe = recipe_param_apply(
-        options.pop("recipe", []), activation=get_class)
-    return partial(factory, *recipe, **options)
+def get_instance(*args, cls, **options):
+    """Locate and create a `cls` instance."""
+    return get_class(cls)(*args, **options)
