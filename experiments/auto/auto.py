@@ -9,12 +9,17 @@ import torch
 import numpy as np
 
 from cplxmodule.relevance import compute_ard_masks
-from cplxmodule.masks import binarize_masks
+from cplxmodule.masked import binarize_masks
 
 from setuptools._vendor.packaging.version import Version
+
+from .utils import get_class
 from .utils import feed_limiter, feed_mover
 from .utils import save_snapshot, load_snapshot
 from .utils import join, deploy_optimizer
+
+from collections import namedtuple
+State = namedtuple("State", ["model", "optim", "mapper"])
 
 
 def defaults(options):
@@ -47,13 +52,13 @@ def get_objective_terms(recipe):
 
 
 def get_model_factory(recipe):
-    """Partial constructor of the model. Assumes a particual common API."""
+    """Partial constructor of the model. Assumes a particular common API."""
     # "model"
     raise NotImplementedError
 
 
 def get_model(factory, recipe):
-    """Partial constructor of the model. Assumes a particual common API."""
+    """Partial constructor of the model. Assumes a particular common API."""
     # <factory>, "stages__*__model"
     raise NotImplementedError
 
@@ -75,6 +80,7 @@ def get_scheduler(optimizer, **kwargs):
 
 
 class FeedWrapper(object):
+    """A class that combines the limiter and the mover."""
     def __init__(self, feed, max=1000, **kwargs):
         self.feed, self.max, self.kwargs = feed, max, kwargs
 
@@ -86,13 +92,94 @@ class FeedWrapper(object):
         return len(self.feed)
 
 
+def state_create(factory, settings, devtype):
+    """Create a new state, i.e. model, optimizer and name-id mapper (for state
+    inheritance below), from the settings and model factory.
+    """
+
+    # (note) `.load_state_dict()` automatically moves to device and casts
+    model = get_model(factory, settings["model"]).to(**devtype)
+
+    # base lr is specified in the optimizer settings
+    optim = get_optimizer(model, **settings["optimizer"])
+
+    # name-id mapping for copying optimizer states
+    mapper = {k: id(p) for k, p in model.named_parameters()}
+
+    return State(model, optim, mapper)
+
+
+def state_inherit(state, options, *, old=None, **sparsity_kwargs):
+    """Inherit optimizer state and model parameters either form
+    the previous (hot) state or from a (cold) storage.
+    """
+    # model state is inherited anyway, optimizer is conditional.
+    optim_state, source_mapper, inheritable = {}, {}, False
+    if options["snapshot"] is not None:
+        # Cold: parameters and buffers are loaded from some snapshot
+        snapshot = load_snapshot(options["snapshot"])
+
+        # get the saved state of the optimizer and a name-id map
+        saved = snapshot.get("optim", {})
+        optim_state = saved.get("state", {})
+        source_mapper = snapshot.get("mapper", {})
+
+        # see if stored state an state.optim's state are compatible
+        inheritable = isinstance(state.optim, get_class(saved.get("cls")))
+
+        # overwrite the parameters and buffers of the model
+        state.model.load_state_dict(snapshot["model"], strict=True)
+
+        del snapshot, saved
+
+    elif isinstance(old, State) and old.model is not None:
+        # Warm: the previous model provides the parameters
+        optim_state, source_mapper = old.optim.state_dict(), old.mapper
+        inheritable = isinstance(state.optim, type(old.optim))
+
+        # Harvest and binarize masks, and clean the related parameters
+        masks = compute_ard_masks(old.model, **sparsity_kwargs)
+        state_dict, masks = binarize_masks(old.model.state_dict(), masks)
+        state_dict.update(masks)
+
+        # Models in each stage are instances of the same underlying
+        #  architecture just with different traits. Hence only here
+        #  we allow missing or unexpected parameters when deploying
+        #  the state
+        state.model.load_state_dict(state_dict, strict=False)
+
+        del state_dict, masks
+
+    else:
+        # no snapshot, or old is None, or old is State, but old.model is None
+        raise NotImplementedError
+
+    # check optimizer inheritance and restart flag, and deploy the state
+    if (optim_state and inheritable) and not options["restart"]:
+        # construct a map of id-s from `source` (left) to `target` (right)
+        mapping = join(right=state.mapper, left=source_mapper, how="inner")
+        deploy_optimizer(dict(mapping.values()), source=optim_state,
+                         target=state.optim)
+        del mapping
+
+    del optim_state, source_mapper
+
+    return state
+
+
+def evaluate(model, feed):
+    raise NotImplementedError
+
+
 def run(options, folder, suffix, verbose=True):
     options = defaults(options)
     options_backup = copy.deepcopy(options)
 
-    # placement (dtype / device) and sparsity settings
-    threshold = options["threshold"]  # log(p/(1-p)), p=dropout rate
+    # placement (dtype / device)
     devtype = dict(device=torch.device(options["device"]), dtype=torch.float32)
+
+    # sparsity settings: threshold is log(p / (1 - p)) for p=dropout rate
+    sparsity = dict(hard=True, threshold=options["threshold"])
 
     datasets = get_datasets(options["dataset"], options["dataset_sources"])
 
@@ -104,76 +191,19 @@ def run(options, folder, suffix, verbose=True):
 
     model_factory = get_model_factory(options["model"])
 
-    stages = options["stages"]
-    model, optim, mapper = None, None, {}
+    stages, state = options["stages"], State(None, None, {})
     for n_stage, stage in enumerate(options["stage-order"]):
         settings = stages[stage]
         stage_backup = stage, copy.deepcopy(settings)
 
-        # `.load_state_dict()` automatically moves to device and casts
-        new_model = get_model(model_factory, settings["model"]).to(**devtype)
+        state = state_inherit(state_create(model_factory, settings, devtype),
+                              settings, old=state, **sparsity)
 
-        # base lr is specified in the optimizer settings
-        new_optim = get_optimizer(new_model, **settings["optimizer"])
+        # unpack the state, initialize objective and scheduler, and train
+        model, optim = state.model, state.optim
 
-        # name-id mapping for copying optimizer states
-        new_mapper = {k: id(p) for k, p in new_model.named_parameters()}
-
-        # check optimizer class and restart flag (`new_optim` exists anyway)
-        restart = settings["restart"] or not isinstance(optim, new_optim.__class__)
-
-        # continuation: inherit optimizer state and model parametrs either form
-        #  the previous (hot) state or from a (cold) storage.
-        optim_state = {}
-        if settings["snapshot"] is not None:
-            # Cold: parameters and buffers are loaded from some snapshot
-            model, optim, mapper = None, None, {}
-            snapshot = load_snapshot(settings["snapshot"])
-
-            # overwrite the parameters and buffers of the model
-            new_model.load_state_dict(snapshot["model"], strict=True)
-
-            # get the saved state of the optimizer and a name-id map
-            optim_state = snapshot.get("optimizer", {})
-            mapper = snapshot.get("mapper", {})
-
-            del snapshot
-
-        elif model is not None:
-            # Warm: the previous model provides the parameters
-            optim_state = optim.state_dict()
-
-            # harvest and binarize masks, and clean the related parameters
-            masks = compute_ard_masks(model, hard=True, threshold=threshold)
-            state_dict, masks = binarize_masks(model.state_dict(), masks)
-            state_dict.update(masks)
-
-            # Models in each stage are instances of the same underlying
-            #  architecture just with differnt traits. Hence only here
-            #  we allow missing or unexpected parameters when deploying
-            #  the state
-            new_model.load_state_dict(state_dict, strict=False)
-
-            del state_dict, masks
-
-        else:
-            raise NotImplementedError
-
-        # pass on the state of the optimizer
-        if optim_state and not restart:
-            # construct a map of id-s from `source` (left) to `target` (right)
-            mapping = join(right=new_mapper, left=mapper, how="inner")
-            deploy_optimizer(dict(mapping.values()),
-                             source=optim_state, target=new_optim)
-            del mapping
-        del optim_state
-
-        model, optim, mapper = new_model, new_optim, new_mapper
-
-        # train
         objective = get_objective(objective_terms, settings["objective"]).to(**devtype)
         feed = FeedWrapper(feeds[stage], max=settings["n_batches_per_epoch"], **devtype)
-
         sched = get_scheduler(optim, **settings["lr_scheduler"])
 
         model.train()
@@ -184,13 +214,20 @@ def run(options, folder, suffix, verbose=True):
 
         # <performance assessment>
         model.eval()
+        test_performance = evaluate(model, ...)
 
         # save snapshot
         status = "" if success else "TERMINATED "
         final_snapshot = save_snapshot(
             os.path.join(folder, f"{status}{n_stage}-{stage} {suffix}.gz"),
-            model=model.state_dict(),
-            optimizer=optim.state_dict() if success else None,
+            # state
+            model=state.model.state_dict(),
+            optim=dict(
+                cls=str(type(state.optim)),
+                state=state.optim.state_dict()
+            ) if success else None,
+            mapper=state.mapper if success else None,
+            # meta data
             history=history,
             options=options_backup,
             stage=stage_backup,
