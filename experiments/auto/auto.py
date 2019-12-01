@@ -8,6 +8,9 @@ import json
 import torch
 import numpy as np
 
+from cplxmodule.relevance import compute_ard_masks
+from cplxmodule.masks import binarize_masks
+
 from setuptools._vendor.packaging.version import Version
 from .utils import feed_limiter, feed_mover
 from .utils import save_snapshot, load_snapshot
@@ -119,23 +122,39 @@ def run(options, folder, suffix, verbose=True):
         # check optimizer class and restart flag (`new_optim` exists anyway)
         restart = settings["restart"] or not isinstance(optim, new_optim.__class__)
 
-        # <stage continuation>
+        # continuation: inherit optimizer state and model parametrs either form
+        #  the previous (hot) state or from a (cold) storage.
         optim_state = {}
         if settings["snapshot"] is not None:
             # Cold: parameters and buffers are loaded from some snapshot
-            state = load_snapshot(settings["snapshot"])
+            model, optim, mapper = None, None, {}
+            snapshot = load_snapshot(settings["snapshot"])
 
-            state_dict = state["model"]
-            mapper = state.get("mapper", {})
-            optim_state = state.get("optimizer", {})
+            # overwrite the parameters and buffers of the model
+            new_model.load_state_dict(snapshot["model"], strict=True)
 
-            new_model.load_state_dict(state_dict, strict=True)
+            # get the saved state of the optimizer and a name-id map
+            optim_state = snapshot.get("optimizer", {})
+            mapper = snapshot.get("mapper", {})
 
-            del state
+            del snapshot
 
         elif model is not None:
             # Warm: the previous model provides the parameters
-            raise NotImplementedError
+            optim_state = optim.state_dict()
+
+            # harvest and binarize masks, and clean the related parameters
+            masks = compute_ard_masks(model, hard=True, threshold=threshold)
+            state_dict, masks = binarize_masks(model.state_dict(), masks)
+            state_dict.update(masks)
+
+            # Models in each stage are instances of the same underlying
+            #  architecture just with differnt traits. Hence only here
+            #  we allow missing or unexpected parameters when deploying
+            #  the state
+            new_model.load_state_dict(state_dict, strict=False)
+
+            del state_dict, masks
 
         else:
             raise NotImplementedError
@@ -145,8 +164,7 @@ def run(options, folder, suffix, verbose=True):
             # construct a map of id-s from `source` (left) to `target` (right)
             mapping = join(right=new_mapper, left=mapper, how="inner")
             deploy_optimizer(dict(mapping.values()),
-                             source=optim_state,
-                             target=new_optim)
+                             source=optim_state, target=new_optim)
             del mapping
         del optim_state
 
