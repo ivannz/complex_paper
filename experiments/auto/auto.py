@@ -242,8 +242,10 @@ def run(options, folder, suffix, verbose=True):
         # unpack the state, initialize objective and scheduler, and train
         model, optim = state.model, state.optim
 
-        objective = get_objective(objective_terms, settings["objective"]).to(**devtype)
-        feed = FeedWrapper(feeds[stage], max=settings["n_batches_per_epoch"], **devtype)
+        feed = FeedWrapper(feeds[settings["feed"]],
+                           max=settings["n_batches_per_epoch"], **devtype)
+        objective = get_objective(objective_terms,
+                                  settings["objective"]).to(**devtype)
         sched = get_scheduler(optim, settings["lr_scheduler"])
 
         model.train()
