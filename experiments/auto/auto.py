@@ -45,7 +45,7 @@ def get_feeds(datasets, collate_fn, recipe):
     raise NotImplementedError
 
 
-def get_objective_terms(recipe):
+def get_objective_terms(datasets, recipe):
     """Gather the components of the objective function."""
     # "objective_terms"
     raise NotImplementedError
@@ -187,7 +187,7 @@ def run(options, folder, suffix, verbose=True):
 
     feeds = get_feeds(datasets, collate_fn, options["feeds"])
 
-    objective_terms = get_objective_terms(options["objective_terms"])
+    objective_terms = get_objective_terms(datasets, options["objective_terms"])
 
     model_factory = get_model_factory(options["model"])
 
