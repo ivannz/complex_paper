@@ -108,13 +108,15 @@ def get_objective(objective_terms, recipe):
     raise NotImplementedError
 
 
-def get_optimizer(module, *, lr, **kwargs):
-    """Get the optimizer for the module from explicit lr and kwargs."""
+def get_optimizer(module, recipe):
+    """Get the optimizer for the module from the recipe."""
+    # <module>, "stages__*__optimizer"
     raise NotImplementedError
 
 
-def get_scheduler(optimizer, **kwargs):
-    """Get scheduler for the optimizer and kwargs."""
+def get_scheduler(optimizer, recipe):
+    """Get scheduler for the optimizer and recipe."""
+    # <optimizer>, "stages__*__lr_scheduler"
     raise NotImplementedError
 
 
@@ -140,7 +142,7 @@ def state_create(factory, settings, devtype):
     model = get_model(factory, settings["model"]).to(**devtype)
 
     # base lr is specified in the optimizer settings
-    optim = get_optimizer(model, **settings["optimizer"])
+    optim = get_optimizer(model, settings["optimizer"])
 
     # name-id mapping for copying optimizer states
     mapper = {k: id(p) for k, p in model.named_parameters()}
@@ -189,9 +191,8 @@ def state_inherit(state, options, *, old=None, **sparsity_kwargs):
 
         del state_dict, masks
 
-    else:
-        # no snapshot, or old is None, or old is State, but old.model is None
-        raise NotImplementedError
+    else:  # snapshot is None and old.model is None
+        pass
 
     # check optimizer inheritance and restart flag, and deploy the state
     if (optim_state and inheritable) and not options["restart"]:
@@ -243,7 +244,7 @@ def run(options, folder, suffix, verbose=True):
 
         objective = get_objective(objective_terms, settings["objective"]).to(**devtype)
         feed = FeedWrapper(feeds[stage], max=settings["n_batches_per_epoch"], **devtype)
-        sched = get_scheduler(optim, **settings["lr_scheduler"])
+        sched = get_scheduler(optim, settings["lr_scheduler"])
 
         model.train()
         model, success, history = fit(

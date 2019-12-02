@@ -7,15 +7,13 @@ import importlib
 
 from functools import partial
 
-from torch.utils.data import DataLoader
-
 
 def feed_mover(feed, **kwargs):
     """Transfer to device and type cast the batches from the feed on the fly.
 
     Parameters
     ----------
-    feed : torch.utils.data.DataLoader
+    feed : iterable
         The data loader instance draw batches from.
 
     **kwargs : keyword arguments
@@ -24,7 +22,7 @@ def feed_mover(feed, **kwargs):
     Yields
     ------
     batch : iterable
-        An iterable that consitutes the batch.
+        An iterable that constitutes the batch.
     """
 
     if not kwargs:
@@ -40,7 +38,7 @@ def feed_limiter(feed, max=-1):
 
     Parameters
     ----------
-    feed : torch.utils.data.DataLoader
+    feed : iterable
         The data loader instance draw batches from.
 
     max : int, default=-1
@@ -50,7 +48,7 @@ def feed_limiter(feed, max=-1):
     Yields
     ------
     batch : iterable
-        An iterable that consitutes the batch.
+        An iterable that constitutes the batch.
     """
 
     if max < 0:
@@ -99,7 +97,7 @@ def param_defaults(param, **defaults):
 
 
 def param_apply_map(param, deep=True, memo=None, **map):
-    """Recurively re-map the values within the nested dictionary.
+    """Recursively re-map the values within the nested dictionary.
 
     Parameters
     ----------
@@ -107,7 +105,7 @@ def param_apply_map(param, deep=True, memo=None, **map):
         The dictionary of parameters.
 
     deep : bool, default=True
-        Whether to recursevely copy the nested dictionaries.
+        Whether to recursively copy the nested dictionaries.
 
     memo : set, default=None
         Service set to keep track of visited nested dictionaries.
@@ -134,7 +132,7 @@ def param_apply_map(param, deep=True, memo=None, **map):
         memo = set()
 
     if id(param) in memo:
-        # nested self reference : return the dictinoary as it is.
+        # nested self reference : return the dictionary as it is.
         return param
     memo.add(id(param))
 
@@ -170,7 +168,7 @@ def get_class(klass):
     if match is None:
         return None
 
-    # import from builtins if no module is specified
+    # import from built-ins if no module is specified
     module, klass = (match.group(1) or "builtins"), match.group(2)
     return getattr(importlib.import_module(module), klass)
 
@@ -212,17 +210,19 @@ def deploy_optimizer(mapper, *, target, source=None):
 
     Note
     ----
-    Neither learning rate settings nor parameter groups are compied.
+    Neither learning rate settings nor parameter groups are copied.
     """
     if source is None:
         return target
 
     if isinstance(source, torch.optim.Optimizer):
         d_source = source.state_dict()
+
     elif isinstance(source, dict):
         d_source = source
+
     else:
-        raise TypeError(f"`source` must be a dict or an oprimizer. "
+        raise TypeError(f"`source` must be a dict or an optimizer. "
                         f"Got {type(source).__name__}.")
 
     d_target = target.state_dict()
