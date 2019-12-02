@@ -142,14 +142,14 @@ def param_apply_map(param, deep=True, memo=None, **map):
     # make an elementwise copy of the dictionary
     for key in param:
         value = param[key]
-        if not isinstance(value, dict):
-            # map a non None value using the supplied map
-            if key in map and value is not None:
-                retvalue = map[key](value)
-                if retvalue is not None:
-                    value = retvalue
+        # map a non None value using the supplied map
+        if key in map and value is not None:
+            retvalue = map[key](value)
+            if retvalue is not None:
+                value = retvalue
 
-        elif deep:  # value is dict
+        elif deep and isinstance(value, dict):
+            # key not in map and value is dict and deep
             value = param_apply_map(value, memo=memo, deep=True, **map)
 
         out[key] = value
