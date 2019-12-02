@@ -5,6 +5,8 @@ import gzip
 import torch
 import importlib
 
+from functools import partial
+
 from torch.utils.data import DataLoader
 
 
@@ -77,6 +79,10 @@ def load_snapshot(filename):
     return state
 
 
+def param_defaults(param, **defaults):
+    return {**defaults, **param}
+
+
 def param_apply(param, **mapper):
     result = {}
     for name, value in param.items():
@@ -111,6 +117,11 @@ def get_class(klass):
 def get_instance(*args, cls, **options):
     """Locate and create a `cls` instance."""
     return get_class(cls)(*args, **options)
+
+
+def get_factory(*args, cls, **options):
+    """Locate and create a partial `cls` constructor."""
+    return partial(get_class(cls), *args, **options)
 
 
 def join(*, left, right, how="inner", f=None):
