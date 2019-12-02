@@ -11,7 +11,7 @@ from numpy.lib.stride_tricks import as_strided
 
 
 class MusicNetHDF5(torch.utils.data.Dataset):
-    """Dataset access to MusicNet sotred in HDF5 file.
+    """Dataset access to MusicNet stored in HDF5 file.
 
     Parameters
     ----------
@@ -31,11 +31,15 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         of the window by default (None).
 
     dtype : np.dtype, default=np.float32
-        The data typee of the waveform windows and targets. Defautls ot float32
+        The data type of the waveform windows and targets. Defaults to float32
         for easier compatibility with torch.
+
+    resident : bool, default=False
+        Wheter to cache the raw waveform data into ram on init.
     """
 
-    def __init__(self, hdf5, window=4096, stride=512, at=None, dtype=np.float32):
+    def __init__(self, hdf5, window=4096, stride=512, at=None,
+                 dtype=np.float32, resident=False):
         # ensure an open HDF5 handle
         assert isinstance(hdf5, h5py.File) and hdf5.id
         # assumes note_ids 21..105, i.e. 84 class labels
@@ -61,6 +65,8 @@ class MusicNetHDF5(torch.utils.data.Dataset):
             self.probability[ix] = counts / float(len(obj))
 
             # cache hdf5 objects (stores references to hdf5 objects!)
+            if resident:
+                obj = obj[:].astype(dtype, copy=True)  # read the data
             references.append((obj, tree))
 
             # the number of full valid windows fitting into the signal
@@ -97,7 +103,7 @@ class MusicNetHDF5(torch.utils.data.Dataset):
 
         # fetch data and construct labels: random access is slow
         obj, lab = self.objects[key], self.labels[key]
-        data = obj[ix:ix + self.window].astype(self.dtype)
+        data = obj[ix:ix + self.window].astype(self.dtype, copy=False)
 
         notes = np.zeros(self.n_outputs, self.dtype)
         for b, e, j in lab.find_overlap(ix + self.at, ix + self.at + 1):
@@ -152,7 +158,7 @@ class MusicNetHDF5(torch.utils.data.Dataset):
             raise KeyError(f"`{key}` not found")
 
         key = self.keys[key]
-        data = self.objects[key][:].astype(self.dtype)
+        data = self.objects[key][:].astype(self.dtype, copy=False)
 
         *head, stride = data.strides
         stride = *head, self.stride * stride, stride
