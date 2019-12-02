@@ -107,8 +107,9 @@ def param_apply_map(param, deep=True, memo=None, **map):
     deep : bool, default=True
         Whether to recursively copy the nested dictionaries.
 
-    memo : set, default=None
-        Service set to keep track of visited nested dictionaries.
+    memo : dict, default=None
+        Internally used service dictionary to keep track of visited nested
+        dictionaries.
 
     **map : keyworded functions
         The key-function mapping, applied to non-dictionary elements.
@@ -129,26 +130,27 @@ def param_apply_map(param, deep=True, memo=None, **map):
 
     # keep track of visited nested dictionaries by their `id(...)`
     if memo is None:
-        memo = set()
+        memo = {}
 
+    # nested self reference: return the previously computed dictionary
     if id(param) in memo:
-        # nested self reference : return the dictionary as it is.
-        return param
-    memo.add(id(param))
+        return memo[id(param)]
 
-    out = dict()
+    out = {}
+    memo[id(param)] = out  # reference the dynamically created dictionary
+
     # make an elementwise copy of the dictionary
     for key in param:
         value = param[key]
+        # prioritize dfs, then pass the nested result through the map
+        if isinstance(value, dict) and deep:
+            value = param_apply_map(value, deep=True, memo=memo, **map)
+
         # map a non None value using the supplied map
         if key in map and value is not None:
             retvalue = map[key](value)
             if retvalue is not None:
                 value = retvalue
-
-        elif deep and isinstance(value, dict):
-            # key not in map and value is dict and deep
-            value = param_apply_map(value, memo=memo, deep=True, **map)
 
         out[key] = value
 
