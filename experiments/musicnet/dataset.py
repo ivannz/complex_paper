@@ -177,6 +177,40 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         return repr(self.hdf5)
 
 
+class MusicNetRAM(MusicNetHDF5):
+    """Entirely RAM resident MusicNet dataset from an HDF5 file.
+
+    Parameters
+    ----------
+    filename : str
+        Path to an HDF5 file with the MusicNet dataset (special structure).
+
+    window : int, or tuple
+        The size of the window. If tuple, then specifies the number of samples
+        before `t` and after.
+
+    stride : int, default=1
+        The stride of the sliding window.
+
+    at : int, or None, default=None
+        The index within the `window` at which the targets are collected.
+        Should be thought of as the offset to time `t` in the window. Midpoint
+        of the window by default (None).
+
+    dtype : np.dtype, default=np.float32
+        The data type of the waveform windows and targets. Defaults to float32
+        for easier compatibility with torch.
+    """
+    def __init__(self, filename, window=4096, stride=512,
+                 at=None, dtype=np.float32):
+        super().__init__(h5py.File(filename, "r"), window=window,
+                         stride=stride, at=at, dtype=dtype,
+                         resident=True)
+
+    def __del__(self):
+        self.hdf5.close()
+
+
 class MusicNetWaveformCollation(object):
     """Batch collation with on-the-fly feature processing transforms.
 
