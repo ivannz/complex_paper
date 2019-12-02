@@ -80,20 +80,81 @@ def load_snapshot(filename):
 
 
 def param_defaults(param, **defaults):
+    """Add keys with default values if absent.
+
+    Parameters
+    ----------
+    param : dict
+        The dictionary of parameters.
+
+    **defaults : keyword arguments
+        The default values of the missing keys.
+
+    Returns
+    -------
+    out : dict
+        A shallow copy of the parameters with specified (shallow) defaults.
+    """
     return {**defaults, **param}
 
 
-def param_apply(param, **mapper):
-    result = {}
-    for name, value in param.items():
-        if value is not None:
-            fn = mapper.get(name)
-            retvalue = fn(value) if callable(fn) else value
-            value = value if retvalue is None else retvalue
+def param_apply_map(param, deep=True, memo=None, **map):
+    """Recurively re-map the values within the nested dictionary.
 
-        result[name] = value
+    Parameters
+    ----------
+    param : dict
+        The dictionary of parameters.
 
-    return result
+    deep : bool, default=True
+        Whether to recursevely copy the nested dictionaries.
+
+    memo : set, default=None
+        Service set to keep track of visited nested dictionaries.
+
+    **map : keyworded functions
+        The key-function mapping, applied to non-dictionary elements.
+
+    Returns
+    -------
+    out : dict
+        A shallow or deep modified copy of the original parameter dictionary.
+
+    Details
+    -------
+    If `map` is provided, then produces a modified copy of the original
+    dictionary, maintaining is key ordering.
+    """
+
+    if not map:
+        return param
+
+    # keep track of visited nested dictionaries by their `id(...)`
+    if memo is None:
+        memo = set()
+
+    if id(param) in memo:
+        # nested self reference : return the dictinoary as it is.
+        return param
+    memo.add(id(param))
+
+    out = dict()
+    # make an elementwise copy of the dictionary
+    for key in param:
+        value = param[key]
+        if not isinstance(value, dict):
+            # map a non None value using the supplied map
+            if key in map and value is not None:
+                retvalue = map[key](value)
+                if retvalue is not None:
+                    value = retvalue
+
+        elif deep:  # value is dict
+            value = param_apply_map(value, memo=memo, deep=True, **map)
+
+        out[key] = value
+
+    return out
 
 
 def get_class(klass):
