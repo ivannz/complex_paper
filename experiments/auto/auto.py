@@ -13,7 +13,9 @@ from cplxmodule.masked import binarize_masks
 
 from setuptools._vendor.packaging.version import Version
 
-from .utils import get_class
+from .utils import get_class, get_factory, get_instance
+from .utils import param_apply_map, param_defaults
+
 from .utils import feed_limiter, feed_mover
 from .utils import save_snapshot, load_snapshot
 from .utils import join, deploy_optimizer
@@ -30,19 +32,28 @@ def defaults(options):
 def get_datasets(factory, recipe):
     """Get dataset instances from the factory specification and recipe."""
     # "dataset", "dataset_sources"
-    raise NotImplementedError
+    factory = get_factory(**factory)
+    return {name: factory(**source)
+            for name, source in recipe.items()}
 
 
 def get_collate_fn(recipe):
     """Get collation function responsible for batch-feature generation."""
     # "features"
-    raise NotImplementedError
+    return get_instance(**recipe)
 
 
 def get_feeds(datasets, collate_fn, recipe):
     """Get instances of data loaders from the datasets and collate function."""
     # <datasets>, <collate_fn>, "feeds"
-    raise NotImplementedError
+    recipe = param_apply_map(recipe, dataset=datasets.__getitem__)
+
+    feeds = {}
+    for name, par in recipe.items():
+        par = param_defaults(par, pin_memory=True)
+        feeds[name] = torch.utils.data.DataLoader(**par, collate_fn=collate_fn)
+
+    return feeds
 
 
 def get_objective_terms(datasets, recipe):
