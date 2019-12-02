@@ -21,6 +21,8 @@ from .utils import feed_limiter, feed_mover
 from .utils import save_snapshot, load_snapshot
 from .utils import join, deploy_optimizer
 
+from .objective import ExpressionObjective, WeightedObjective
+
 from collections import namedtuple
 State = namedtuple("State", ["model", "optim", "mapper"])
 
@@ -90,34 +92,32 @@ def get_objective_terms(datasets, recipe):
     return objectives
 
 
-def get_model_factory(recipe):
-    """Partial constructor of the model. Assumes a particular common API."""
-    # "model"
-    raise NotImplementedError
-
-
 def get_model(factory, recipe):
-    """Partial constructor of the model. Assumes a particular common API."""
-    # <factory>, "stages__*__model"
-    raise NotImplementedError
+    """Construct the instance of a model from a two-part specification."""
+    # "model", "stages__*__model"
+    return get_instance(**factory, **recipe)
 
 
 def get_objective(objective_terms, recipe):
     """Construct the objective function from the recipe and components."""
     # <objective_terms>, "stages__*__objective"
-    raise NotImplementedError
+    if isinstance(recipe, dict):
+        return WeightedObjective(recipe, **objective_terms)
+
+    if isinstance(recipe, str):
+        return ExpressionObjective(recipe, **objective_terms)
 
 
 def get_optimizer(module, recipe):
     """Get the optimizer for the module from the recipe."""
     # <module>, "stages__*__optimizer"
-    raise NotImplementedError
+    return get_instance(module.parameters(), **recipe)
 
 
 def get_scheduler(optimizer, recipe):
     """Get scheduler for the optimizer and recipe."""
     # <optimizer>, "stages__*__lr_scheduler"
-    raise NotImplementedError
+    return get_instance(optimizer, **recipe)
 
 
 class FeedWrapper(object):
@@ -229,15 +229,13 @@ def run(options, folder, suffix, verbose=True):
 
     objective_terms = get_objective_terms(datasets, options["objective_terms"])
 
-    model_factory = get_model_factory(options["model"])
-
     stages, state = options["stages"], State(None, None, {})
     for n_stage, stage in enumerate(options["stage-order"]):
         settings = stages[stage]
         stage_backup = stage, copy.deepcopy(settings)
 
-        state = state_inherit(state_create(model_factory, settings, devtype),
-                              settings, old=state, **sparsity)
+        new = state_create(options["model"], settings, devtype)
+        state = state_inherit(new, settings, old=state, **sparsity)
 
         # unpack the state, initialize objective and scheduler, and train
         model, optim = state.model, state.optim
