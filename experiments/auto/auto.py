@@ -317,10 +317,10 @@ def fit(model, objective, feed, optim, sched=None, n_epochs=100,
 
                 # abort on nan -- no need to waste compute
                 abort = np.isnan(epoch_loss[-1])
-                if abort or stop:
+                if abort or bool(stop):
                     break
 
-            if abort or stop:
+            if abort or bool(stop):
                 break
 
             if sched is not None:
@@ -340,4 +340,4 @@ def fit(model, objective, feed, optim, sched=None, n_epochs=100,
     history = dict(zip(objective.terms, term_values))
     history.update({"|g|": grad_norms})
 
-    return model.eval(), bool(abort or stop), history
+    return model.eval(), not (abort or bool(stop)), history
