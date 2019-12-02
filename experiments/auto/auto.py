@@ -11,6 +11,7 @@ import numpy as np
 from cplxmodule.relevance import compute_ard_masks
 from cplxmodule.masked import binarize_masks
 
+from scipy.special import logit
 from setuptools._vendor.packaging.version import Version
 
 from .utils import get_class, get_factory, get_instance
@@ -56,10 +57,37 @@ def get_feeds(datasets, collate_fn, recipe):
     return feeds
 
 
+def compute_positive_weight(recipe):
+    """Compute the +ve label weights to ensure balance given in the recipe."""
+    # "pos_weight" (with mapped dataset)
+    recipe = param_defaults(recipe, alpha=0.5, max=1e2)
+
+    # average across pieces of data (axis 0 in probabilities)
+    proba_hat = recipe["dataset"].probability.mean(axis=0)
+
+    # clip to within (0, 1) to prevent saturation
+    proba_hat_clipped = proba_hat.clip(1e-6, 1 - 1e-6)
+
+    # w_+ = \alpha (\tfrac{m}{n_+} - 1) = \alpha \tfrac{1 - p_+}{p_+}
+    pos_weight = np.exp(- logit(proba_hat_clipped)) * recipe["alpha"]
+
+    # clip weights to avoid overflows
+    pos_weight_clipped = pos_weight.clip(max=recipe["max"])
+
+    return torch.from_numpy(pos_weight_clipped).float()
+
+
 def get_objective_terms(datasets, recipe):
     """Gather the components of the objective function."""
-    # "objective_terms"
-    raise NotImplementedError
+    # <datasets>, "objective_terms"
+    recipe = param_apply_map(recipe, dataset=datasets.__getitem__)
+
+    objectives = {}
+    for name, par in recipe.items():
+        par = param_apply_map(par, pos_weight=compute_positive_weight)
+        objectives[name] = get_instance(**par)
+
+    return objectives
 
 
 def get_model_factory(recipe):
