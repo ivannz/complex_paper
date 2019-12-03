@@ -8,6 +8,21 @@ import importlib
 from functools import partial
 
 
+class BaseFeedWrapper(object):
+    """A base class for feed wrappers."""
+    def __init__(self, feed):
+        self.feed = feed
+
+    def __repr__(self):
+        return repr(self.feed)
+
+    def __len__(self):
+        return len(self.feed)
+
+    def __iter__(self):
+        raise NotImplementedError
+
+
 def feed_mover(feed, **kwargs):
     """Transfer to device and type cast the batches from the feed on the fly.
 
@@ -31,6 +46,15 @@ def feed_mover(feed, **kwargs):
 
     for batch in feed:
         yield [b.to(**kwargs) for b in batch]
+
+
+class FeedMover(BaseFeedWrapper):
+    def __init__(self, feed, **kwargs):
+        super().__init__(feed)
+        self.devtype = kwargs
+
+    def __iter__(self):
+        yield from feed_mover(self.feed, **self.devtype)
 
 
 def feed_limiter(feed, max=-1):
@@ -57,6 +81,20 @@ def feed_limiter(feed, max=-1):
 
     for batch, _ in zip(feed, range(max)):
         yield batch
+
+
+class FeedLimiter(BaseFeedWrapper):
+    def __init__(self, feed, max_iter=-1):
+        super().__init__(feed)
+        self.max_iter = max_iter
+
+    def __len__(self):
+        if self.max_iter < 0:
+            return len(self.feed)
+        return min(len(self.feed), self.max_iter)
+
+    def __iter__(self):
+        yield from feed_limiter(self.feed, self.max_iter)
 
 
 def feed_forward_pass(feed, module):
