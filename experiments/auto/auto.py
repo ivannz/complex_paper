@@ -14,10 +14,12 @@ from cplxmodule.masked import binarize_masks
 from scipy.special import logit
 from setuptools._vendor.packaging.version import Version
 
+from .performance import evaluate
+
 from .utils import get_class, get_factory, get_instance
 from .utils import param_apply_map, param_defaults
 
-from .utils import feed_limiter, feed_mover
+from .utils import FeedMover, FeedLimiter
 from .utils import save_snapshot, load_snapshot
 from .utils import join, deploy_optimizer
 
@@ -57,6 +59,22 @@ def get_feeds(datasets, collate_fn, recipe):
         feeds[name] = torch.utils.data.DataLoader(**par, collate_fn=collate_fn)
 
     return feeds
+
+
+def wrap_feed(feed, max_iter=-1, **devtype):
+    """Return a feed that combines the limiter and the mover."""
+    return FeedMover(FeedLimiter(feed, max_iter), **devtype)
+
+
+def get_special_feeds(feeds, devtype, special):
+    """Prepare feeds for special activities, like testing performance."""
+    special_feeds = {}
+    for name, feed in feeds.items():
+        if name in special:
+            special_feeds[name] = wrap_feed(feed, max_iter=-1, **devtype)
+
+    # may be empty
+    return special_feeds
 
 
 def compute_positive_weight(recipe):
@@ -120,25 +138,12 @@ def get_scheduler(optimizer, recipe):
     return get_instance(optimizer, **recipe)
 
 
-class FeedWrapper(object):
-    """A class that combines the limiter and the mover."""
-    def __init__(self, feed, max=1000, **kwargs):
-        self.feed, self.max, self.kwargs = feed, max, kwargs
-
-    def __iter__(self):
-        feed = feed_limiter(self.feed, self.max)
-        yield from feed_mover(feed, **self.kwargs)
-
-    def __len__(self):
-        return len(self.feed)
-
-
 def state_create(factory, settings, devtype):
     """Create a new state, i.e. model, optimizer and name-id mapper (for state
     inheritance below), from the settings and model factory.
     """
 
-    # (note) `.load_state_dict()` automatically moves to device and casts
+    # subsequent `.load_state_dict()` automatically moves to device and casts
     model = get_model(factory, settings["model"]).to(**devtype)
 
     # base lr is specified in the optimizer settings
@@ -207,11 +212,12 @@ def state_inherit(state, options, *, old=None, **sparsity_kwargs):
     return state
 
 
-def evaluate(model, feed):
-    raise NotImplementedError
-
-
 def run(options, folder, suffix, verbose=True):
+    """The main procedure that choreographs staged training.
+
+    Parameters
+    ----------
+    """
     options = defaults(options)
     options_backup = copy.deepcopy(options)
 
@@ -226,9 +232,11 @@ def run(options, folder, suffix, verbose=True):
     collate_fn = get_collate_fn(options["features"])
 
     feeds = get_feeds(datasets, collate_fn, options["feeds"])
+    special_feeds = get_special_feeds(feeds, devtype, ("test", "valid"))
 
     objective_terms = get_objective_terms(datasets, options["objective_terms"])
 
+    snapshots = []
     stages, state = options["stages"], State(None, None, {})
     for n_stage, stage in enumerate(options["stage-order"]):
         settings = stages[stage]
@@ -239,12 +247,16 @@ def run(options, folder, suffix, verbose=True):
 
         # unpack the state, initialize objective and scheduler, and train
         model, optim = state.model, state.optim
-
-        feed = FeedWrapper(feeds[settings["feed"]],
-                           max=settings["n_batches_per_epoch"], **devtype)
-        objective = get_objective(objective_terms,
-                                  settings["objective"]).to(**devtype)
         sched = get_scheduler(optim, settings["lr_scheduler"])
+
+        name, max_iter = settings["feed"], settings["n_batches_per_epoch"]
+        feed = wrap_feed(feeds[name], max_iter=max_iter, **devtype)
+
+        formula = settings["objective"]
+        objective = get_objective(objective_terms, formula).to(**devtype)
+
+        # setup checkpointing and fit-time validation for early stopping
+        # checkpointer, early_stopper = Checkpointer(...), EarlyStoper(...)
 
         model.train()
         model, success, history = fit(
@@ -252,14 +264,16 @@ def run(options, folder, suffix, verbose=True):
             n_epochs=settings["n_epochs"], grad_clip=settings["grad_clip"],
             verbose=verbose)
 
-        # <performance assessment>
+        # Evaluate the performance on the reserved feeds, e.g. `test`.
         model.eval()
-        test_performance = evaluate(model, ...)
+        performance = {name: evaluate(model, feed, curves=False)
+                       for name, feed in special_feeds.items()}
 
         # save snapshot
         status = "" if success else "TERMINATED "
         final_snapshot = save_snapshot(
             os.path.join(folder, f"{status}{n_stage}-{stage} {suffix}.gz"),
+
             # state
             model=state.model.state_dict(),
             optim=dict(
@@ -267,21 +281,40 @@ def run(options, folder, suffix, verbose=True):
                 state=state.optim.state_dict()
             ) if success else None,
             mapper=state.mapper if success else None,
+
             # meta data
             history=history,
+            performance=performance,
             options=options_backup,
             stage=stage_backup,
+
             __version__=__version__
         )
 
-        # offload model back to cpu
+        # offload the model back to the cpu
         model.cpu()
 
-    return
+        snapshots.append(final_snapshot)
+
+    return snapshots
 
 
 def fit(model, objective, feed, optim, sched=None, n_epochs=100,
         grad_clip=0., verbose=True):
+    """Fit a model to the objective on the data feed for specified number of
+    epochs with optimizer, lr-schedule and gradient clipping.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    Details
+    -------
+    Forces the model in `train` mode before the nested SGD loop and forces it
+    into `eval` mode afterwards.
+    """
     from torch.optim.lr_scheduler import ReduceLROnPlateau
     from torch.nn.utils import clip_grad_norm_
     from .delayed import DelayedKeyboardInterrupt
