@@ -14,7 +14,7 @@ def feed_mover(feed, **kwargs):
     Parameters
     ----------
     feed : iterable
-        The data loader instance draw batches from.
+        The data loader instance to draw batches from.
 
     **kwargs : keyword arguments
         The keyword arguments for the method `torch.Tensor.to()`.
@@ -39,7 +39,7 @@ def feed_limiter(feed, max=-1):
     Parameters
     ----------
     feed : iterable
-        The data loader instance draw batches from.
+        The data loader instance to draw batches from.
 
     max : int, default=-1
         The limit on the number of batches generated.
@@ -57,6 +57,35 @@ def feed_limiter(feed, max=-1):
 
     for batch, _ in zip(feed, range(max)):
         yield batch
+
+
+def feed_forward_pass(feed, module):
+    """Feed the first item in the batch tuple through the provided module.
+
+    Parameters
+    ----------
+    feed : iterable
+        The data loader instance to draw batches from.
+
+    module : torch.nn.Module
+        The module which the first element in the batch is fed to.
+
+    Yields
+    ------
+    batch : iterable
+        An iterable that constitutes the batch.
+
+    Details
+    -------
+    Does not force the module into eval mode! Disables gradients, computes a
+    forward pass moves the resulting batch to CPU and converts to numpy.
+    """
+    def to_numpy(t):  # assumes detached tensor or no_grad
+        return t.cpu().numpy()
+
+    with torch.no_grad():
+        for X, *rest in feed:
+            yield [*map(to_numpy, (module(X), *rest))]
 
 
 def save_snapshot(filename, **kwargs):
