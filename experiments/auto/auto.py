@@ -14,6 +14,10 @@ from cplxmodule.masked import binarize_masks
 from scipy.special import logit
 from setuptools._vendor.packaging.version import Version
 
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.nn.utils import clip_grad_norm_
+from .delayed import DelayedKeyboardInterrupt
+
 from .performance import evaluate
 
 from .utils import get_class, get_factory, get_instance
@@ -299,6 +303,21 @@ def run(options, folder, suffix, verbose=True):
     return snapshots
 
 
+class TerminateFit(Exception):
+    pass
+
+
+def scheduler_step(sched, value):
+    if sched is None:
+        return
+
+    # exclusions to `.step` api only apply to ReduceLROnPlateau
+    if isinstance(sched, ReduceLROnPlateau):
+        sched.step(value)
+    else:
+        sched.step()
+
+
 def fit(model, objective, feed, optim, sched=None, n_epochs=100,
         grad_clip=0., verbose=True):
     """Fit a model to the objective on the data feed for specified number of
@@ -315,52 +334,43 @@ def fit(model, objective, feed, optim, sched=None, n_epochs=100,
     Forces the model in `train` mode before the nested SGD loop and forces it
     into `eval` mode afterwards.
     """
-    from torch.optim.lr_scheduler import ReduceLROnPlateau
-    from torch.nn.utils import clip_grad_norm_
-    from .delayed import DelayedKeyboardInterrupt
-
-    history, abort = [], False
+    history, terminated = [], False
     with tqdm.tqdm(range(n_epochs), disable=not verbose) as bar, \
             DelayedKeyboardInterrupt("ignore") as stop:
 
         model.train()
-        for epoch in bar:
-            epoch_loss, grad_norm = [], float("nan")
-            for data, target in feed:
-                optim.zero_grad()
+        try:
+            for epoch in bar:
+                epoch_loss, grad_norm = [], float("nan")
+                for data, target in feed:
+                    optim.zero_grad()
 
-                # Compute the composite objective and record the components
-                loss = objective(model, data, target)
-                loss.backward()
-                if grad_clip > 0:
-                    grad_norm = clip_grad_norm_(model.parameters(), grad_clip)
+                    # Compute the composite objective and record the components
+                    loss = objective(model, data, target)
+                    loss.backward()
+                    if grad_clip > 0:
+                        grad_norm = clip_grad_norm_(model.parameters(), grad_clip)
 
-                epoch_loss.append(float(loss))
-                history.append((*objective.component_values_, grad_norm))
+                    epoch_loss.append(float(loss))
+                    history.append((*objective.component_values_, grad_norm))
 
-                optim.step()
-                if verbose:
-                    # format the components of the loss objective
-                    terms = map("{:.2e}".format, history[-1][:-1])
-                    status = repr(tuple(terms)).replace("'", "")
+                    optim.step()
+                    if verbose:
+                        # format the components of the loss objective
+                        terms = map("{:.2e}".format, history[-1][:-1])
+                        status = repr(tuple(terms)).replace("'", "")
 
-                    bar.set_postfix_str(f"{status} |g| {grad_norm:.1e}")
+                        bar.set_postfix_str(f"{status} |g| {grad_norm:.1e}")
 
-                # abort on nan -- no need to waste compute
-                abort = np.isnan(epoch_loss[-1])
-                if abort or bool(stop):
-                    break
+                    # abort on nan -- no need to waste compute
+                    if np.isnan(epoch_loss[-1]) or bool(stop):
+                        raise TerminateFit
 
-            if abort or bool(stop):
-                break
+                scheduler_step(sched, np.mean(epoch_loss))
+                # checkpointer and earlystopper steps
 
-            if sched is not None:
-                # exclusions to `.step` api only apply to ReduceLROnPlateau
-                if isinstance(sched, ReduceLROnPlateau):
-                    sched.step(np.mean(epoch_loss))
-                else:
-                    sched.step()
-        # end for
+        except TerminateFit:
+            terminated = True
     # end with
 
     # Collect histories of objective's components and the norm of the gradient
@@ -371,4 +381,4 @@ def fit(model, objective, feed, optim, sched=None, n_epochs=100,
     history = dict(zip(objective.terms, term_values))
     history.update({"|g|": grad_norms})
 
-    return model.eval(), not (abort or bool(stop)), history
+    return model.eval(), not terminated, history
