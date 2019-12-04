@@ -263,18 +263,20 @@ def run(options, folder, suffix, verbose=True):
         # checkpointer, early_stopper = Checkpointer(...), EarlyStoper(...)
 
         model.train()
-        model, success, history = fit(
+        model, emergency, history = fit(
             model, objective, feed, optim, sched,
             n_epochs=settings["n_epochs"], grad_clip=settings["grad_clip"],
             verbose=verbose)
 
         # Evaluate the performance on the reserved feeds, e.g. `test`.
         model.eval()
-        performance = {name: evaluate(model, feed, curves=False)
-                       for name, feed in special_feeds.items()}
+        performance = {}
+        if not emergency:
+            performance = {name: evaluate(model, feed, curves=False)
+                           for name, feed in special_feeds.items()}
 
         # save snapshot
-        status = "" if success else "TERMINATED "
+        status = "TERMINATED " if emergency else ""
         final_snapshot = save_snapshot(
             os.path.join(folder, f"{status}{n_stage}-{stage} {suffix}.gz"),
 
@@ -283,8 +285,8 @@ def run(options, folder, suffix, verbose=True):
             optim=dict(
                 cls=str(type(state.optim)),
                 state=state.optim.state_dict()
-            ) if success else None,
-            mapper=state.mapper if success else None,
+            ) if not emergency else None,
+            mapper=state.mapper if not emergency else None,
 
             # meta data
             history=history,
@@ -297,8 +299,11 @@ def run(options, folder, suffix, verbose=True):
 
         # offload the model back to the cpu
         model.cpu()
-
         snapshots.append(final_snapshot)
+
+        # emergency termination: cannot continue
+        if emergency:
+            break
 
     return snapshots
 
@@ -334,7 +339,7 @@ def fit(model, objective, feed, optim, sched=None, n_epochs=100,
     Forces the model in `train` mode before the nested SGD loop and forces it
     into `eval` mode afterwards.
     """
-    history, terminated = [], False
+    history, emergency = [], False
     with tqdm.tqdm(range(n_epochs), disable=not verbose) as bar, \
             DelayedKeyboardInterrupt("ignore") as stop:
 
@@ -343,6 +348,9 @@ def fit(model, objective, feed, optim, sched=None, n_epochs=100,
             for epoch in bar:
                 epoch_loss, grad_norm = [], float("nan")
                 for data, target in feed:
+                    # (closure) "The closure should clear the gradients,
+                    #  compute the loss and gradients, and return the loss."
+                    #  https://pytorch.org/docs/stable/optim.html#optimizer-step-closure
                     optim.zero_grad()
 
                     # Compute the composite objective and record the components
@@ -370,7 +378,7 @@ def fit(model, objective, feed, optim, sched=None, n_epochs=100,
                 # checkpointer and earlystopper steps
 
         except TerminateFit:
-            terminated = True
+            emergency = True
     # end with
 
     # Collect histories of objective's components and the norm of the gradient
@@ -381,4 +389,4 @@ def fit(model, objective, feed, optim, sched=None, n_epochs=100,
     history = dict(zip(objective.terms, term_values))
     history.update({"|g|": grad_norms})
 
-    return model.eval(), not terminated, history
+    return model.eval(), emergency, history
