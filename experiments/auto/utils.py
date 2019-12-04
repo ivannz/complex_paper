@@ -213,13 +213,15 @@ def param_apply_map(param, deep=True, memo=None, **map):
         if isinstance(value, dict) and deep:
             value = param_apply_map(value, deep=True, memo=memo, **map)
 
-        # map a non None value using the supplied map
+        out[key] = value
+
+    # map all non None values using the supplied map
+    for key in out:
         if key in map and value is not None:
+            # better try-catch an exception here
             retvalue = map[key](value)
             if retvalue is not None:
-                value = retvalue
-
-        out[key] = value
+                out[key] = retvalue
 
     return out
 
