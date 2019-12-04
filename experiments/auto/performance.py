@@ -1,3 +1,4 @@
+import math
 import numpy as np
 
 from scipy.special import expit as sigmoid
@@ -93,3 +94,57 @@ def evaluate(model, feed, curves=False):
         # curves take too much space 2 x (3 x len x float64)!
 
     return out
+
+
+class ValueTracker(object):
+    """Indicate if the metric stops improving for several epochs in a row.
+
+    Parameters
+    ----------
+    patience : int, default=10
+        Number of epochs with no significant improvement in the tracked value
+        after which early stopping should mechanics kick in.
+
+    mode : str, default='min'
+        In mode='min' the quantity is monitored for significant decreases,
+        otherwise it is tracked for increases.
+
+    rtol : float, default=1e-4
+        The maximum allowed difference between the tracked value and its
+        historical best, relative to the latter to consider a change
+        insignificant.
+
+    atol : float, default=0.
+        The maximum absolute difference to consider a change insignificant.
+    """
+    def __init__(self, patience=10, mode="min", rtol=1e-4, atol=0.):
+        super().__init__()
+        if mode not in ("min", "max"):
+            raise ValueError(f"Unknown tracking mode `{mode}`")
+
+        self.mode, self.rtol, self.atol = mode, rtol, atol
+        self.patience = patience
+        self.reset()
+
+    def reset(self):
+        self.best_ = -math.inf if self.mode == "max" else math.inf
+        self.wait_ = 0
+
+    def is_worse(self, a, b):
+        r"""Check if `a` is outside of the allowed tolerance of `b`."""
+        delta = (a - b) if self.mode == "max" else (b - a)
+        # (max) a \in (-\infty, b + |b| \rho + \alpha)
+        # (min) a \in (b - |b| \rho - \alpha, +\infty)
+        return delta < abs(b) * self.rtol + self.atol
+
+    def step(self, value):
+        """Decrease the time-to-live counter, depending on the metric."""
+        current = float(value)
+        if self.is_worse(current, self.best_):
+            self.wait_ += 1
+
+        else:
+            self.best_, self.wait_ = current, 0
+
+    def __bool__(self):
+        return self.wait_ >= self.patience
