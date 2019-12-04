@@ -217,6 +217,11 @@ def state_inherit(state, options, *, old=None, **sparsity_kwargs):
     return state
 
 
+def state_dict_to_cpu(state_dict):
+    # .state_dict() references tensors, so we copy .data to CPU
+    return {key: par.data.cpu() for key, par in state_dict.items()}
+
+
 def run(options, folder, suffix, verbose=True):
     """The main procedure that choreographs staged training.
 
@@ -261,7 +266,7 @@ def run(options, folder, suffix, verbose=True):
         objective = get_objective(objective_terms, formula).to(**devtype)
 
         # setup checkpointing and fit-time validation for early stopping
-        # checkpointer, early_stopper = Checkpointer(...), EarlyStoper(...)
+        # checkpointer, early_stopper = Checkpointer(...), EarlyStopper(...)
 
         model.train()
         model, emergency, history = fit(
@@ -351,6 +356,8 @@ def fit(model, objective, feed, optim, sched=None, n_epochs=100,
             for epoch in bar:
                 epoch_loss, grad_norm = [], float("nan")
                 for data, target in feed:
+                    backup = state_dict_to_cpu(model.state_dict())
+
                     # (closure) "The closure should clear the gradients,
                     #  compute the loss and gradients, and return the loss."
                     #  https://pytorch.org/docs/stable/optim.html#optimizer-step-closure
@@ -381,6 +388,9 @@ def fit(model, objective, feed, optim, sched=None, n_epochs=100,
                 # checkpointer and earlystopper steps
 
         except TerminateFit:
+            if np.isnan(epoch_loss[-1]):
+                model.load_state_dict(backup)
+
             emergency = True
     # end with
 
