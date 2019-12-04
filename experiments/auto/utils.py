@@ -217,6 +217,7 @@ def param_apply_map(param, deep=True, memo=None, **map):
 
     # map all non None values using the supplied map
     for key in out:
+        value = out[key]
         if key in map and value is not None:
             out[key] = map[key](value)
 
