@@ -218,10 +218,7 @@ def param_apply_map(param, deep=True, memo=None, **map):
     # map all non None values using the supplied map
     for key in out:
         if key in map and value is not None:
-            # better try-catch an exception here
-            retvalue = map[key](value)
-            if retvalue is not None:
-                out[key] = retvalue
+            out[key] = map[key](value)
 
     return out
 
@@ -232,12 +229,12 @@ def get_class(klass):
         return klass
 
     if not isinstance(klass, str):
-        return None
+        raise TypeError(f"Expected a string, got {type(klass)}.")
 
     # match and rsplit by "."
     match = re.fullmatch(r"^<class\s+'(?:(.*)\.)?([^\.]+)'>$", klass)
     if match is None:
-        return None
+        raise ValueError(f"{klass} is not a type identifier.")
 
     # import from built-ins if no module is specified
     module, klass = (match.group(1) or "builtins"), match.group(2)
