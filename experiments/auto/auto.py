@@ -4,6 +4,7 @@ import copy
 import tqdm
 import math
 import json
+import warnings
 
 import torch
 import numpy as np
@@ -272,8 +273,10 @@ def run(options, folder, suffix, verbose=True):
         model.eval()
         performance = {}
         if not emergency:
-            performance = {name: evaluate(model, feed, curves=False)
-                           for name, feed in special_feeds.items()}
+            # Ignore warnings: no need to `.filter()` when `record=True`
+            with warnings.catch_warnings(record=True):
+                performance = {name: evaluate(model, feed, curves=False)
+                               for name, feed in special_feeds.items()}
 
         # save snapshot
         status = "TERMINATED " if emergency else ""
