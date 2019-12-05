@@ -93,7 +93,7 @@ class ARDPenaltyObjective(BaseObjective):
         return sum(C * fn(m.penalty) for C, m in zip(coefs, ardmods.values()) if C > 0)
 
 
-class BaseCompositeObjective(Module):
+class BaseCompositeObjective(BaseObjective):
     """Differentiable objective defined as a weighted sum.
 
     Parameters
@@ -104,11 +104,10 @@ class BaseCompositeObjective(Module):
 
     def __init__(self, **terms):
         from torch.nn.modules.loss import _Loss  # import locally
-        assert all(isinstance(term, (_Loss, BaseObjective,
-                                     BaseCompositeObjective))
+        assert all(isinstance(term, (_Loss, BaseObjective))
                    for term in terms.values())
 
-        super().__init__()
+        super().__init__(reduction="sum")
 
         self.terms = torch.nn.ModuleDict(terms)
 
@@ -140,7 +139,7 @@ class BaseCompositeObjective(Module):
         components = {}
         output = module(input) if output is None else output
         for name, term in self.terms.items():
-            if isinstance(term, (BaseObjective, BaseCompositeObjective)):
+            if isinstance(term, BaseObjective):
                 components[name] = term(module, input, target, output)
 
             else:
