@@ -2,7 +2,6 @@ __version__ = "0.1"
 import os
 import copy
 import tqdm
-import math
 import json
 import warnings
 
@@ -15,10 +14,6 @@ from cplxmodule.masked import binarize_masks
 from scipy.special import logit
 from setuptools._vendor.packaging.version import Version
 
-from torch.optim.lr_scheduler import ReduceLROnPlateau
-from torch.nn.utils import clip_grad_norm_
-from .delayed import DelayedKeyboardInterrupt
-
 from .performance import evaluate
 
 from .utils import get_class, get_factory, get_instance
@@ -28,6 +23,7 @@ from .utils import FeedMover, FeedLimiter
 from .utils import save_snapshot, load_snapshot
 from .utils import join, deploy_optimizer
 
+from .fit import fit
 from .objective import ExpressionObjective, WeightedObjective
 
 from collections import namedtuple
@@ -217,17 +213,16 @@ def state_inherit(state, options, *, old=None, **sparsity_kwargs):
     return state
 
 
-def state_dict_to_cpu(state_dict):
-    # .state_dict() references tensors, so we copy .data to CPU
-    return {key: par.data.cpu() for key, par in state_dict.items()}
-
-
 def run(options, folder, suffix, verbose=True):
     """The main procedure that choreographs staged training.
 
     Parameters
     ----------
     """
+    # cudnn float32 ConvND does not seem to guarantee +ve sign of the result
+    #  on inputs, that are +ve by construction.
+    # torch.backends.cudnn.deterministic = True
+
     options = defaults(options)
     options_backup = copy.deepcopy(options)
 
@@ -277,7 +272,7 @@ def run(options, folder, suffix, verbose=True):
         # Evaluate the performance on the reserved feeds, e.g. `test`.
         model.eval()
         performance = {}
-        if not emergency:
+        if emergency is None:
             # Ignore warnings: no need to `.filter()` when `record=True`
             with warnings.catch_warnings(record=True):
                 performance = {name: evaluate(model, feed, curves=False)
@@ -293,8 +288,8 @@ def run(options, folder, suffix, verbose=True):
             optim=dict(
                 cls=str(type(state.optim)),
                 state=state.optim.state_dict()
-            ) if not emergency else None,
-            mapper=state.mapper if not emergency else None,
+            ) if emergency is None else None,
+            mapper=state.mapper if emergency is None else None,
 
             # meta data
             history=history,
@@ -314,92 +309,3 @@ def run(options, folder, suffix, verbose=True):
             break
 
     return snapshots
-
-
-class TerminateFit(Exception):
-    pass
-
-
-def scheduler_step(sched, value):
-    if sched is None:
-        return
-
-    # exclusions to `.step` api only apply to ReduceLROnPlateau
-    if isinstance(sched, ReduceLROnPlateau):
-        sched.step(value)
-    else:
-        sched.step()
-
-
-def fit(model, objective, feed, optim, sched=None, n_epochs=100,
-        grad_clip=0., verbose=True):
-    """Fit a model to the objective on the data feed for specified number of
-    epochs with optimizer, lr-schedule and gradient clipping.
-
-    Parameters
-    ----------
-
-    Returns
-    -------
-
-    Details
-    -------
-    Forces the model in `train` mode before the nested SGD loop and forces it
-    into `eval` mode afterwards.
-    """
-    history, emergency = [], False
-    with tqdm.tqdm(range(n_epochs), disable=not verbose) as bar, \
-            DelayedKeyboardInterrupt("ignore") as stop:
-
-        model.train()
-        try:
-            for epoch in bar:
-                epoch_loss, grad_norm = [], float("nan")
-                for data, target in feed:
-                    backup = state_dict_to_cpu(model.state_dict())
-
-                    # (closure) "The closure should clear the gradients,
-                    #  compute the loss and gradients, and return the loss."
-                    #  https://pytorch.org/docs/stable/optim.html#optimizer-step-closure
-                    optim.zero_grad()
-
-                    # Compute the composite objective and record the components
-                    loss = objective(model, data, target)
-                    loss.backward()
-                    if grad_clip > 0:
-                        grad_norm = clip_grad_norm_(model.parameters(), grad_clip)
-
-                    epoch_loss.append(float(loss))
-                    history.append((*objective.component_values_, grad_norm))
-
-                    optim.step()
-                    if verbose:
-                        # format the components of the loss objective
-                        terms = map("{:.2e}".format, history[-1][:-1])
-                        status = repr(tuple(terms)).replace("'", "")
-
-                        bar.set_postfix_str(f"{status} |g| {grad_norm:.1e}")
-
-                    # abort on nan -- no need to waste compute
-                    if np.isnan(epoch_loss[-1]) or bool(stop):
-                        raise TerminateFit
-
-                scheduler_step(sched, np.mean(epoch_loss))
-                # checkpointer and earlystopper steps
-
-        except TerminateFit:
-            if np.isnan(epoch_loss[-1]):
-                model.load_state_dict(backup)
-
-            emergency = True
-    # end with
-
-    # Collect histories of objective's components and the norm of the gradient
-    *term_values, grad_norms = [np.empty(0)] * (len(objective.terms) + 1)
-    if history:
-        *term_values, grad_norms = map(np.array, zip(*history))
-
-    history = dict(zip(objective.terms, term_values))
-    history.update({"|g|": grad_norms})
-
-    return model.eval(), emergency, history

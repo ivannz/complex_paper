@@ -303,3 +303,8 @@ def deploy_optimizer(mapper, *, target, source=None):
 
     target.load_state_dict(d_target)
     return target
+
+
+def state_dict_to_cpu(state_dict):
+    # .state_dict() references tensors, so we copy .data to CPU
+    return {key: par.data.cpu() for key, par in state_dict.items()}
