@@ -1,3 +1,8 @@
+"""Measure performance of the models.
+
+This module is exceptionally task-specific, except for, probabily,
+`predict()` and `ValueTracker`,
+"""
 import math
 import numpy as np
 
@@ -128,7 +133,7 @@ class ValueTracker(object):
 
     def reset(self):
         self.best_ = -math.inf if self.mode == "max" else math.inf
-        self.wait_ = 0
+        self.wait_, self.hits_ = 0, 0
 
     def is_worse(self, a, b):
         r"""Check if `a` is outside of the allowed tolerance of `b`."""
@@ -144,7 +149,7 @@ class ValueTracker(object):
             self.wait_ += 1
 
         else:
-            self.best_, self.wait_ = current, 0
+            self.best_, self.wait_, self.hits_ = current, 0, self.hits_ + 1
 
     def __bool__(self):
         return self.wait_ >= self.patience
