@@ -71,7 +71,7 @@ def get_special_feeds(feeds, devtype, special):
     """Prepare feeds for special activities, like testing performance."""
     special_feeds = {}
     for name, feed in feeds.items():
-        if name in special:
+        if any(map(name.startswith, special)):
             special_feeds[name] = wrap_feed(feed, max_iter=-1, **devtype)
 
     # may be empty
