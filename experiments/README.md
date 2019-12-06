@@ -65,6 +65,9 @@ the scores and targets are flattened, so the AP-score is computed as if every no
 
 No explicit early stopping is in their code, but they do checkpointing every epoch.
 
+Validation adn test sets are strided with 128 (`construct_eval_set()` in [dataset.py#L117](https://github.com/ChihebTrabelsi/deep_complex_networks/blob/master/musicnet/musicnet/dataset.py#L117)
+called from `eval_set()` at [dataset.py#L210](https://github.com/ChihebTrabelsi/deep_complex_networks/blob/master/musicnet/musicnet/dataset.py#L210))
+
 
 ### Yang et al. (2019)
 
