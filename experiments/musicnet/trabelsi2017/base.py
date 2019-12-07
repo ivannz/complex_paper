@@ -55,7 +55,7 @@ class ShallowConvNet(BodyMixin, torch.nn.Module):
         n_seq = (n_seq -   4 + 1 +  2 - 1) //  2  # tailored to `max1d01`
         self.body = torch.nn.Sequential(OrderedDict([
             ("cnv1d00", self.Conv1d(n_channels, 64, 512, stride=16)),
-            ("activ01", torch.nn.ReLU()),
+            ("activ01", torch.nn.ReLU()),  # can move ReLU after maxpool
             ("max1d01", torch.nn.MaxPool1d(4, stride=2)),
             ("flatten", Flatten(1, -1)),
             ("dense02", self.Linear(n_seq * 64, 2048)),
@@ -72,11 +72,15 @@ class DeepConvNet(BodyMixin, torch.nn.Module):
 
     @classmethod
     def one_block(cls, in_features, out_features, kernel, stride, full=True):
-        layers = [("conv", cls.Conv1d(in_features, out_features, kernel, stride))]
+        # BatchNorm cancels out bias: switch on if partial block
+        layers = [("conv", cls.Conv1d(in_features, out_features, kernel,
+                                      stride, bias=not full))]
         if full:
-            layers.append(("btch", torch.nn.BatchNorm1d(out_features)))
+            layers.append(
+                ("btch", torch.nn.BatchNorm1d(out_features, affine=True))
+            )
 
-        layers.append(("relu", torch.nn.ReLU()))
+        layers.append(("relu", torch.nn.ReLU()))  # can move ReLU after maxpool
         if full:
             layers.append(("maxp", torch.nn.MaxPool1d(2, stride=2)))
         return torch.nn.Sequential(OrderedDict(layers))
