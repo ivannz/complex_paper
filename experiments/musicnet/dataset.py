@@ -1,3 +1,4 @@
+import math
 import h5py
 import numpy as np
 
@@ -284,3 +285,45 @@ class MusicNetWaveformCollation(object):
             data = np.abs(z)
 
         return [*map(torch.from_numpy, (data, *rest))]
+
+
+class MusicNetRandomBatchSampler(object):
+    """Random batch sampler for MusicNet."""
+    def __init__(self, dataset, pregen=128):
+        assert isinstance(dataset, MusicNetHDF5)
+        self.dataset, self.pregen = dataset, pregen
+
+    def __iter__(self):
+        """Generate random indices within the range of each windowed waveform.
+        """
+        n_batches = (len(self) + self.pregen - 1) // self.pregen
+        for i in range(n_batches):
+            # construct a dict of keys and window indices
+            obj_ind = {}
+            for k, lim in self.dataset.limits.items():
+                # generate a sequence of samples indices for this object
+                obj_ind[k] = torch.randint(*lim, (self.pregen,)).tolist()
+
+            # take the next index from every object (pregen times)
+            yield from zip(*obj_ind.values())
+
+    def __len__(self):
+        # length by the longest key
+        return max(b - a for a, b in self.dataset.limits.values())
+
+
+class MusicNetDataLoader(torch.utils.data.DataLoader):
+    """A special DataLoader to avoid pre-populating memory (~10 Gb) with coslty
+    random permutaions, which are performed on __iter__ of the base sampler
+    class `torch.utils.data.sampler.RandomSampler`
+    """
+    def __init__(self, dataset, collate_fn, pin_memory=False, num_workers=0,
+                 timeout=0, worker_init_fn=None):
+        super().__init__(
+            dataset,
+            batch_sampler=MusicNetRandomBatchSampler(dataset),
+            num_workers=num_workers,
+            collate_fn=collate_fn,
+            pin_memory=pin_memory,
+            timeout=timeout,
+            worker_init_fn=worker_init_fn)

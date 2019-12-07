@@ -56,8 +56,9 @@ def get_feeds(datasets, collate_fn, recipe):
 
     feeds = {}
     for name, par in recipe.items():
-        par = param_defaults(par, pin_memory=True)
-        feeds[name] = torch.utils.data.DataLoader(**par, collate_fn=collate_fn)
+        par = param_defaults(par, cls=str(torch.utils.data.DataLoader),
+                             pin_memory=True)
+        feeds[name] = get_instance(**par, collate_fn=collate_fn)
 
     return feeds
 
