@@ -141,8 +141,11 @@ def get_scheduler(optimizer, recipe):
     return get_instance(optimizer, **recipe)
 
 
-def get_early_stopper(model, special_feeds, recipe):
-    raise NotImplementedError
+def get_early_stopper(model, feeds, recipe):
+    """Get scheduler for the optimizer and recipe."""
+    # <model>, <feeds>, "stages__*__early"
+    recipe = param_apply_map(recipe, feed=feeds.__getitem__)
+    return PooledAveragePrecisionEarlyStopper(model, **recipe)
 
 
 def state_create(factory, settings, devtype):
@@ -268,11 +271,13 @@ def run(options, folder, suffix, verbose=True):
 
         # setup checkpointing and fit-time validation for early stopping
         # checkpointer, early_stopper = Checkpointer(...), EarlyStopper(...)
-        early = get_early_stopper(model, special_feeds, settings["early"])
+        early = None
+        if "early" in settings:
+            early = get_early_stopper(model, special_feeds, settings["early"])
 
         model.train()
         model, emergency, history = fit(
-            model, objective, feed, optim, sched, early,
+            model, objective, feed, optim, sched=sched, early=early,
             n_epochs=settings["n_epochs"], grad_clip=settings["grad_clip"],
             verbose=verbose)
 
