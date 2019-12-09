@@ -5,6 +5,8 @@ This module is exceptionally task-specific, except for, probabily,
 """
 import math
 import numpy as np
+import torch
+import warnings
 
 from scipy.special import expit as sigmoid
 
@@ -78,18 +80,18 @@ def evaluate(model, feed, curves=False):
     out["precision"] = tp / np.maximum(tp + fp, 1)  # ~ P(y=1 \mid \hat{y}=1)
     out["recall"] = tp / np.maximum(tp + fn, 1)     # ~ P(\hat{y}=1 \mid y=1)
 
-    # Raw per output average precision (actually logits should suffice)
-    y_prob = sigmoid(logits)
+    # Raw per output average precision
     out["average_precision"] = average_precision_score(
-        y_true, y_prob, pos_label=1, average=None)
+        y_true, logits, pos_label=1, average=None)
 
     # Pooled AP (treating different outputs as one -- good?) -- slow
     out["pooled_average_precision"] = average_precision_score(
-        y_true.ravel(), y_prob.ravel(), pos_label=1, average=None)
+        y_true.ravel(), logits.ravel(), pos_label=1, average=None)
 
     # compute the curves
     out["ap_curves"] = {}
     if curves:
+        y_prob = sigmoid(logits)
         out["ap_curves"]["pooled"] = precision_recall_curve(
             y_true.ravel(), y_prob.ravel())
 
@@ -135,6 +137,10 @@ class ValueTracker(object):
         self.best_ = -math.inf if self.mode == "max" else math.inf
         self.wait_, self.hits_, self.history_ = 0, 0, []
 
+    @property
+    def is_waiting(self):
+        return self.wait_ < self.patience
+
     def is_worse(self, a, b):
         r"""Check if `a` is outside of the allowed tolerance of `b`."""
         delta = (a - b) if self.mode == "max" else (b - a)
@@ -153,5 +159,43 @@ class ValueTracker(object):
 
         self.history_.append(value)
 
+        # indicate reset ot the caller
+        return self.wait_ == 0
+
     def __bool__(self):
-        return self.wait_ >= self.patience
+        return not self.is_waiting
+
+
+class PooledAveragePrecisionEarlyStopper(ValueTracker):
+    """Raise StopIteration if the metric stops improving for several epochs
+    in a row.
+    """
+    def __init__(self, model, feed, cooldown=1, patience=10):
+        super().__init__(patience=patience, mode="max", rtol=1e-3, atol=1e-4)
+        self.model, self.feed, self.cooldown = model, feed, cooldown
+
+    def reset(self):
+        super().reset()
+        self.last_epoch, self.next_epoch = -1, 0
+
+    def step(self, epoch=None):
+        if epoch is None:
+            epoch = self.last_epoch = self.last_epoch + 1
+        self.last_epoch = epoch
+
+        if not self.is_waiting:
+            raise StopIteration
+
+        # check if in cooldown mode and schedule next cooldown
+        if self.last_epoch <= self.next_epoch:
+            return
+
+        self.next_epoch = self.last_epoch + self.cooldown
+
+        # get predictions of `model` on `feed`, toggles eval mode
+        y_true, y_pred, logits = predict(self.model.eval(), self.feed)
+
+        # evaluatу metric on y_true and y_pred (or proba)
+        value = average_precision_score(y_true.ravel(), logits.ravel(),
+                                        pos_label=1, average=None)
+        super().step(value)
