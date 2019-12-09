@@ -62,7 +62,9 @@ def fit_one_epoch(model, objective, feed, optim, grad_clip=0., callback=None):
 
         losses.append(float(loss))
         if callable(callback):
-            callback((*objective.component_values_, grad_norm))
+            # track zero-th parameter group's learning rate
+            lrs = [group.get("lr", np.nan) for group in optim.param_groups]
+            callback((*objective.component_values_, grad_norm, lrs[0]))
 
         # abort on nan -- no need to waste compute
         if np.isnan(losses[-1]):
@@ -133,9 +135,9 @@ def fit(model, objective, feed, optim, sched=None, early=None,
             history.append(values)
             if verbose:
                 # format the components of the loss objective
-                *terms, grad_norm = map("{:.2e}".format, values)
+                *terms, grad_norm, lr = map("{:.2e}".format, values)
                 status = repr(terms).replace("'", "")
-                bar.set_postfix_str(f"{status} |g| {grad_norm}")
+                bar.set_postfix_str(f"{status} |g| {grad_norm} lr {lr}")
 
         # try-catch for graceful return
         try:
@@ -168,12 +170,12 @@ def fit(model, objective, feed, optim, sched=None, early=None,
             emergency = None
 
     # Collect histories of objective's components and the norm of the gradient
-    *term_values, grad_norms = [np.empty(0)] * (len(objective.terms) + 1)
+    *term_values, grad_norms, lr = [np.empty(0)] * (len(objective.terms) + 2)
     if history:
-        *term_values, grad_norms = map(np.array, zip(*history))
+        *term_values, grad_norms, lr = map(np.array, zip(*history))
 
     history = dict(zip(objective.terms, term_values))
-    history.update({"|g|": grad_norms})
+    history.update({"|g|": grad_norms, "lr": lr})
 
     model.eval()
     return model, emergency, history
