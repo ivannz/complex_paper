@@ -73,7 +73,7 @@ def fit_one_epoch(model, objective, feed, optim, grad_clip=0., callback=None):
     return losses
 
 
-def fit(model, objective, feed, optim, sched=None, early=None,
+def fit(model, objective, feed, optim, *, sched=None, early=None,
         n_epochs=100, grad_clip=0., verbose=True):
     """Fit a model to the objective on the data feed for specified number of
     epochs with optimizer, lr-schedule and gradient clipping.
