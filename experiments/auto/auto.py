@@ -272,7 +272,7 @@ def run(options, folder, suffix, verbose=True):
         # setup checkpointing and fit-time validation for early stopping
         # checkpointer, early_stopper = Checkpointer(...), EarlyStopper(...)
         early = None
-        if "early" in settings:
+        if "early" in settings and settings["early"] is not None:
             early = get_early_stopper(model, special_feeds, settings["early"])
 
         model.train()
