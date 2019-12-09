@@ -67,17 +67,17 @@ for practical data-driven problem solving. With continual miniaturization ever m
 applications can be found in embedded systems. Common embedded applications include
 on-device image recognition and signal processing. Despite recent advances in generalization
 and optimization theory specific to deep networks, deploying in actual embedded hardware
-remains a challenge due to storage, real-time throughput, and numerical computational
+remains a challenge due to storage, real-time throughput, and arithmetic (computational)
 complexity restrictions \citep{he_amc:_2018}. Therefore compression methods for achieving
 high model sparsity and numerical efficiency without losing much in performance are
 especially relevant.
-% Solving the storage and compute constraints encourages development of model compression
+% Solving the storage and artihmetic constraints encourages development of model compression
 % and sparsification methods, that focus on favourable tradeoff between performance and size.
 
 Signal processing, specifically, audio or radio frequency signal analysis is inherently
 complex-valued, yet $\cplx$-valued models and neural networks, and, in particular, compression
 methods tailored to $\cplx$-domain remain a niche field of research. Computational efficiency
-reduction methods such as quantization, integer-based arithmetic \citep{citation_needed},
+improvement methods such as quantization, integer-based arithmetic \citep{citation_needed},
 and distillation \citep{distillation} appear to be immediately applicable to $\cplx$-field.
 %
 Some model sparsification methods, e.g. magnitude pruning \citep{zuo_compression_2019}, which
@@ -91,7 +91,7 @@ adapted directly to $\cplx$-valued models. Other methods require additional cons
 % (cplx-transformer) yang-ma-li.tex
 % (cplx capacity) monning-manandhar.tex
 \citet{monning_evaluation_2018} state,
-that $\cplx$-networks have less intuitive architectures, inherently higher numerical
+that $\cplx$-networks have less intuitive architectures, inherently higher arithmetic
 complexity due to multiplication in $\cplx$, that requires 3-4 floating point multiplications,
 dependening on the implementation.
 % due to them not being true cplx and just paired real computational graphs
@@ -208,11 +208,11 @@ $ with $
 $, provides useful information about yet unobserved data and model parameters, e.g
 classification uncertainty, predictive statistics, and parameter relevance.
 
-The posterior itself is computationally intractable, save for the relatively simple cases
-\citep{citation_needed}, and therefore exact inference is traded for tractability and scalability
-of Variational Inference. Instead of deriving $p(\omega \mid D)$ using the rule, this approach
-recasts posterior inference into variational optimization problem: finding $q$ that is close
-to $p(\omega \mid D)$ in terms of a proximity score $\rho$
+The posterior itself is intractable, save for the relatively simple cases \citep{citation_needed},
+and therefore exact inference is traded for tractability and scalability of Variational
+Inference. Instead of deriving $p(\omega \mid D)$ using the rule, this approach recasts
+posterior inference into variational optimization problem: finding $q$ that is close to
+$p(\omega \mid D)$ in terms of a proximity score $\rho$
 \begin{equation}  \label{eq:variational-progam}
   q_*
     \in \arg \min_{\theta} \rho\bigl(
@@ -1063,7 +1063,7 @@ propagation into solutions of the problems of interest.
 
 % criticism and discussion
 based on the algebraic equivalence between $2 \times 2$ real matrices and complex numbers.
-Due to this constraint $\cplx$-networks have less expressive power for the same computation
+Due to this constraint $\cplx$-networks have less expressive power for the same arithmetic
 complexity compared to a $\real$-layer with twice as many inputs and outputs.
 %
 The \verify{most fierce critique} of Bayesian approach towards model
