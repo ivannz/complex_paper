@@ -15,6 +15,7 @@ from scipy.special import logit
 from setuptools._vendor.packaging.version import Version
 
 from .performance import evaluate
+from .performance import PooledAveragePrecisionEarlyStopper
 
 from .utils import get_class, get_factory, get_instance
 from .utils import param_apply_map, param_defaults
@@ -140,6 +141,10 @@ def get_scheduler(optimizer, recipe):
     return get_instance(optimizer, **recipe)
 
 
+def get_early_stopper(model, special_feeds, recipe):
+    raise NotImplementedError
+
+
 def state_create(factory, settings, devtype):
     """Create a new state, i.e. model, optimizer and name-id mapper (for state
     inheritance below), from the settings and model factory.
@@ -263,10 +268,11 @@ def run(options, folder, suffix, verbose=True):
 
         # setup checkpointing and fit-time validation for early stopping
         # checkpointer, early_stopper = Checkpointer(...), EarlyStopper(...)
+        early = get_early_stopper(model, special_feeds, settings["early"])
 
         model.train()
         model, emergency, history = fit(
-            model, objective, feed, optim, sched,
+            model, objective, feed, optim, sched, early,
             n_epochs=settings["n_epochs"], grad_clip=settings["grad_clip"],
             verbose=verbose)
 

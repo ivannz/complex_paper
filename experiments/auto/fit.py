@@ -144,7 +144,7 @@ def fit(model, objective, feed, optim, sched=None, early=None,
             for epoch in bar:
                 # checkpointer and early stopper steps
                 if early is not None:
-                    raise NotImplementedError
+                    early.step(epoch)
 
                 model_backup = state_dict_to_cpu(model.state_dict())
                 epoch_loss = fit_one_epoch(model, objective, feed, optim,
@@ -164,6 +164,9 @@ def fit(model, objective, feed, optim, sched=None, early=None,
             emergency = e
 
         except KeyboardInterrupt as e:
+            emergency = e
+
+        except StopIteration as e:  # thrown by early stopper
             emergency = e
 
         else:  # no exception raised, no loop broken out of -- no emergency
