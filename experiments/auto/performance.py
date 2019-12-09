@@ -133,7 +133,7 @@ class ValueTracker(object):
 
     def reset(self):
         self.best_ = -math.inf if self.mode == "max" else math.inf
-        self.wait_, self.hits_ = 0, 0
+        self.wait_, self.hits_, self.history_ = 0, 0, []
 
     def is_worse(self, a, b):
         r"""Check if `a` is outside of the allowed tolerance of `b`."""
@@ -150,6 +150,8 @@ class ValueTracker(object):
 
         else:
             self.best_, self.wait_, self.hits_ = current, 0, self.hits_ + 1
+
+        self.history_.append(value)
 
     def __bool__(self):
         return self.wait_ >= self.patience
