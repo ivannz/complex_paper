@@ -127,28 +127,27 @@ def fit(model, objective, feed, optim, sched=None, early=None,
     into `eval` mode afterwards.
     """
     model.train()
-    history, epoch_checkpoint = [], {}
+    history, model_backup = [], {}
     with tqdm.tqdm(range(n_epochs), disable=not verbose) as bar:
         def history_append(values):
             history.append(values)
             if verbose:
                 # format the components of the loss objective
-                *terms, grad_norm = values
-                terms = map("{:.2e}".format, terms)
-                status = repr(tuple(terms)).replace("'", "")
-                bar.set_postfix_str(f"{status} |g| {grad_norm:.1e}")
+                *terms, grad_norm = map("{:.2e}".format, values)
+                status = repr(terms).replace("'", "")
+                bar.set_postfix_str(f"{status} |g| {grad_norm}")
 
         # try-catch for graceful return
         try:
             for epoch in bar:
+                # checkpointer and early stopper steps
+                if early is not None:
+                    raise NotImplementedError
+
+                model_backup = state_dict_to_cpu(model.state_dict())
                 epoch_loss = fit_one_epoch(model, objective, feed, optim,
                                            grad_clip=grad_clip,
                                            callback=history_append)
-
-                # checkpointer and early stopper steps
-                epoch_checkpoint = state_dict_to_cpu(model.state_dict())
-                if early is not None:
-                    raise NotImplementedError
 
                 # scheduler step: the `.step` api isn't standardized
                 if sched is not None:
@@ -158,7 +157,8 @@ def fit(model, objective, feed, optim, sched=None, early=None,
                     else:
                         sched.step()
 
-        except FloatingPointError as e:
+        except FloatingPointError as e:  # thrown by fit_one_epoch
+            model.load_state_dict(model_backup)
             emergency = e
 
         except KeyboardInterrupt as e:
@@ -166,10 +166,6 @@ def fit(model, objective, feed, optim, sched=None, early=None,
 
         else:  # no exception raised, no loop broken out of -- no emergency
             emergency = None
-
-    if isinstance(emergency, FloatingPointError):
-        if epoch_checkpoint:
-            model.load_state_dict(epoch_checkpoint)
 
     # Collect histories of objective's components and the norm of the gradient
     *term_values, grad_norms = [np.empty(0)] * (len(objective.terms) + 1)
