@@ -175,13 +175,15 @@ class PooledAveragePrecisionEarlyStopper(ExtremeTracker):
     """Raise StopIteration if the metric stops improving for several epochs
     in a row.
     """
-    def __init__(self, model, feed, cooldown=1, patience=10):
-        super().__init__(patience=patience, extreme="max", rtol=1e-3, atol=1e-4)
+    def __init__(self, model, feed, cooldown=1, patience=10,
+                 rtol=1e-3, atol=1e-4):
+        super().__init__(patience=patience, extreme="max",
+                         rtol=rtol, atol=atol)
         self.model, self.feed, self.cooldown = model, feed, cooldown
 
     def reset(self):
         super().reset()
-        self.last_epoch, self.next_epoch = -1, 0
+        self.last_epoch, self.next_epoch = -1, -math.inf
 
     def step(self, epoch=None):
         if epoch is None:
