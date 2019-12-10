@@ -306,6 +306,7 @@ def run(options, folder, suffix, verbose=True):
             # meta data
             history=history,
             performance=performance,
+            early_history=np.array(getattr(early, "history_")),
             options=options_backup,
             stage=stage_backup,
 

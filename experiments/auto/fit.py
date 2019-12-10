@@ -167,7 +167,7 @@ def fit(model, objective, feed, optim, *, sched=None, early=None,
             emergency = e
 
         except StopIteration as e:  # thrown by early stopper
-            emergency = e
+            emergency = None  # e  # Early Stopping is not an emergency
 
         else:  # no exception raised, no loop broken out of -- no emergency
             emergency = None
