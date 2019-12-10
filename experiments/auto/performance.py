@@ -1,7 +1,7 @@
 """Measure performance of the models.
 
 This module is exceptionally task-specific, except for, probabily,
-`predict()` and `ValueTracker`,
+`predict()` and `ExtremeTracker`,
 """
 import math
 import numpy as np
@@ -103,7 +103,7 @@ def evaluate(model, feed, curves=False):
     return out
 
 
-class ValueTracker(object):
+class ExtremeTracker(object):
     """Indicate if the metric stops improving for several epochs in a row.
 
     Parameters
@@ -112,8 +112,8 @@ class ValueTracker(object):
         Number of epochs with no significant improvement in the tracked value
         after which early stopping should mechanics kick in.
 
-    mode : str, default='min'
-        In mode='min' the quantity is monitored for significant decreases,
+    extreme : str, default='min'
+        In extreme='min' the quantity is monitored for significant decreases,
         otherwise it is tracked for increases.
 
     rtol : float, default=1e-4
@@ -124,38 +124,39 @@ class ValueTracker(object):
     atol : float, default=0.
         The maximum absolute difference to consider a change insignificant.
     """
-    def __init__(self, patience=10, mode="min", rtol=1e-4, atol=0.):
+    def __init__(self, patience=10, extreme="min", rtol=1e-4, atol=0.):
         super().__init__()
-        if mode not in ("min", "max"):
-            raise ValueError(f"Unknown tracking mode `{mode}`")
+        if extreme not in ("min", "max"):
+            raise ValueError(f"Unknown extreme `{extreme}`")
 
-        self.mode, self.rtol, self.atol = mode, rtol, atol
+        self.extreme, self.rtol, self.atol = extreme, rtol, atol
         self.patience = patience
         self.reset()
 
     def reset(self):
-        self.best_ = -math.inf if self.mode == "max" else math.inf
-        self.wait_, self.hits_, self.history_ = 0, 0, []
+        self.best_ = -math.inf if self.extreme == "max" else math.inf
+        self.breached_, self.history_ = False, []
+        self.wait_, self.hits_ = 0, 0
 
-    @property
-    def is_waiting(self):
-        return self.wait_ < self.patience
+    def is_better(self, a, b, strict=True):
+        r"""Check if `a` is within the allowed tolerance of `b` or `better`."""
+        tau = 0 if strict else max(self.rtol * abs(b), self.atol)
 
-    def is_worse(self, a, b):
-        r"""Check if `a` is outside of the allowed tolerance of `b`."""
-        delta = (a - b) if self.mode == "max" else (b - a)
-        # (max) a \in (-\infty, b + |b| \rho + \alpha)
-        # (min) a \in (b - |b| \rho - \alpha, +\infty)
-        return delta < abs(b) * self.rtol + self.atol
+        # (max) $a \in [b - \tau, +\infty]$, (min) $a \in [-\infty, b + \tau]$
+        return (b - tau <= a) if self.extreme == "max" else (a <= b + tau)
 
     def step(self, value):
         """Decrease the time-to-live counter, depending on the metric."""
-        current = float(value)
-        if self.is_worse(current, self.best_):
-            self.wait_ += 1
+        value = float(value)
+        if self.is_better(value, self.best_, strict=True):
+            self.wait_, self.breached_ = 0, False
+            self.best_, self.hits_ = value, self.hits_ + 1
+
+        elif self.is_better(value, self.best_, strict=False):
+            self.wait_, self.breached_ = self.wait_ + 1, False
 
         else:
-            self.best_, self.wait_, self.hits_ = current, 0, self.hits_ + 1
+            self.wait_, self.breached_ = self.wait_ + 1, True
 
         self.history_.append(value)
 
@@ -163,15 +164,19 @@ class ValueTracker(object):
         return self.wait_ == 0
 
     def __bool__(self):
-        return not self.is_waiting
+        return self.wait_ >= self.patience or self.breached_
+
+    @property
+    def is_waiting(self):
+        return not self
 
 
-class PooledAveragePrecisionEarlyStopper(ValueTracker):
+class PooledAveragePrecisionEarlyStopper(ExtremeTracker):
     """Raise StopIteration if the metric stops improving for several epochs
     in a row.
     """
     def __init__(self, model, feed, cooldown=1, patience=10):
-        super().__init__(patience=patience, mode="max", rtol=1e-3, atol=1e-4)
+        super().__init__(patience=patience, extreme="max", rtol=1e-3, atol=1e-4)
         self.model, self.feed, self.cooldown = model, feed, cooldown
 
     def reset(self):
