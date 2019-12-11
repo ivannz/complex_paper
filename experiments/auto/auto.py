@@ -144,7 +144,11 @@ def get_scheduler(optimizer, recipe):
 def get_early_stopper(model, feeds, recipe):
     """Get scheduler for the optimizer and recipe."""
     # <model>, <feeds>, "stages__*__early"
-    recipe = param_apply_map(recipe, feed=feeds.__getitem__)
+    def None_or_get_class(klass):
+        return klass if klass is None else get_class(klass)
+
+    recipe = param_apply_map(recipe, feed=feeds.__getitem__,
+                             raises=None_or_get_class)
     return PooledAveragePrecisionEarlyStopper(model, **recipe)
 
 
