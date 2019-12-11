@@ -6,7 +6,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.nn.utils import clip_grad_norm_
 
 from .delayed import DelayedKeyboardInterrupt
-from .utils import state_dict_to_cpu
+from .utils import state_dict_to_cpu, collate_history
 
 
 def fit_one_epoch(model, objective, feed, optim, grad_clip=0., callback=None):
@@ -173,12 +173,7 @@ def fit(model, objective, feed, optim, *, sched=None, early=None,
             emergency = None
 
     # Collect histories of objective's components and the norm of the gradient
-    *term_values, grad_norms, lr = [np.empty(0)] * (len(objective.terms) + 2)
-    if history:
-        *term_values, grad_norms, lr = map(np.array, zip(*history))
-
-    history = dict(zip(objective.terms, term_values))
-    history.update({"|g|": grad_norms, "lr": lr})
+    history = collate_history(history, [*objective.terms, "|g|", "lr"])
 
     model.eval()
     return model, emergency, history

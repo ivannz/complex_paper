@@ -2,10 +2,13 @@ import re
 import time
 import gzip
 
+import numpy as np
+
 import torch
 import importlib
 
 from functools import partial
+from itertools import repeat
 
 
 class BaseFeedWrapper(object):
@@ -308,3 +311,20 @@ def deploy_optimizer(mapper, *, target, source=None):
 def state_dict_to_cpu(state_dict):
     # .state_dict() references tensors, so we copy .data to CPU
     return {key: par.data.cpu() for key, par in state_dict.items()}
+
+
+def collate_history(history, fields):
+    """Repack the list of tuples into a dict of arrays keyed by `fields`.
+
+    Examples
+    --------
+    >>> collate_history([(1., 2.), (3., 4.)], ["a", "b"])
+    {'a': array([1., 3.]), 'b': array([2., 4.])}
+    """
+    if history:
+        values = map(np.array, zip(*history))
+
+    else:
+        values = map(np.empty, repeat(0, len(fields)))
+
+    return dict(zip(fields, values))
