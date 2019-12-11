@@ -176,10 +176,13 @@ class PooledAveragePrecisionEarlyStopper(ExtremeTracker):
     in a row.
     """
     def __init__(self, model, feed, cooldown=1, patience=10,
-                 rtol=1e-3, atol=1e-4):
+                 rtol=1e-3, atol=1e-4, raises=StopIteration):
+        assert raises is None or issubclass(raises, Exception)
+
         super().__init__(patience=patience, extreme="max",
                          rtol=rtol, atol=atol)
         self.model, self.feed, self.cooldown = model, feed, cooldown
+        self.raises = raises
 
     def reset(self):
         super().reset()
@@ -190,8 +193,8 @@ class PooledAveragePrecisionEarlyStopper(ExtremeTracker):
             epoch = self.last_epoch = self.last_epoch + 1
         self.last_epoch = epoch
 
-        if not self.is_waiting:
-            raise StopIteration
+        if self.raises is not None and not self.is_waiting:
+            raise self.raises
 
         # check if in cooldown mode and schedule next cooldown
         if self.last_epoch <= self.next_epoch:
