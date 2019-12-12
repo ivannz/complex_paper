@@ -10,7 +10,7 @@ from bisect import bisect_right
 
 from numpy.lib.stride_tricks import as_strided
 
-from scipy.fftpack import fft  # Fourier features
+from scipy.fftpack import fft, fftshift  # Fourier features
 from scipy.signal import stft  # Short-time Fourtier Transform
 
 
@@ -233,7 +233,7 @@ class MusicNetWaveformCollation(object):
     """
 
     def __init__(self, kind="fft", cplx=True):
-        assert kind in ("raw", "fft", "stft", "stft-swap")
+        assert kind in ("raw", "fft", "fft-shifted", "stft", "stft-swap")
         self.kind, self.cplx = kind, cplx
 
     def __call__(self, batch):
@@ -252,9 +252,12 @@ class MusicNetWaveformCollation(object):
         if self.kind == "raw":
             z = signal[..., np.newaxis, :]
 
-        elif self.kind == "fft":
+        elif self.kind == "fft" or self.kind == "fft-shifted":
             # z is complex64 B x 1 x [window]
             z = fft(signal[..., np.newaxis, :], axis=-1)
+            if self.kind == "fft-shifted":
+                # Shift the zero-frequency component to the center of window
+                z = fftshift(z, axes=-1)
 
         else:  # self.kind in ("stft", "stft-swap")
             # z is complex64 B x [freq] x [times] (window 4096 -> 70 times)
