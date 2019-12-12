@@ -126,7 +126,7 @@ class Trabelsi2017LRSchedule(torch.optim.lr_scheduler.LambdaLR):
             return 1e-1  # (1e-4)
 
         elif epoch < 120:
-            return 2e-1  # (5e-5)
+            return 5e-2  # (5e-5)
 
         elif epoch < 150:
             return 1e-2  # (1e-5)
