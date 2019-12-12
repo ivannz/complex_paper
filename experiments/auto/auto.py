@@ -23,6 +23,7 @@ from .utils import param_apply_map, param_defaults
 from .utils import FeedMover, FeedLimiter
 from .utils import save_snapshot, load_snapshot
 from .utils import join, deploy_optimizer
+from .utils import filter_prefix
 
 from .fit import fit
 from .objective import ExpressionObjective, WeightedObjective
@@ -50,16 +51,19 @@ def get_collate_fn(recipe):
     return get_instance(**recipe)
 
 
-def get_feeds(datasets, collate_fn, recipe):
+def get_feeds(datasets, collate_fn, devtype, recipe):
     """Get instances of data loaders from the datasets and collate function."""
-    # <datasets>, <collate_fn>, "feeds"
+    # <datasets>, <collate_fn>, <devtype>, "feeds"
     recipe = param_apply_map(recipe, dataset=datasets.__getitem__)
 
     feeds = {}
     for name, par in recipe.items():
-        par = param_defaults(par, cls=str(torch.utils.data.DataLoader),
-                             pin_memory=True)
-        feeds[name] = get_instance(**par, collate_fn=collate_fn)
+        par = param_defaults(par, n_batches=-1, pin_memory=True,
+                             cls=str(torch.utils.data.DataLoader))
+
+        max_iter = par.pop("n_batches")
+        feed = get_instance(**par, collate_fn=collate_fn)
+        feeds[name] = wrap_feed(feed, max_iter=max_iter, **devtype)
 
     return feeds
 
@@ -67,17 +71,6 @@ def get_feeds(datasets, collate_fn, recipe):
 def wrap_feed(feed, max_iter=-1, **devtype):
     """Return a feed that combines the limiter and the mover."""
     return FeedMover(FeedLimiter(feed, max_iter), **devtype)
-
-
-def get_special_feeds(feeds, devtype, special):
-    """Prepare feeds for special activities, like testing performance."""
-    special_feeds = {}
-    for name, feed in feeds.items():
-        if any(map(name.startswith, special)):
-            special_feeds[name] = wrap_feed(feed, max_iter=-1, **devtype)
-
-    # may be empty
-    return special_feeds
 
 
 def compute_positive_weight(recipe):
@@ -249,8 +242,8 @@ def run(options, folder, suffix, verbose=True):
 
     collate_fn = get_collate_fn(options["features"])
 
-    feeds = get_feeds(datasets, collate_fn, options["feeds"])
-    special_feeds = get_special_feeds(feeds, devtype, ("test", "valid"))
+    feeds = get_feeds(datasets, collate_fn, devtype, options["feeds"])
+    special_feeds = filter_prefix(feeds, "test", "valid")
 
     objective_terms = get_objective_terms(datasets, options["objective_terms"])
 
@@ -267,8 +260,7 @@ def run(options, folder, suffix, verbose=True):
         model, optim = state.model, state.optim
         sched = get_scheduler(optim, settings["lr_scheduler"])
 
-        name, max_iter = settings["feed"], settings["n_batches_per_epoch"]
-        feed = wrap_feed(feeds[name], max_iter=max_iter, **devtype)
+        feed = feeds[settings["feed"]]
 
         formula = settings["objective"]
         objective = get_objective(objective_terms, formula).to(**devtype)

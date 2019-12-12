@@ -328,3 +328,17 @@ def collate_history(history, fields):
         values = map(np.empty, repeat(0, len(fields)))
 
     return dict(zip(fields, values))
+
+
+def filter_prefix(dictionary, *prefixes):
+    """Return dict with keys having any of the prefixes."""
+    if not prefixes:
+        return dictionary
+
+    out = {}
+    for key, value in dictionary.items():
+        if any(map(str(key).startswith, prefixes)):
+            out[key] = value
+
+    # may be empty
+    return out
