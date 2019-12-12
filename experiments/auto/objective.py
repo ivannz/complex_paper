@@ -114,6 +114,12 @@ class BaseCompositeObjective(BaseObjective):
     def extra_repr(self):
         return repr(list(self.terms))
 
+    def __getitem__(self, key):
+        return self.terms[key]
+
+    def __dir__(self):
+        return list(self.terms)
+
     def forward(self, module, input, target, output=None):
         """Evaluate the terms of the objective.
 
