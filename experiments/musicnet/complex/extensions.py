@@ -2,14 +2,14 @@ from .base import CplxTwoLayerDense
 from .base import CplxShallowConvNet
 from .base import CplxDeepConvNet
 
-from cplxmodule.relevance import CplxLinearARD
+from cplxmodule.relevance.extensions import CplxLinearVDBogus
 from cplxmodule.masked import CplxLinearMasked
-from cplxmodule.relevance import CplxConv1dARD
+from cplxmodule.relevance.extensions import CplxConv1dVDBogus
 from cplxmodule.masked import CplxConv1dMasked
 
 
 class CplxTwoLayerDenseARD(CplxTwoLayerDense):
-    Linear = CplxLinearARD
+    Linear = CplxLinearVDBogus
 
 
 class CplxTwoLayerDenseMasked(CplxTwoLayerDense):
@@ -17,8 +17,8 @@ class CplxTwoLayerDenseMasked(CplxTwoLayerDense):
 
 
 class CplxShallowConvNetARD(CplxShallowConvNet):
-    Linear = CplxLinearARD
-    Conv1d = CplxConv1dARD
+    Linear = CplxLinearVDBogus
+    Conv1d = CplxConv1dVDBogus
 
 
 class CplxShallowConvNetMasked(CplxShallowConvNet):
@@ -27,8 +27,8 @@ class CplxShallowConvNetMasked(CplxShallowConvNet):
 
 
 class CplxDeepConvNetARD(CplxDeepConvNet):
-    Linear = CplxLinearARD
-    Conv1d = CplxConv1dARD
+    Linear = CplxLinearVDBogus
+    Conv1d = CplxConv1dVDBogus
 
 
 class CplxDeepConvNetMasked(CplxDeepConvNet):
