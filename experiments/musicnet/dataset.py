@@ -253,6 +253,8 @@ class MusicNetWaveformCollation(object):
             z = signal[..., np.newaxis, :]
 
         elif self.kind == "fft" or self.kind == "fft-shifted":
+            # fft of a real signal is conj-symmteric: z[j] = z[n-j].conj()
+
             # z is complex64 B x 1 x [window]
             z = fft(signal[..., np.newaxis, :], axis=-1)
             if self.kind == "fft-shifted":
