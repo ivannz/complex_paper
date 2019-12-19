@@ -146,7 +146,18 @@ class ExtremeTracker(object):
         return (b - tau <= a) if self.extreme == "max" else (a <= b + tau)
 
     def step(self, value):
-        """Decrease the time-to-live counter, depending on the metric."""
+        """Decrease the time-to-live counter, depending on the provided value.
+
+        Arguments
+        ---------
+        value : float
+            The next observed value of the tracked metric.
+
+        Returns
+        -------
+        reset : bool
+            Flag, indicating if a new extreme value has been detected.
+        """
         value = float(value)
         if self.is_better(value, self.best_, strict=True):
             self.wait_, self.breached_ = 0, False
@@ -164,6 +175,9 @@ class ExtremeTracker(object):
         return self.wait_ == 0
 
     def __bool__(self):
+        """Indicate if ran out of patience, or the last observed value
+        breached the tracked band.
+        """
         return self.wait_ >= self.patience or self.breached_
 
     @property
@@ -189,6 +203,19 @@ class PooledAveragePrecisionEarlyStopper(ExtremeTracker):
         self.last_epoch, self.next_epoch = -1, -math.inf
 
     def step(self, epoch=None):
+        """Single step of the performance tracker.
+
+        Arguments
+        ---------
+        epoch : int, default=None
+            The current epoch number to override the internal epoch counter.
+
+        Returns
+        -------
+        reset : bool
+            Flag, indicating that a new extreme has been detected.
+            See `:class:`~ExtremeTracker`.
+        """
         if epoch is None:
             epoch = self.last_epoch = self.last_epoch + 1
         self.last_epoch = epoch
@@ -208,4 +235,4 @@ class PooledAveragePrecisionEarlyStopper(ExtremeTracker):
         # evaluatу metric on y_true and y_pred (or proba)
         value = average_precision_score(y_true.ravel(), logits.ravel(),
                                         pos_label=1, average=None)
-        super().step(value)
+        return super().step(value)
