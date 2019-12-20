@@ -7,6 +7,8 @@ from cplxmodule.layers import ConcatenatedRealToCplx
 from cplxmodule.layers import CplxLinear
 from cplxmodule.conv import CplxConv1d
 
+from cplxmodule.batchnorm import CplxBatchNorm1d
+
 from ..trabelsi2017.base import Flatten, BodyMixin
 
 
@@ -71,8 +73,11 @@ class CplxDeepConvNet(torch.nn.Module):
         layers = []
         n_seq, conv = one_conv(
             n_seq, cls.Conv1d, in_channels, out_channels,
-            kernel, stride, bias=True)
+            kernel, stride, bias=not full)
         layers.append(("conv", conv))
+
+        if full:
+            layers.append(("btch", CplxBatchNorm1d(out_channels)))
 
         layers.append(("relu", CplxToCplx[torch.nn.ReLU]()))
         if full:
