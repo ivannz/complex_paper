@@ -33,8 +33,72 @@ State = namedtuple("State", ["model", "optim", "mapper"])
 
 
 def defaults(options):
-    # currently no defaults
-    return copy.deepcopy(options)
+    options = copy.deepcopy(options)
+
+    # add defaults: device, threshold, and objective terms
+    options = {
+        "device": "cuda:0",
+        "threshold": -0.5,
+        "objective_terms": {
+            "loss": {
+                "cls": "<class 'torch.nn.modules.loss.BCEWithLogitsLoss'>",
+                "reduction": "mean"
+            },
+            "kl_div": {
+                "cls": "<class 'auto.objective.ARDPenaltyObjective'>",
+                "reduction": "mean",
+                "coef": 1.0
+            }
+        },
+        **options
+    }
+
+    assert all(key in options for key in [
+        "device", "threshold", "model",
+        "dataset", "dataset_sources", "features", "feeds",
+        "objective_terms", "stages", "stage-order"
+    ])
+
+    # fix optional settings in stages
+    for settings in options["stages"].values():
+        # required: "feed", "n_epochs", "objective", "model"
+        # optional: "lr_scheduler", "optimizer", "early",
+        #           "snapshot", "grad_clip"
+        settings.update({
+            "snapshot": None,
+            "grad_clip": 0.5,
+            "early": {
+                "feed": "valid_256",  # this is not optional
+                "patience": 200,
+                "cooldown": 0,
+                "rtol": 0,
+                "atol": 2e-2,
+                "raises": "<class 'StopIteration'>"
+            },
+            "lr_scheduler": {
+                "cls": "<class 'musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
+            },
+            "optimizer": {
+                "cls": "<class 'torch.optim.adam.Adam'>",
+                "lr": 0.001,
+                "betas": [
+                    0.9,
+                    0.999
+                ],
+                "eps": 1e-08,
+                "weight_decay": 0,
+                "amsgrad": False
+            },
+            "restart": False,
+            **settings
+        })
+        assert all(key in settings for key in [
+            "model", "n_epochs", "objective", "feed",
+            "grad_clip", "snapshot", "lr_scheduler",
+            "optimizer", "restart", "early"
+        ])
+
+    return options
 
 
 def get_datasets(factory, recipe):
