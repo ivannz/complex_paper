@@ -1,13 +1,13 @@
 import torch
 from collections import OrderedDict
 
-from cplxmodule.layers import CplxToCplx, CplxReal, CplxImag
-from cplxmodule.layers import ConcatenatedRealToCplx
+from cplxmodule.nn.layers import CplxToCplx, CplxReal, CplxImag
+from cplxmodule.nn.layers import ConcatenatedRealToCplx
 
-from cplxmodule.layers import CplxLinear
-from cplxmodule.conv import CplxConv1d
+from cplxmodule.nn.layers import CplxLinear
+from cplxmodule.nn.conv import CplxConv1d
 
-from cplxmodule.batchnorm import CplxBatchNorm1d
+from cplxmodule.nn.batchnorm import CplxBatchNorm1d
 
 from ..trabelsi2017.base import Flatten, BodyMixin
 

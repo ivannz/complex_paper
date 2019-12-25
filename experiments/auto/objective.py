@@ -5,7 +5,7 @@ import operator
 import torch
 
 from torch.nn.modules import Module
-from cplxmodule.relevance.base import BaseARD
+from cplxmodule.nn.relevance.base import BaseARD
 
 
 def named_ard_modules(module, prefix=""):

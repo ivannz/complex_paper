@@ -99,14 +99,14 @@ We expect differing sparsity patterns between these architectures.
 #### Components
 
 Real networks ordinary network in real domain
-* (existing) **torch.nn**: BatchNorm1d; **cplxmodule.relevance**: Linear{ARD, Masked};
-* (~missing~ fixed) **cplxmodule.relevance**: Conv1d{ARD, Masked}, Conv2d{ARD, Masked} (see `mlss2019`)
+* (existing) **torch.nn**: BatchNorm1d; **cplxmodule.nn.relevance**: Linear{ARD, Masked};
+* (~missing~ fixed) **cplxmodule.nn.relevance**: Conv1d{ARD, Masked}, Conv2d{ARD, Masked} (see `mlss2019`)
 
 Complex-valued networks uxing `Cplx` form `cplxmodule`
-* (existing) **cplxmodule.layers**: CplxConv1d, CplxLinear, RealToCplx, AsTypeCplx, CplxToReal;
-  **cplxmodule.relevance**: CplxLinear{ARD, Masked}
-* (~missing~ fixed) **cplxmodule.relevance**: CplxConv1d{ARD, Masked},  CplxConv2d{ARD, Masked}
-* (missing) **cplxmodule.layers**: CplxBatchNorm1d
+* (existing) **cplxmodule.nn.layers**: CplxConv1d, CplxLinear, RealToCplx, AsTypeCplx, CplxToReal;
+  **cplxmodule.nn.relevance**: CplxLinear{ARD, Masked}
+* (~missing~ fixed) **cplxmodule.nn.relevance**: CplxConv1d{ARD, Masked},  CplxConv2d{ARD, Masked}
+* (~missing~ fixed) **cplxmodule.nn.layers**: CplxBatchNorm1d
 
 
 * raw signal: 

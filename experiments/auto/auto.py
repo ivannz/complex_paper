@@ -8,8 +8,8 @@ import warnings
 import torch
 import numpy as np
 
-from cplxmodule.relevance import compute_ard_masks
-from cplxmodule.masked import binarize_masks
+from cplxmodule.nn.relevance import compute_ard_masks
+from cplxmodule.nn.masked import binarize_masks
 
 from scipy.special import logit
 from setuptools._vendor.packaging.version import Version

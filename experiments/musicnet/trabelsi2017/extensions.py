@@ -2,10 +2,10 @@ from .base import TwoLayerDense
 from .base import ShallowConvNet
 from .base import DeepConvNet
 
-from cplxmodule.relevance import LinearARD
-from cplxmodule.masked import LinearMasked
-from cplxmodule.relevance import Conv1dARD
-from cplxmodule.masked import Conv1dMasked
+from cplxmodule.nn.relevance import LinearARD
+from cplxmodule.nn.masked import LinearMasked
+from cplxmodule.nn.relevance import Conv1dARD
+from cplxmodule.nn.masked import Conv1dMasked
 
 
 class TwoLayerDenseARD(TwoLayerDense):
