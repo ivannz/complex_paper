@@ -363,10 +363,12 @@ def run(options, folder, suffix, verbose=True):
 
         # save snapshot
         status = "" if emergency is None else type(emergency).__name__
+        status += " " if status else ""
+
         is_benign = isinstance(emergency, benign_emergencies)
 
         final_snapshot = save_snapshot(
-            os.path.join(folder, f"{status}{n_stage}-{stage} {suffix}.gz"),
+            os.path.join(folder, f"{n_stage}-{stage} {status}{suffix}.gz"),
 
             # state
             model=state.model.state_dict(),
