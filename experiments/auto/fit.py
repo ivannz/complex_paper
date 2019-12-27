@@ -161,13 +161,13 @@ def fit(model, objective, feed, optim, *, sched=None, early=None,
 
         except FloatingPointError as e:  # thrown by fit_one_epoch
             model.load_state_dict(model_backup)
-            emergency = e
+            emergency = e  # encountered wild model instability
 
         except KeyboardInterrupt as e:
-            emergency = e
+            emergency = e  # user requested fit loop termination
 
         except StopIteration as e:  # thrown by early stopper
-            emergency = None  # e  # Early Stopping is not an emergency
+            emergency = e  # Early Stopping is a benign `emergency`
 
         else:  # no exception raised, no loop broken out of -- no emergency
             emergency = None

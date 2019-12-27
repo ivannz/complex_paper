@@ -31,6 +31,8 @@ from .objective import ExpressionObjective, WeightedObjective
 from collections import namedtuple
 State = namedtuple("State", ["model", "optim", "mapper"])
 
+benign_emergencies = (StopIteration, type(None))
+
 
 def defaults(options):
     options = copy.deepcopy(options)
@@ -360,7 +362,9 @@ def run(options, folder, suffix, verbose=True):
                                for name, feed in special_feeds.items()}
 
         # save snapshot
-        status = "TERMINATED " if emergency else ""
+        status = "" if emergency is None else type(emergency).__name__
+        is_benign = isinstance(emergency, benign_emergencies)
+
         final_snapshot = save_snapshot(
             os.path.join(folder, f"{status}{n_stage}-{stage} {suffix}.gz"),
 
@@ -369,8 +373,8 @@ def run(options, folder, suffix, verbose=True):
             optim=dict(
                 cls=str(type(state.optim)),
                 state=state.optim.state_dict()
-            ) if emergency is None else None,
-            mapper=state.mapper if emergency is None else None,
+            ) if is_benign else None,
+            mapper=state.mapper if is_benign else None,
 
             # meta data
             history=history,
@@ -387,7 +391,7 @@ def run(options, folder, suffix, verbose=True):
         snapshots.append(final_snapshot)
 
         # emergency termination: cannot continue
-        if emergency:
+        if not is_benign:
             break
 
     return snapshots
