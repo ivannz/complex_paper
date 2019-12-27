@@ -1,0 +1,190 @@
+{
+  "__name__": "Example experiment manifest for MusicNet",
+  "device": "cuda:3",
+  "threshold": -0.5,
+  "dataset": {
+    "cls": "<class 'musicnet.dataset.MusicNetRAM'>"
+  },
+  "dataset_sources": {
+    "train-1": {
+      "filename": "./data/musicnet/musicnet_11khz_train.h5",
+      "window": 4096,
+      "stride": 1
+    },
+    "train-512": {
+      "filename": "./data/musicnet/musicnet_11khz_train.h5",
+      "window": 4096,
+      "stride": 512
+    },
+    "valid-128": {
+      "filename": "./data/musicnet/musicnet_11khz_valid.h5",
+      "window": 4096,
+      "stride": 128
+    },
+    "test-128": {
+      "filename": "./data/musicnet/musicnet_11khz_test.h5",
+      "window": 4096,
+      "stride": 128
+    }
+  },
+  "features": {
+    "cls": "<class 'musicnet.dataset.MusicNetWaveformCollation'>",
+    "kind": "fft",
+    "cplx": true
+  },
+  "feeds": {
+    "train_trabelsi": {
+      "cls": "<class 'musicnet.dataset.MusicNetDataLoader'>",
+      "dataset": "train-1",
+      "pin_memory": true,
+      "n_batches": 1000
+    },
+    "valid_768": {
+      "cls": "<class 'torch.utils.data.dataloader.DataLoader'>",
+      "dataset": "valid-128",
+      "batch_size": 768,
+      "pin_memory": true,
+      "shuffle": false,
+      "n_batches": -1
+    },
+    "test_256": {
+      "cls": "<class 'torch.utils.data.dataloader.DataLoader'>",
+      "dataset": "test-128",
+      "batch_size": 256,
+      "pin_memory": true,
+      "shuffle": false,
+      "n_batches": -1
+    }
+  },
+  "objective_terms": {
+    "loss": {
+      "cls": "<class 'torch.nn.modules.loss.BCEWithLogitsLoss'>",
+      "reduction": "mean"
+    },
+    "kl_div": {
+      "cls": "<class 'auto.objective.ARDPenaltyObjective'>",
+      "reduction": "mean",
+      "coef": 1.0
+    }
+  },
+  "model": {
+    "n_seq": 4096,
+    "n_channels": 1,
+    "n_outputs": 84
+  },
+  "stages": {
+    "dense": {
+      "snapshot": null,
+      "feed": "train_trabelsi",
+      "restart": true,
+      "n_epochs": 200,
+      "grad_clip": 0.05,
+      "model" : {
+        "cls": "<class 'musicnet.complex.CplxDeepConvNet'>"
+      },
+      "lr_scheduler": {
+        "cls": "<class 'musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
+      },
+      "optimizer": {
+        "cls": "<class 'torch.optim.adam.Adam'>",
+        "lr": 0.001,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "weight_decay": 0,
+        "amsgrad": false
+      },
+      "objective": {
+        "loss": 1.0,
+        "kl_div": 0.0
+      },
+      "early": {
+        "feed": "valid_768",
+        "patience": 20,
+        "cooldown": 0,
+        "rtol": 0,
+        "atol": 2e-2,
+        "raises": "<class 'StopIteration'>"
+      }
+    },
+    "sparsify": {
+      "snapshot": null,
+      "feed": "train_trabelsi",
+      "restart": true,
+      "n_epochs": 200,
+      "grad_clip": 0.05,
+      "model" : {
+        "cls": "<class 'musicnet.complex.extensions.CplxDeepConvNetARD'>"
+      },
+      "lr_scheduler": {
+        "cls": "<class 'musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
+      },
+      "optimizer": {
+        "cls": "<class 'torch.optim.adam.Adam'>",
+        "lr": 0.001,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "weight_decay": 0,
+        "amsgrad": false
+      },
+      "objective": {
+        "loss": 1.0,
+        "kl_div": 1e-3
+      },
+      "early": {
+        "feed": "valid_768",
+        "patience": 200,
+        "cooldown": 0,
+        "rtol": 0,
+        "atol": 2e-2,
+        "raises": "<class 'StopIteration'>"
+      }
+    },
+    "fine-tune": {
+      "snapshot": null,
+      "feed": "train_trabelsi",
+      "restart": true,
+      "n_epochs": 200,
+      "grad_clip": 0.05,
+      "model" : {
+        "cls": "<class 'musicnet.complex.extensions.CplxDeepConvNetMasked'>"
+      },
+      "lr_scheduler": {
+        "cls": "<class 'musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
+      },
+      "optimizer": {
+        "cls": "<class 'torch.optim.adam.Adam'>",
+        "lr": 0.001,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "weight_decay": 0,
+        "amsgrad": false
+      },
+      "objective": {
+        "loss": 1.0,
+        "kl_div": 0.0
+      },
+      "early": {
+        "feed": "valid_768",
+        "patience": 200,
+        "cooldown": 0,
+        "rtol": 0,
+        "atol": 2e-2,
+        "raises": "<class 'StopIteration'>"
+      }
+    }
+  },
+  "stage-order": [
+    "dense",
+    "sparsify",
+    "fine-tune"
+  ]
+}
