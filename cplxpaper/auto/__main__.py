@@ -1,4 +1,5 @@
 import os
+import time
 import json
 
 import argparse
@@ -33,7 +34,6 @@ def one_experiment(wid, device, manifest):
     # Import torch inside this function, because it is called in a subprocess.
     # This makes sure that torch's RNG context is initialized afresh.
     import torch
-
     from cplxpaper.auto import run
 
     # open manifest
@@ -50,7 +50,7 @@ def one_experiment(wid, device, manifest):
     # run the experiment
     if not os.path.exists(target):
         print(f">>> {wid:03d}-{device} {name}")
-#         run(options, target, time.strftime("%Y%m%d-%H%M%S"), verbose=False)
+        run(options, target, time.strftime("%Y%m%d-%H%M%S"), verbose=False)
 
 
 def worker(wid, jobs, devarray, devices):
@@ -72,13 +72,14 @@ def worker(wid, jobs, devarray, devices):
     jobs.task_done()
 
 
-def main(path, devices=("cuda:1", "cuda:3"), n_per_device=2):
+def main(path, devices=("cuda:1", "cuda:3"), n_per_device=1):
     # create a pool of workers and a device availability array
     workers, manifests = [], JoinableQueue()
     devarray = Array("i", len(devices) * [n_per_device])
     for device in n_per_device * devices:
         p = Process(target=worker, args=(
-            len(workers), manifests, devarray, devices))
+            len(workers), manifests, devarray, devices
+        ))
         p.start()
         workers.append(p)
 
@@ -106,11 +107,13 @@ def main(path, devices=("cuda:1", "cuda:3"), n_per_device=2):
     print(">>> complete")
 
 
-parser = argparse.ArgumentParser(add_help=True, description='Auto experiment runner')
+parser = argparse.ArgumentParser(description='Auto experiment runner',
+                                 add_help=True)
 parser.add_argument('path', type=str, help='the path to all manifests')
-parser.add_argument('--devices', default=("cuda:1", "cuda:3"),
-                    type=str, nargs='+', help='allowed devices', required=False)
-parser.add_argument('--per-device', default='2', type=int, required=False)
+parser.add_argument('--devices', type=str, nargs='+',
+                    default=("cuda:1", "cuda:3"), required=False,
+                    help='allowed devices')
+parser.add_argument('--per-device', type=int, default=1, required=False)
 
 args = parser.parse_args()
 
