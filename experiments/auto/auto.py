@@ -9,7 +9,7 @@ import torch
 import numpy as np
 
 from cplxmodule.nn.relevance import compute_ard_masks
-from cplxmodule.nn.masked import binarize_masks
+from cplxmodule.nn.masked import binarize_masks, deploy_masks
 
 from scipy.special import logit
 from setuptools._vendor.packaging.version import Version
@@ -259,11 +259,19 @@ def state_inherit(state, options, *, old=None, **sparsity_kwargs):
         state_dict, masks = binarize_masks(old.model.state_dict(), masks)
         state_dict.update(masks)
 
-        # Models in each stage are instances of the same underlying
-        #  architecture just with different traits. Hence only here
-        #  we allow missing or unexpected parameters when deploying
-        #  the state
-        state.model.load_state_dict(state_dict, strict=False)
+        if options["reset"]:
+            # Explicitly instructed to transfer masks only (if available).
+            #  `reset=True` makes sure that every mask in the receiving
+            #  model is initialized. A forward pass thorugh a model with
+            #  an uninitialized mask would raise a RuntimeError.
+            deploy_masks(state.model, state_dict=masks, reset=True)
+
+        else:
+            # Models in each stage are instances of the same underlying
+            #  architecture just with different traits. Hence only here
+            #  we allow missing or unexpected parameters when deploying
+            #  the state
+            state.model.load_state_dict(state_dict, strict=False)
 
         del state_dict, masks
 
