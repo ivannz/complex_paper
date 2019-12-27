@@ -90,12 +90,13 @@ def defaults(options):
                 "amsgrad": False
             },
             "restart": False,
+            "reset": False,
             **settings
         })
         assert all(key in settings for key in [
             "model", "n_epochs", "objective", "feed",
             "grad_clip", "snapshot", "lr_scheduler",
-            "optimizer", "restart", "early"
+            "optimizer", "restart", "early", "reset"
         ])
 
     return options
