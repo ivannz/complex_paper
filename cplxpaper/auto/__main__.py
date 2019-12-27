@@ -49,6 +49,8 @@ def one_experiment(wid, device, manifest):
 
     # run the experiment
     if not os.path.exists(target):
+        os.makedirs(target, exist_ok=False)
+
         print(f">>> {wid:03d}-{device} {name}")
         run(options, target, time.strftime("%Y%m%d-%H%M%S"), verbose=False)
 
