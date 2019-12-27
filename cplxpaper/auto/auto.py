@@ -241,11 +241,12 @@ def state_inherit(state, options, *, old=None, **sparsity_kwargs):
 
         # get the saved state of the optimizer and a name-id map
         saved = snapshot.get("optim", {})
-        optim_state = saved.get("state", {})
-        source_mapper = snapshot.get("mapper", {})
+        if saved is not None:
+            optim_state = saved.get("state", {})
+            source_mapper = snapshot.get("mapper", {})
 
-        # see if stored state an state.optim's state are compatible
-        inheritable = isinstance(state.optim, get_class(saved.get("cls")))
+            # see if stored state an state.optim's state are compatible
+            inheritable = isinstance(state.optim, get_class(saved.get("cls")))
 
         # overwrite the parameters and buffers of the model
         state.model.load_state_dict(snapshot["model"], strict=True)
