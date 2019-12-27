@@ -295,7 +295,7 @@ def state_inherit(state, options, *, old=None, **sparsity_kwargs):
     return state
 
 
-def run(options, folder, suffix, verbose=True):
+def run(options, folder, suffix, verbose=True, save_optim=False):
     """The main procedure that choreographs staged training.
 
     Parameters
@@ -376,8 +376,8 @@ def run(options, folder, suffix, verbose=True):
             optim=dict(
                 cls=str(type(state.optim)),
                 state=state.optim.state_dict()
-            ) if is_benign else None,
-            mapper=state.mapper if is_benign else None,
+            ) if (is_benign and save_optim) else None,
+            mapper=state.mapper if (is_benign and save_optim) else None,
 
             # meta data
             history=history,

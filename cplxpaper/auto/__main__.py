@@ -117,6 +117,10 @@ parser.add_argument('--devices', type=str, nargs='+',
                     help='allowed devices')
 parser.add_argument('--per-device', type=int, default=1, required=False)
 
+# parser.add_argument('--save-optim', dest='save_optim', action='store_true')
+# parser.add_argument('--no-save-optim', dest='save_optim', action='store_false')
+# parser.set_defaults(save_optim=True)
+
 args = parser.parse_args()
 
 path = args.path
