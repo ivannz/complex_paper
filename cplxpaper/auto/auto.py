@@ -353,10 +353,12 @@ def run(options, folder, suffix, verbose=True, save_optim=False):
             n_epochs=settings["n_epochs"], grad_clip=settings["grad_clip"],
             verbose=verbose)
 
-        # Evaluate the performance on the reserved feeds, e.g. `test`.
+        is_benign_emergency = isinstance(emergency, benign_emergencies)
+
+        # Evaluate the performance on the reserved feeds, e.g. 'test*'.
         model.eval()
         performance = {}
-        if emergency is None:
+        if is_benign_emergency:
             # Ignore warnings: no need to `.filter()` when `record=True`
             with warnings.catch_warnings(record=True):
                 performance = {name: evaluate(model, feed, curves=False)
@@ -365,9 +367,6 @@ def run(options, folder, suffix, verbose=True, save_optim=False):
         # save snapshot
         status = "" if emergency is None else type(emergency).__name__
         status += " " if status else ""
-
-        is_benign = isinstance(emergency, benign_emergencies)
-
         final_snapshot = save_snapshot(
             os.path.join(folder, f"{n_stage}-{stage} {status}{suffix}.gz"),
 
@@ -376,8 +375,8 @@ def run(options, folder, suffix, verbose=True, save_optim=False):
             optim=dict(
                 cls=str(type(state.optim)),
                 state=state.optim.state_dict()
-            ) if (is_benign and save_optim) else None,
-            mapper=state.mapper if (is_benign and save_optim) else None,
+            ) if (is_benign_emergency and save_optim) else None,
+            mapper=state.mapper if (is_benign_emergency and save_optim) else None,
 
             # meta data
             history=history,
@@ -394,7 +393,7 @@ def run(options, folder, suffix, verbose=True, save_optim=False):
         snapshots.append(final_snapshot)
 
         # emergency termination: cannot continue
-        if not is_benign:
+        if not is_benign_emergency:
             break
 
     return snapshots
