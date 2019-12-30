@@ -20,10 +20,11 @@ from .performance import PooledAveragePrecisionEarlyStopper
 from .utils import get_class, get_factory, get_instance
 from .utils import param_apply_map, param_defaults
 
-from .utils import FeedMover, FeedLimiter
 from .utils import save_snapshot, load_snapshot
 from .utils import join, deploy_optimizer
 from .utils import filter_prefix
+
+from .feeds import FeedMover, FeedLimiter
 
 from .fit import fit
 from .objective import ExpressionObjective, WeightedObjective
