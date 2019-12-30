@@ -4,6 +4,7 @@ import numpy as np
 
 import torch
 import torch.utils.data
+from torch.utils.data.dataloader import default_collate
 
 from ncls import NCLS64
 from bisect import bisect_right
@@ -322,8 +323,8 @@ class MusicNetDataLoader(torch.utils.data.DataLoader):
     random permutaions, which are performed on __iter__ of the base sampler
     class `torch.utils.data.sampler.RandomSampler`
     """
-    def __init__(self, dataset, collate_fn, pin_memory=False, num_workers=0,
-                 timeout=0, worker_init_fn=None):
+    def __init__(self, dataset, collate_fn=default_collate, pin_memory=False,
+                 num_workers=0, timeout=0, worker_init_fn=None):
         super().__init__(
             dataset,
             batch_sampler=MusicNetRandomBatchSampler(dataset),
