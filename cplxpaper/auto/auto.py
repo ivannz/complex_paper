@@ -38,64 +38,48 @@ def defaults(options):
     options = {
         "device": "cuda:0",
         "threshold": -0.5,
-        "objective_terms": {
-            "loss": {
-                "cls": "<class 'torch.nn.modules.loss.BCEWithLogitsLoss'>",
-                "reduction": "mean"
-            },
-            "kl_div": {
-                "cls": "<class 'auto.objective.ARDPenaltyObjective'>",
-                "reduction": "mean",
-                "coef": 1.0
-            }
-        },
+        "scorers": {},
         **options
     }
 
     assert all(key in options for key in [
-        "device", "threshold", "model",
-        "dataset", "dataset_sources", "features", "feeds",
-        "objective_terms", "stages", "stage-order"
+        "device", "threshold", "datasets", "features", "feeds",
+        "scorers", "objective_terms", "model", "stages", "stage-order"
     ])
+
+    # check that all stages are present
+    assert all(stage in options["stages"] for stage in options["stage-order"])
 
     # fix optional settings in stages
     for settings in options["stages"].values():
-        # required: "feed", "n_epochs", "objective", "model"
-        # optional: "lr_scheduler", "optimizer", "early",
-        #           "snapshot", "grad_clip"
+        # required: "feed", "n_epochs", "model", "objective"
+        # optional: "snapshot", "restart", "reset", "grad_clip",
+        #           "optimizer", "early", "lr_scheduler"
+
         settings.update({
             "snapshot": None,
+            "restart": False,
+            "reset": False,
             "grad_clip": 0.5,
-            "early": {
-                "feed": "valid_256",  # this is not optional
-                "patience": 200,
-                "cooldown": 0,
-                "rtol": 0,
-                "atol": 2e-2,
-                "raises": "<class 'StopIteration'>"
-            },
+            "early": None,
             "lr_scheduler": {
                 "cls": "<class 'musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
             },
             "optimizer": {
                 "cls": "<class 'torch.optim.adam.Adam'>",
                 "lr": 0.001,
-                "betas": [
-                    0.9,
-                    0.999
-                ],
+                "betas": (0.9, 0.999),
                 "eps": 1e-08,
                 "weight_decay": 0,
                 "amsgrad": False
             },
-            "restart": False,
-            "reset": False,
             **settings
         })
+
         assert all(key in settings for key in [
-            "model", "n_epochs", "objective", "feed",
-            "grad_clip", "snapshot", "lr_scheduler",
-            "optimizer", "restart", "early", "reset"
+            "snapshot", "feed", "restart", "reset", "n_epochs",
+            "grad_clip", "model", "lr_scheduler", "optimizer",
+            "objective", "early"
         ])
 
     return options
@@ -182,12 +166,13 @@ def get_objective_terms(datasets, recipe):
     return objectives
 
 
-def get_model(model, recipe):
+def get_model(recipe, **overrides):
     """Construct the instance of a model from a two-part specification."""
     # "model", "stages__*__model"
-    if isinstance(recipe, dict):
-        model = {**model, **recipe}  # override by parameters from `recipe`
-    return get_instance(**model)  # expand (shallow copy)
+    if isinstance(overrides, dict):
+        recipe = {**recipe, **overrides}  # override parameters
+
+    return get_instance(**recipe)  # expand (shallow copy)
 
 
 def get_objective(objective_terms, recipe):
@@ -223,17 +208,17 @@ def get_early_stopper(model, scorers, recipe):
     return get_instance(model, **recipe)
 
 
-def state_create(factory, settings, devtype):
+def state_create(recipe, stage, devtype):
     """Create a new state, i.e. model, optimizer and name-id mapper (for state
-    inheritance below), from the settings and model factory.
+    inheritance below), from the stage and model settings.
     """
 
     # subsequent `.load_state_dict()` automatically moves to device and casts
-    #  `model` settings in a stage are allowed to be None
-    model = get_model(factory, settings.get("model")).to(**devtype)
+    #  `model` stage in a stage are allowed to be None
+    model = get_model(recipe, **stage["model"]).to(**devtype)
 
     # base lr is specified in the optimizer settings
-    optim = get_optimizer(model, settings["optimizer"])
+    optim = get_optimizer(model, stage["optimizer"])
 
     # name-id mapping for copying optimizer states
     mapper = {k: id(p) for k, p in model.named_parameters()}
