@@ -14,9 +14,9 @@ from sklearn.metrics import confusion_matrix as base_confusion_matrix
 from sklearn.metrics import average_precision_score
 from sklearn.metrics import precision_recall_curve
 
-from .auto.feeds import feed_forward_pass
+from ..auto.feeds import feed_forward_pass
 
-from .auto.performance import BaseEarlyStopper, BasePerformanceEvaluation
+from ..auto.performance import BaseEarlyStopper, BasePerformanceEvaluation
 
 
 def confusion_matrix(y_true, y_pred, fast=True):
