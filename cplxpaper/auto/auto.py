@@ -1,4 +1,4 @@
-__version__ = "0.1"
+__version__ = "0.2"
 import os
 import copy
 import tqdm
@@ -14,15 +14,11 @@ from cplxmodule.nn.masked import binarize_masks, deploy_masks
 from scipy.special import logit
 from setuptools._vendor.packaging.version import Version
 
-from .performance import evaluate
-from .performance import PooledAveragePrecisionEarlyStopper
-
-from .utils import get_class, get_factory, get_instance
+from .utils import get_class, get_instance
 from .utils import param_apply_map, param_defaults
 
 from .utils import save_snapshot, load_snapshot
 from .utils import join, deploy_optimizer
-from .utils import filter_prefix
 
 from .feeds import FeedMover, FeedLimiter
 
@@ -105,35 +101,10 @@ def defaults(options):
     return options
 
 
-def get_datasets(factory, recipe):
-    """Get dataset instances from the factory specification and recipe."""
-    # "dataset", "dataset_sources"
-    factory = get_factory(**factory)
-    return {name: factory(**source)
-            for name, source in recipe.items()}
-
-
-def get_collate_fn(recipe):
-    """Get collation function responsible for batch-feature generation."""
-    # "features"
-    return get_instance(**recipe)
-
-
-def get_feeds(datasets, collate_fn, devtype, recipe):
-    """Get instances of data loaders from the datasets and collate function."""
-    # <datasets>, <collate_fn>, <devtype>, "feeds"
-    recipe = param_apply_map(recipe, dataset=datasets.__getitem__)
-
-    feeds = {}
-    for name, par in recipe.items():
-        par = param_defaults(par, n_batches=-1, pin_memory=True,
-                             cls=str(torch.utils.data.DataLoader))
-
-        max_iter = par.pop("n_batches")
-        feed = get_instance(**par, collate_fn=collate_fn)
-        feeds[name] = wrap_feed(feed, max_iter=max_iter, **devtype)
-
-    return feeds
+def get_datasets(recipe):
+    """Get dataset instances from the recipe."""
+    # "datasets"
+    return {dataset: get_instance(**par) for dataset, par in recipe.items()}
 
 
 def wrap_feed(feed, max_iter=-1, **devtype):
@@ -141,8 +112,45 @@ def wrap_feed(feed, max_iter=-1, **devtype):
     return FeedMover(FeedLimiter(feed, max_iter), **devtype)
 
 
+def get_feature_generator(feed, recipe):
+    """Create Feature generator (last step before feeeding into fit)"""
+    return get_instance(feed, **recipe)
+
+
+def get_feeds(datasets, devtype, features, recipe):
+    """Get instances of data feeds (loader with feature geenrator)."""
+    # <datasets>, <devtype>, "features", "feeds"
+    recipe = param_apply_map(recipe, dataset=datasets.__getitem__)
+
+    feeds = {}
+    for name, par in recipe.items():
+        par = param_defaults(par, cls=str(torch.utils.data.DataLoader),
+                             n_batches=-1, pin_memory=True)
+
+        max_iter = par.pop("n_batches")
+        feed = wrap_feed(get_instance(**par), max_iter=max_iter, **devtype)
+
+        # outer wrapper is the on-the-fly feature generator
+        feeds[name] = get_feature_generator(feed, features)
+
+    return feeds
+
+
+def get_scorers(feeds, recipe):
+    """Get scoring objects."""
+    # <feeds>, "scorers"
+    recipe = param_apply_map(recipe, feed=feeds.__getitem__)
+    return {name: get_instance(**par) for name, par in recipe.items()}
+
+
 def compute_positive_weight(recipe):
-    """Compute the +ve label weights to ensure balance given in the recipe."""
+    """Compute the +ve label weights to ensure balance given in the recipe.
+
+    This specific to multi-output binary classification in MusicNet.
+    """
+    if recipe is None:
+        return None
+
     # "pos_weight" (with mapped dataset)
     recipe = param_defaults(recipe, alpha=0.5, max=1e2)
 
@@ -174,10 +182,12 @@ def get_objective_terms(datasets, recipe):
     return objectives
 
 
-def get_model(factory, recipe):
+def get_model(model, recipe):
     """Construct the instance of a model from a two-part specification."""
     # "model", "stages__*__model"
-    return get_instance(**factory, **recipe)
+    if isinstance(recipe, dict):
+        model = {**model, **recipe}  # override by parameters from `recipe`
+    return get_instance(**model)  # expand (shallow copy)
 
 
 def get_objective(objective_terms, recipe):
@@ -202,15 +212,15 @@ def get_scheduler(optimizer, recipe):
     return get_instance(optimizer, **recipe)
 
 
-def get_early_stopper(model, feeds, recipe):
+def get_early_stopper(model, scorers, recipe):
     """Get scheduler for the optimizer and recipe."""
-    # <model>, <feeds>, "stages__*__early"
+    # <model>, <scorers>, "stages__*__early"
     def None_or_get_class(klass):
         return klass if klass is None else get_class(klass)
 
-    recipe = param_apply_map(recipe, feed=feeds.__getitem__,
+    recipe = param_apply_map(recipe, scorer=scorers.__getitem__,
                              raises=None_or_get_class)
-    return PooledAveragePrecisionEarlyStopper(model, **recipe)
+    return get_instance(model, **recipe)
 
 
 def state_create(factory, settings, devtype):
@@ -219,7 +229,8 @@ def state_create(factory, settings, devtype):
     """
 
     # subsequent `.load_state_dict()` automatically moves to device and casts
-    model = get_model(factory, settings["model"]).to(**devtype)
+    #  `model` settings in a stage are allowed to be None
+    model = get_model(factory, settings.get("model")).to(**devtype)
 
     # base lr is specified in the optimizer settings
     optim = get_optimizer(model, settings["optimizer"])
@@ -310,19 +321,29 @@ def run(options, folder, suffix, verbose=True, save_optim=False):
     options_backup = copy.deepcopy(options)
 
     # placement (dtype / device)
-    devtype = dict(device=torch.device(options["device"]), dtype=torch.float32)
+    devtype = dict(device=torch.device(options["device"]), dtype=None)
+
+    # The data feeds are built from three layers:
+    #   Dataset -> DataLoader -> *FeedTransformer
+    # `Dataset` -- physical access to data and initial transformations
+    # `DataLoader` -- sampling and collating samples into batches
+    # `FeedTransformer` -- host-to-device relocation or post-processing and
+    #   can be chained
+    # Legacy and poor development choices led fused creation of of
+    #  DataLoaders and FeedTransformers
+    datasets = get_datasets(options["datasets"])  # implicit dtype=float32
+    feeds = get_feeds(datasets, devtype, options["features"], options["feeds"])
+
+    # In case the datasets are imbalanced we pass then into loss
+    #  objective constructor
+    objective_terms = get_objective_terms(datasets, options["objective_terms"])
 
     # sparsity settings: threshold is log(p / (1 - p)) for p=dropout rate
     sparsity = dict(hard=True, threshold=options["threshold"])
 
-    datasets = get_datasets(options["dataset"], options["dataset_sources"])
-
-    collate_fn = get_collate_fn(options["features"])
-
-    feeds = get_feeds(datasets, collate_fn, devtype, options["feeds"])
-    special_feeds = filter_prefix(feeds, "test", "valid")
-
-    objective_terms = get_objective_terms(datasets, options["objective_terms"])
+    # scorers are objects that take a model and return its metrics on the
+    #  specified feeds.
+    scorers = get_scorers(feeds, options["scorers"])
 
     snapshots = []
     stages, state = options["stages"], State(None, None, {})
@@ -346,7 +367,7 @@ def run(options, folder, suffix, verbose=True, save_optim=False):
         # checkpointer, early_stopper = Checkpointer(...), EarlyStopper(...)
         early = None
         if "early" in settings and settings["early"] is not None:
-            early = get_early_stopper(model, special_feeds, settings["early"])
+            early = get_early_stopper(model, scorers, settings["early"])
 
         model.train()
         model, emergency, history = fit(
@@ -362,8 +383,8 @@ def run(options, folder, suffix, verbose=True, save_optim=False):
         if is_benign_emergency:
             # Ignore warnings: no need to `.filter()` when `record=True`
             with warnings.catch_warnings(record=True):
-                performance = {name: evaluate(model, feed, curves=False)
-                               for name, feed in special_feeds.items()}
+                performance = {name: scorer(model)
+                               for name, scorer in scorers.items()}
 
         # save snapshot
         status = "" if emergency is None else type(emergency).__name__

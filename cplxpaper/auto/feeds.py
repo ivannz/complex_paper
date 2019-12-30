@@ -119,6 +119,18 @@ def feed_forward_pass(feed, module):
             yield [*map(to_numpy, (module(X), *rest))]
 
 
+class FeedRawFeatures(BaseFeedWrapper):
+    def __init__(self, feed, **kwargs):
+        super().__init__(feed)
+
+    def __iter__(self):
+        return self.iter_impl(self.feed)
+
+    @classmethod
+    def iter_impl(cls, feed, **kwargs):
+        yield from feed
+
+
 def torch_fftshift(tensor, dims=None):
     """Shift the zero-frequency component to the center of the spectrum.
 
