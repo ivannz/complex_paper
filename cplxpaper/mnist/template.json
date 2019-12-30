@@ -1,0 +1,152 @@
+{
+  "__name__": "Example experiment manifest for fourier MNIST (reversed train-test roles)",
+  "device": "cuda:3",
+  "threshold": -0.5,
+  "datasets": {
+    "mnist-train": {
+      "cls": "<class 'cplxpaper.mnist.dataset.MNISTTrain'>",
+      "root": "./mnist/data"
+    },
+    "mnist-test": {
+      "cls": "<class 'cplxpaper.mnist.dataset.MNISTTest'>",
+      "root": "./mnist/data"
+    }
+  },
+  "features": {
+    "cls": "<class 'cplxpaper.auto.feeds.FeedFourierFeatures'>",
+    "signal_ndim": 2,
+    "cplx": true,
+    "shift": true
+  },
+  "feeds": {
+    "train": {
+      "cls": "<class 'torch.utils.data.dataloader.DataLoader'>",
+      "dataset": "mnist-test",
+      "batch_size": 128,
+      "shuffle": true,
+      "pin_memory": true,
+      "n_batches": -1
+    },
+    "test": {
+      "cls": "<class 'torch.utils.data.dataloader.DataLoader'>",
+      "dataset": "mnist-train",
+      "batch_size": 128,
+      "shuffle": false,
+      "pin_memory": true,
+      "n_batches": -1
+    }
+  },
+  "objective_terms": {
+    "loss": {
+      "cls": "<class 'torch.nn.modules.loss.CrossEntropyLoss'>",
+      "reduction": "mean"
+    },
+    "kl_div": {
+      "cls": "<class 'cplxpaper.auto.objective.ARDPenaltyObjective'>",
+      "reduction": "mean",
+      "coef": 1.0
+    }
+  },
+  "scorers": {},
+  "model": {
+    "cls": "<class 'cplxpaper.mnist.complex.CplxDeepConvNet'>",
+    "n_spatial": [28, 28],
+    "n_channels": 2,
+    "n_outputs": 10
+  },
+  "stages": {
+    "dense": {
+      "snapshot": null,
+      "feed": "train",
+      "restart": true,
+      "reset": false,
+      "n_epochs": 200,
+      "grad_clip": 0.05,
+      "model" : {},
+      "lr_scheduler": {
+        "cls": "<class 'cplxpaper.musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
+      },
+      "optimizer": {
+        "cls": "<class 'torch.optim.adam.Adam'>",
+        "lr": 0.001,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "weight_decay": 0,
+        "amsgrad": false
+      },
+      "objective": {
+        "loss": 1.0,
+        "kl_div": 0.0
+      },
+      "early": null
+    },
+    "sparsify": {
+      "snapshot": null,
+      "feed": "train",
+      "restart": true,
+      "reset": false,
+      "n_epochs": 200,
+      "grad_clip": 0.05,
+      "model" : {
+        "cls": "<class 'cplxpaper.mnist.complex.extensions.CplxDeepConvNetARD'>"
+      },
+      "lr_scheduler": {
+        "cls": "<class 'cplxpaper.musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
+      },
+      "optimizer": {
+        "cls": "<class 'torch.optim.adam.Adam'>",
+        "lr": 0.001,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "weight_decay": 0,
+        "amsgrad": false
+      },
+      "objective": {
+        "loss": 1.0,
+        "kl_div": 1e-3
+      },
+      "early": null
+    },
+    "fine-tune": {
+      "snapshot": null,
+      "feed": "train",
+      "restart": true,
+      "reset": false,
+      "n_epochs": 200,
+      "grad_clip": 0.05,
+      "model" : {
+        "cls": "<class 'cplxpaper.mnist.complex.extensions.CplxDeepConvNetMasked'>"
+      },
+      "lr_scheduler": {
+        "cls": "<class 'cplxpaper.musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
+      },
+      "optimizer": {
+        "cls": "<class 'torch.optim.adam.Adam'>",
+        "lr": 0.001,
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08,
+        "weight_decay": 0,
+        "amsgrad": false
+      },
+      "objective": {
+        "loss": 1.0,
+        "kl_div": 0.0
+      },
+      "early": null
+    }
+  },
+  "stage-order": [
+    "dense",
+    "sparsify",
+    "fine-tune"
+  ]
+}
