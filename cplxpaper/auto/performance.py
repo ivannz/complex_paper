@@ -99,11 +99,11 @@ class BaseEarlyStopper(ExtremeTracker):
     """Raise StopIteration if the metric stops improving for several epochs
     in a row.
     """
-    def __init__(self, cooldown=1, patience=10, rtol=1e-3, atol=1e-4,
-                 raises=StopIteration):
+    def __init__(self, extreme, cooldown=1, patience=10,
+                 rtol=1e-3, atol=1e-4, raises=StopIteration):
         assert raises is None or issubclass(raises, Exception)
 
-        super().__init__(patience=patience, extreme="max",
+        super().__init__(patience=patience, extreme=extreme,
                          rtol=rtol, atol=atol)
         self.cooldown, self.raises = cooldown, raises
 
@@ -111,7 +111,7 @@ class BaseEarlyStopper(ExtremeTracker):
         super().reset()
         self.last_epoch, self.next_epoch = -1, -math.inf
 
-    def step(self, epoch=None):
+    def step(self, model, epoch=None):
         """Single step of the performance tracker.
 
         Arguments
@@ -138,7 +138,7 @@ class BaseEarlyStopper(ExtremeTracker):
 
         self.next_epoch = self.last_epoch + self.cooldown
 
-        return super().step(self.get_score())
+        return super().step(self.get_score(model))
 
     def get_score(self):
         raise NotImplementedError

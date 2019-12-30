@@ -197,15 +197,15 @@ def get_scheduler(optimizer, recipe):
     return get_instance(optimizer, **recipe)
 
 
-def get_early_stopper(model, scorers, recipe):
+def get_early_stopper(scorers, recipe):
     """Get scheduler for the optimizer and recipe."""
-    # <model>, <scorers>, "stages__*__early"
+    # <scorers>, "stages__*__early"
     def None_or_get_class(klass):
         return klass if klass is None else get_class(klass)
 
     recipe = param_apply_map(recipe, scorer=scorers.__getitem__,
                              raises=None_or_get_class)
-    return get_instance(model, **recipe)
+    return get_instance(**recipe)
 
 
 def state_create(recipe, stage, devtype):
@@ -352,7 +352,7 @@ def run(options, folder, suffix, verbose=True, save_optim=False):
         # checkpointer, early_stopper = Checkpointer(...), EarlyStopper(...)
         early = None
         if "early" in settings and settings["early"] is not None:
-            early = get_early_stopper(model, scorers, settings["early"])
+            early = get_early_stopper(scorers, settings["early"])
 
         model.train()
         model, emergency, history = fit(

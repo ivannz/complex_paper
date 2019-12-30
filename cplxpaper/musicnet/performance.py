@@ -112,13 +112,13 @@ class MusicNetBasePerformance(BasePerformanceEvaluation):
 
 
 class PooledAveragePrecisionEarlyStopper(BaseEarlyStopper):
-    def __init__(self, model, scorer, cooldown=1, patience=10,
-                 rtol=1e-3, atol=1e-4, raises=StopIteration):
-        super().__init__(cooldown=cooldown, patience=patience, extreme="max",
+    def __init__(self, scorer, cooldown=1, patience=10, rtol=1e-3, atol=1e-4,
+                 raises=StopIteration):
+        super().__init__(extreme="max", cooldown=cooldown, patience=patience,
                          rtol=rtol, atol=atol, raises=raises)
-        self.model, self.scorer = model, scorer
+        self.scorer = scorer
 
-    def get_score(self):
+    def get_score(self, model):
         # evaluate the `model`, toggles eval mode
-        scores = self.scorer(self.model.eval())
+        scores = self.scorer(model.eval())
         return scores["pooled_average_precision"]
