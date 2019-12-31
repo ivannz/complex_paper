@@ -47,7 +47,8 @@
   "scorers": {
     "test": {
       "cls": "<class 'cplxpaper.mnist.performance.MNISTBasePerformance'>",
-      "feed": "test"
+      "feed": "test",
+      "threshold": -0.5
     }
   },
   "model": {

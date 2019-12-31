@@ -1,10 +1,11 @@
 import torch
 import numpy as np
 
+from sklearn.metrics import confusion_matrix
+from cplxmodule.utils.stats import sparsity
+
 from ..auto.performance import BasePerformanceEvaluation, BaseEarlyStopper
 from ..auto.feeds import feed_forward_pass
-
-from sklearn.metrics import confusion_matrix
 
 
 def predict(model, feed):
@@ -16,10 +17,16 @@ def predict(model, feed):
 
 
 class MNISTBasePerformance(BasePerformanceEvaluation):
+    def __init__(self, feed, threshold=-0.5):
+        super().__init__(feed)
+        self.threshold = threshold
+
     @classmethod
-    def eval_impl(cls, model, feed):
+    def eval_impl(cls, model, feed, threshold):
         """Compute the multiclass performance metrics."""
-        out = {}
+        out = {
+            "sparsity": sparsity(model, threshold=threshold, hard=True)
+        }
 
         model.eval()
         y_true, y_pred, logits = predict(model, feed)
