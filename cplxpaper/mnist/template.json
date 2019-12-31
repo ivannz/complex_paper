@@ -1,6 +1,6 @@
 {
   "__name__": "Example experiment manifest for fourier MNIST (reversed train-test roles)",
-  "device": "cuda:3",
+  "device": "cuda:1",
   "threshold": -0.5,
   "datasets": {
     "mnist-train": {
@@ -13,10 +13,7 @@
     }
   },
   "features": {
-    "cls": "<class 'cplxpaper.auto.feeds.FeedFourierFeatures'>",
-    "signal_ndim": 2,
-    "cplx": true,
-    "shift": true
+    "cls": "<class 'cplxpaper.auto.feeds.FeedRawFeatures'>"
   },
   "feeds": {
     "train": {
@@ -47,12 +44,14 @@
       "coef": 1.0
     }
   },
-  "scorers": {},
+  "scorers": {
+    "test": {
+      "cls": "<class 'cplxpaper.mnist.performance.MNISTBasePerformance'>",
+      "feed": "test"
+    }
+  },
   "model": {
-    "cls": "<class 'cplxpaper.mnist.complex.CplxDeepConvNet'>",
-    "n_spatial": [28, 28],
-    "n_channels": 2,
-    "n_outputs": 10
+    "cls": "<class 'cplxpaper.mnist.models.real.MNISTModel'>"
   },
   "stages": {
     "dense": {
@@ -60,7 +59,7 @@
       "feed": "train",
       "restart": true,
       "reset": false,
-      "n_epochs": 200,
+      "n_epochs": 40,
       "grad_clip": 0.05,
       "model" : {},
       "lr_scheduler": {
@@ -88,10 +87,10 @@
       "feed": "train",
       "restart": true,
       "reset": false,
-      "n_epochs": 200,
+      "n_epochs": 40,
       "grad_clip": 0.05,
       "model" : {
-        "cls": "<class 'cplxpaper.mnist.complex.extensions.CplxDeepConvNetARD'>"
+        "cls": "<class 'cplxpaper.mnist.models.real.MNISTModelARD'>"
       },
       "lr_scheduler": {
         "cls": "<class 'cplxpaper.musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
@@ -109,7 +108,7 @@
       },
       "objective": {
         "loss": 1.0,
-        "kl_div": 1e-3
+        "kl_div": 1e-2
       },
       "early": null
     },
@@ -117,11 +116,11 @@
       "snapshot": null,
       "feed": "train",
       "restart": true,
-      "reset": false,
-      "n_epochs": 200,
+      "reset": true,
+      "n_epochs": 40,
       "grad_clip": 0.05,
       "model" : {
-        "cls": "<class 'cplxpaper.mnist.complex.extensions.CplxDeepConvNetMasked'>"
+        "cls": "<class 'cplxpaper.mnist.models.real.MNISTModelMasked'>"
       },
       "lr_scheduler": {
         "cls": "<class 'cplxpaper.musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
