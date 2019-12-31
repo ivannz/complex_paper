@@ -2,64 +2,79 @@
   "__name__": "Example experiment manifest for MusicNet",
   "device": "cuda:3",
   "threshold": -0.5,
-  "dataset": {
-    "cls": "<class 'cplxpaper.musicnet.dataset.MusicNetRAM'>"
-  },
-  "dataset_sources": {
-    "train-1": {
+  "datasets": {
+    "musicnet-train": {
+      "cls": "<class 'cplxpaper.musicnet.dataset.MusicNetRAM'>",
       "filename": "./data/musicnet_11khz_train.h5",
       "window": 4096,
       "stride": 1
     },
-    "train-512": {
+    "musicnet-train-512": {
+      "cls": "<class 'cplxpaper.musicnet.dataset.MusicNetRAM'>",
       "filename": "./data/musicnet_11khz_train.h5",
       "window": 4096,
       "stride": 512
     },
-    "valid-128": {
+    "musicnet-valid-128": {
+      "cls": "<class 'cplxpaper.musicnet.dataset.MusicNetRAM'>",
       "filename": "./data/musicnet_11khz_valid.h5",
       "window": 4096,
       "stride": 128
     },
-    "test-128": {
+    "musicnet-test-128": {
+      "cls": "<class 'cplxpaper.musicnet.dataset.MusicNetRAM'>",
       "filename": "./data/musicnet_11khz_test.h5",
       "window": 4096,
       "stride": 128
     }
   },
   "features": {
-    "cls": "<class 'cplxpaper.musicnet.dataset.MusicNetWaveformCollation'>",
-    "kind": "fft",
-    "cplx": true
+    "cls": "<class 'cplxpaper.auto.feeds.FeedFourierFeatures'>",
+    "signal_ndim": 1,
+    "cplx": true,
+    "shift": true
   },
   "feeds": {
-    "train_trabelsi": {
+    "train": {
       "cls": "<class 'cplxpaper.musicnet.dataset.MusicNetDataLoader'>",
-      "dataset": "train-1",
+      "dataset": "musicnet-train",
       "pin_memory": true,
       "n_batches": 1000
     },
-    "valid_768": {
+    "valid-768": {
       "cls": "<class 'torch.utils.data.dataloader.DataLoader'>",
-      "dataset": "valid-128",
+      "dataset": "musicnet-valid-128",
       "batch_size": 768,
       "pin_memory": true,
       "shuffle": false,
       "n_batches": -1
     },
-    "test_256": {
+    "test-256": {
       "cls": "<class 'torch.utils.data.dataloader.DataLoader'>",
-      "dataset": "test-128",
+      "dataset": "musicnet-test-128",
       "batch_size": 256,
       "pin_memory": true,
       "shuffle": false,
       "n_batches": -1
     }
   },
+  "scorers": {
+    "validation": {
+      "cls": "<class 'cplxpaper.musicnet.performance.MusicNetBasePerformance'>",
+      "feed": "valid-768",
+      "curves": false
+    },
+    "test": {
+      "cls": "<class 'cplxpaper.musicnet.performance.MusicNetBasePerformance'>",
+      "feed": "test-256",
+      "curves": true
+    }
+  },
   "objective_terms": {
     "loss": {
       "cls": "<class 'torch.nn.modules.loss.BCEWithLogitsLoss'>",
-      "reduction": "mean"
+      "reduction": "mean",
+      "pos_weight": null
     },
     "kl_div": {
       "cls": "<class 'cplxpaper.auto.objective.ARDPenaltyObjective'>",
@@ -68,6 +83,7 @@
     }
   },
   "model": {
+    "cls": "<class 'cplxpaper.musicnet.complex.CplxDeepConvNet'>",
     "n_seq": 4096,
     "n_channels": 1,
     "n_outputs": 84
@@ -75,14 +91,12 @@
   "stages": {
     "dense": {
       "snapshot": null,
-      "feed": "train_trabelsi",
+      "feed": "train",
       "restart": true,
       "reset": false,
       "n_epochs": 200,
       "grad_clip": 0.05,
-      "model" : {
-        "cls": "<class 'cplxpaper.musicnet.complex.CplxDeepConvNet'>"
-      },
+      "model" : {},
       "lr_scheduler": {
         "cls": "<class 'cplxpaper.musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
       },
@@ -102,7 +116,8 @@
         "kl_div": 0.0
       },
       "early": {
-        "feed": "valid_768",
+        "cls": "<class 'cplxpaper.musicnet.performance.PooledAveragePrecisionEarlyStopper'>",
+        "scorer": "validation",
         "patience": 20,
         "cooldown": 0,
         "rtol": 0,
@@ -112,7 +127,7 @@
     },
     "sparsify": {
       "snapshot": null,
-      "feed": "train_trabelsi",
+      "feed": "train",
       "restart": true,
       "reset": false,
       "n_epochs": 200,
@@ -138,18 +153,11 @@
         "loss": 1.0,
         "kl_div": 1e-3
       },
-      "early": {
-        "feed": "valid_768",
-        "patience": 200,
-        "cooldown": 0,
-        "rtol": 0,
-        "atol": 2e-2,
-        "raises": "<class 'StopIteration'>"
-      }
+      "early": null
     },
     "fine-tune": {
       "snapshot": null,
-      "feed": "train_trabelsi",
+      "feed": "train",
       "restart": true,
       "reset": false,
       "n_epochs": 200,
@@ -176,8 +184,9 @@
         "kl_div": 0.0
       },
       "early": {
-        "feed": "valid_768",
-        "patience": 200,
+        "cls": "<class 'cplxpaper.musicnet.performance.PooledAveragePrecisionEarlyStopper'>",
+        "scorer": "validation",
+        "patience": 20,
         "cooldown": 0,
         "rtol": 0,
         "atol": 2e-2,

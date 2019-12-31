@@ -44,7 +44,7 @@ def fit_one_epoch(model, objective, feed, optim, grad_clip=0., callback=None):
     -------
     Updates the internal states of the model and optimizer.
     """
-    model.train()
+    model.train()  # make sure model is in `train` mode
     losses, grad_norm = [], np.nan
     for data, target in feed:
         with DelayedKeyboardInterrupt("delay"):  # fire after SGD step
@@ -144,7 +144,7 @@ def fit(model, objective, feed, optim, *, sched=None, early=None,
             for epoch in bar:
                 # checkpointer and early stopper steps
                 if early is not None:
-                    early.step(epoch)
+                    early.step(model, epoch)
 
                 model_backup = state_dict_to_cpu(model.state_dict())
                 epoch_loss = fit_one_epoch(model, objective, feed, optim,
