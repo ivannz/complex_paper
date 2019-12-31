@@ -24,7 +24,7 @@ def load_snapshot(filename):
     with gzip.open(filename, "rb") as fin:
         state = torch.load(fin, map_location=torch.device("cpu"))
 
-    # verify
+    # verify version
 
     return state
 
@@ -76,7 +76,6 @@ def param_apply_map(param, deep=True, memo=None, **map):
     If `map` is provided, then produces a modified copy of the original
     dictionary, maintaining is key ordering.
     """
-
     if not map:
         return param
 
@@ -191,8 +190,9 @@ def deploy_optimizer(mapper, *, target, source=None):
 
 
 def state_dict_to_cpu(state_dict):
-    # .state_dict() references tensors, so we copy .data to CPU
-    return {key: par.data.cpu() for key, par in state_dict.items()}
+    """Make a copy of the state dict onto the cpu."""
+    # .state_dict() references tensors, so we detach and copy to cpu
+    return {key: par.detach().cpu() for key, par in state_dict.items()}
 
 
 def collate_history(history, fields):

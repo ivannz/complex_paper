@@ -25,6 +25,7 @@ class DelayedKeyboardInterrupt(object):
     >>>         if flag:
     >>>             break
     """
+
     def __init__(self, action="delay"):
         assert action in ("raise", "delay", "ignore")
         self.action = action

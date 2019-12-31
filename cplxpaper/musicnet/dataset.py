@@ -12,7 +12,7 @@ from bisect import bisect_right
 from numpy.lib.stride_tricks import as_strided
 
 from scipy.fftpack import fft, fftshift  # Fourier features
-from scipy.signal import stft  # Short-time Fourtier Transform
+from scipy.signal import stft  # Short-time Fourier Transform
 
 
 class MusicNetHDF5(torch.utils.data.Dataset):
@@ -40,7 +40,7 @@ class MusicNetHDF5(torch.utils.data.Dataset):
         for easier compatibility with torch.
 
     resident : bool, default=False
-        Wheter to cache the raw waveform data into ram on init.
+        Whether to cache the raw waveform data into ram on init.
     """
 
     def __init__(self, hdf5, window=4096, stride=512, at=None,
@@ -203,6 +203,7 @@ class MusicNetRAM(MusicNetHDF5):
         The data type of the waveform windows and targets. Defaults to float32
         for easier compatibility with torch.
     """
+
     def __init__(self, filename, window=4096, stride=512,
                  at=None, dtype=np.float32):
         super().__init__(h5py.File(filename, "r"), window=window,
@@ -220,7 +221,7 @@ class MusicNetWaveformCollation(object):
     ----------
     kind : str, default='fft'
         The kind of features to compute: 'raw' -- the raw signal waveform,
-        'fft' -- fourier trasnform, 'stft' -- short time fourier transform.
+        'fft' -- Fourier transform, 'stft' -- short time Fourier transform.
         'stft-swap' is same as 'stft', but has freq and times axes swapped
         for compatibility with the original experiments of Trabesli et al.
         (2017), where the frequencies and times are swapped in Keras.
@@ -243,7 +244,7 @@ class MusicNetWaveformCollation(object):
         Details
         -------
         Expects numpy ndarray(s) in batch. Feature generation was put here to
-        streamline fourier feature generation, albeit in numpy.
+        streamline Fourier feature generation, albeit in numpy.
         """
 
         # collate in numpy (on CPU) by stacking along axis 0
@@ -254,7 +255,7 @@ class MusicNetWaveformCollation(object):
             z = signal[..., np.newaxis, :]
 
         elif self.kind == "fft" or self.kind == "fft-shifted":
-            # fft of a real signal is conj-symmteric: z[j] = z[n-j].conj()
+            # fft of a real signal is conj-symmetric: z[j] = z[n-j].conj()
 
             # z is complex64 B x 1 x [window]
             z = fft(signal[..., np.newaxis, :], axis=-1)
@@ -287,7 +288,7 @@ class MusicNetWaveformCollation(object):
             data = np.concatenate([z.real, z.imag], axis=-2)
 
         else:  # kind in ("stft", "fft", "stft-swap")
-            # z is complex (after fourier), so get the magnitude
+            # z is complex (after Fourier), so get the magnitude
             data = np.abs(z)
 
         return [*map(torch.from_numpy, (data, *rest))]
@@ -295,6 +296,7 @@ class MusicNetWaveformCollation(object):
 
 class MusicNetRandomBatchSampler(object):
     """Random batch sampler for MusicNet."""
+
     def __init__(self, dataset, pregen=128):
         assert isinstance(dataset, MusicNetHDF5)
         self.dataset, self.pregen = dataset, pregen
@@ -319,10 +321,11 @@ class MusicNetRandomBatchSampler(object):
 
 
 class MusicNetDataLoader(torch.utils.data.DataLoader):
-    """A special DataLoader to avoid pre-populating memory (~10 Gb) with coslty
-    random permutaions, which are performed on __iter__ of the base sampler
+    """A special DataLoader to avoid pre-populating memory (~10 Gb) with costly
+    random permutations, which are performed on __iter__ of the base sampler
     class `torch.utils.data.sampler.RandomSampler`
     """
+
     def __init__(self, dataset, collate_fn=default_collate, pin_memory=False,
                  num_workers=0, timeout=0, worker_init_fn=None):
         super().__init__(

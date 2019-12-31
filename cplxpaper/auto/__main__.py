@@ -85,7 +85,7 @@ def main(path, devices=("cuda:1", "cuda:3"), n_per_device=1):
         p.start()
         workers.append(p)
 
-    # gather and equeue all manifests from the folder
+    # gather and enqueue all manifests from the folder
     for fn in os.listdir(path):
         if not fn.endswith(".json"):
             continue

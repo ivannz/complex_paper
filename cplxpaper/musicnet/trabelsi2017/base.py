@@ -118,7 +118,7 @@ class Trabelsi2017LRSchedule(torch.optim.lr_scheduler.LambdaLR):
 
     @classmethod
     def lr_lambda(cls, epoch):
-        """Multiplivcative LR schedule (for base lr 1e-3)."""
+        """Multiplicative LR schedule (for base lr 1e-3)."""
         if epoch < 10:
             return 1e-0  # (1e-3)
 

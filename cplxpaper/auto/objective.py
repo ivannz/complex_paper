@@ -81,7 +81,9 @@ class ARDPenaltyObjective(BaseObjective):
         self.coef = coef if callable(coef) else lambda n: coef
 
     def forward(self, module, input=None, target=None, output=None):
-        """Reimplements `named_penalties` with non-uniform coefficients."""
+        """Reimplements `cplxmodule.nn.relevance.named_penalties` with
+        non-uniform coefficients.
+        """
         # get names of variational modules and pre-fetch coefficients
         ardmods = dict(named_ard_modules(module))
         coef_fn, fn = self.coef, self.reduce_fn
@@ -140,7 +142,6 @@ class BaseCompositeObjective(BaseObjective):
         -------
         Precomputes the output of the module on the given input.
         """
-
         # evaluate the components and cache the most recent values
         components = {}
         output = module(input) if output is None else output
@@ -254,7 +255,7 @@ class ExpressionObjective(BaseCompositeObjective):
     ----------
     expression : str
         A valid pythonic expression that involves variables, specified in
-        terms. Allowed to include arithmetic binary and unary operators,
+        terms. Only allowed to include arithmetic binary and unary operators,
         numeric constants and syntactically valid variable names.
 
     **terms : keyword arguments
@@ -272,6 +273,6 @@ class ExpressionObjective(BaseCompositeObjective):
         return repr(self.expression)
 
     def forward(self, module, input, target, output=None):
-        """Evaluate a safe arithmetic expression with the components' values"""
+        """Evaluate an arithmetic expression with the components' values."""
         components = super().forward(module, input, target, output)
         return eval(self.compiled, components)

@@ -22,6 +22,7 @@ class ExtremeTracker(object):
     atol : float, default=0.
         The maximum absolute difference to consider a change insignificant.
     """
+
     def __init__(self, patience=10, extreme="min", rtol=1e-4, atol=0.):
         super().__init__()
         if extreme not in ("min", "max"):
@@ -69,7 +70,7 @@ class ExtremeTracker(object):
 
         self.history_.append(value)
 
-        # indicate reset ot the caller
+        # indicate reset to the caller
         return self.wait_ == 0
 
     def __bool__(self):
@@ -99,6 +100,7 @@ class BaseEarlyStopper(ExtremeTracker):
     """Raise StopIteration if the metric stops improving for several epochs
     in a row.
     """
+
     def __init__(self, extreme, cooldown=1, patience=10,
                  rtol=1e-3, atol=1e-4, raises=StopIteration):
         assert raises is None or issubclass(raises, Exception)

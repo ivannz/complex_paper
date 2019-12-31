@@ -97,7 +97,7 @@ def wrap_feed(feed, max_iter=-1, **devtype):
 
 
 def get_feature_generator(feed, recipe):
-    """Create Feature generator (last step before feeeding into fit)"""
+    """Create feature generator (last step before feeeding into fit)."""
     return get_instance(feed, **recipe)
 
 
@@ -212,7 +212,6 @@ def state_create(recipe, stage, devtype):
     """Create a new state, i.e. model, optimizer and name-id mapper (for state
     inheritance below), from the stage and model settings.
     """
-
     # subsequent `.load_state_dict()` automatically moves to device and casts
     #  `model` stage in a stage are allowed to be None
     model = get_model(recipe, **stage["model"]).to(**devtype)

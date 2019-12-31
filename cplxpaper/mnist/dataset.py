@@ -2,7 +2,8 @@ from torchvision import datasets, transforms
 
 
 class BaseMNIST(datasets.MNIST):
-    """Base class for MNIST dataset"""
+    """Base class for MNIST dataset."""
+
     def __init__(self, root, train=True):
         super().__init__(root, transform=transforms.Compose([
             transforms.ToTensor(),

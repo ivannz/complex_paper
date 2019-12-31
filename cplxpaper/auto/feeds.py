@@ -3,6 +3,7 @@ import torch
 
 class BaseFeedWrapper(object):
     """A base class for feed wrappers."""
+
     def __init__(self, feed):
         self.feed = feed
 
@@ -26,7 +27,7 @@ class FeedMover(BaseFeedWrapper):
 
     @classmethod
     def iter_impl(cls, feed, **devtype):
-        """Transfer to device and type cast the batches from the feed on the fly.
+        """Transfer to device and type cast batches from the feed on the fly.
 
         Parameters
         ----------
@@ -76,7 +77,6 @@ class FeedLimiter(BaseFeedWrapper):
         batch : iterable
             An iterable that constitutes the batch.
         """
-
         if max >= 0:
             for batch, _ in zip(feed, range(max)):
                 yield batch
@@ -108,8 +108,8 @@ def feed_forward_pass(feed, module):
 
     Details
     -------
-    Does not force the module into eval mode! Disables gradients, computes a
-    forward pass moves the resulting batch to CPU and converts to numpy.
+    Does not force the module into eval mode! Disables gradients, computes
+    a forward pass moves the resulting batch to CPU and converts to numpy.
     """
     def to_numpy(t):  # assumes detached tensor or no_grad
         return t.cpu().numpy()
@@ -136,7 +136,8 @@ def torch_fftshift(tensor, dims=None):
 
     Details
     -------
-    Taken almost verbatim from `scipy.fftpack.fftshift`."""
+    Taken almost verbatim from `scipy.fftpack.fftshift`.
+    """
     if dims is None:
         dims = tuple(range(tensor.dim()))
 
@@ -154,9 +155,10 @@ def torch_rfft(input, signal_ndim, normalized=False):
     """Upcast the tensor to complex and compute fft.
     See `torch.fft` for details.
     """
-    nil = torch.tensor(0.).to(input)
+    # interleave tensor values (real) with zeros (imaginary)
+    zero = torch.tensor(0.).to(input).expand_as(input)
+    input = torch.stack([input, zero], dim=-1)  # slow, not cache friendly
 
-    input = torch.stack([input, nil.expand_as(input)], dim=-1)
     return torch.fft(input, signal_ndim, normalized)
 
 
@@ -193,7 +195,6 @@ def to_fourier(input, signal_ndim=1, complex=True, shift=False):
     Fourier transform is applied to each channel separately. Ensures that
     the result is c-contiguous.
     """
-
     # expects `input` of shape [*batch] x chan x [*signal_dim]
     assert input.dim() >= 1 + signal_ndim
 
@@ -228,7 +229,8 @@ class FeedFourierFeatures(BaseFeedWrapper):
         self.signal_ndim, self.shift, self.cplx = signal_ndim, shift, cplx
 
     def __iter__(self):
-        return self.iter_impl(self.feed, self.signal_ndim, self.cplx, self.shift)
+        return self.iter_impl(self.feed, self.signal_ndim,
+                              self.cplx, self.shift)
 
     @classmethod
     def iter_impl(cls, feed, signal_ndim=1, cplx=True, shift=False):

@@ -9,6 +9,7 @@ class BaseCIFAR10(datasets.CIFAR10):
     Taken from the tutorial on classification in pytorch.
     https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
     """
+
     def __init__(self, root, train=True):
         super().__init__(root, transform=transforms.Compose([
             transforms.ToTensor(),

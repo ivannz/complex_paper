@@ -172,6 +172,9 @@ def fit(model, objective, feed, optim, *, sched=None, early=None,
         else:  # no exception raised, no loop broken out of -- no emergency
             emergency = None
 
+        # all exceptions, not handled explicitly, are critical faults
+        #  and constitute severe emergencies.
+
     # Collect histories of objective's components and the norm of the gradient
     history = collate_history(history, [*objective.terms, "|g|", "lr"])
 
