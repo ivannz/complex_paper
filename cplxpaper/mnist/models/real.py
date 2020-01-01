@@ -8,7 +8,8 @@ from cplxmodule.nn.masked import Conv2dMasked, LinearMasked
 class SimpleConvModel(object):
     """Simple convolutional model for MNIST.
 
-    Use `__new__` returning a Sequential to mimic a smart model constructor.
+    Use `__new__` returning a Sequential to mimic a smart model constructor,
+    and simplify object reference via strings in JSON manifests.
     """
     Linear = torch.nn.Linear
     Conv2d = torch.nn.Conv2d
@@ -42,4 +43,19 @@ class SimpleDenseModel(object):
     Linear = torch.nn.Linear
 
     def __new__(cls):
-        return torch.nn.Sequential()
+        return torch.nn.Sequential(OrderedDict([
+            ("flat_", torch.nn.Flatten(-3, -1)),
+            ("lin_1", cls.Linear(1 * 28 * 28, 512)),
+            ("relu2", torch.nn.ReLU()),
+            ("lin_2", cls.Linear(512, 512)),
+            ("relu3", torch.nn.ReLU()),
+            ("lin_3", cls.Linear(512, 10)),
+        ]))
+
+
+class SimpleDenseModelARD(SimpleDenseModel):
+    Linear = LinearARD
+
+
+class SimpleDenseModelMasked(SimpleDenseModel):
+    Linear = LinearMasked
