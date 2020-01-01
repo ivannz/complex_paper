@@ -4,11 +4,11 @@
   "threshold": -0.5,
   "datasets": {
     "mnist-train": {
-      "cls": "<class 'cplxpaper.mnist.dataset.MNISTTrain'>",
+      "cls": "<class 'cplxpaper.mnist.dataset.MNIST_Train'>",
       "root": "./mnist/data"
     },
     "mnist-test": {
-      "cls": "<class 'cplxpaper.mnist.dataset.MNISTTest'>",
+      "cls": "<class 'cplxpaper.mnist.dataset.MNIST_Test'>",
       "root": "./mnist/data"
     }
   },
