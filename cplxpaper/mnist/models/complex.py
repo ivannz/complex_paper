@@ -7,7 +7,11 @@ from cplxmodule.nn import CplxConv2d, CplxLinear
 from cplxmodule.nn.layers import CplxReal
 from cplxmodule.nn.layers import ConcatenatedRealToCplx
 from cplxmodule.nn.layers import CplxToConcatenatedReal
-from cplxmodule.nn.relevance import CplxConv2dARD, CplxLinearARD
+
+# from cplxmodule.nn.relevance import CplxConv2dARD, CplxLinearARD
+from cplxmodule.nn.relevance.extensions import CplxLinearVDBogus
+from cplxmodule.nn.relevance.extensions import CplxConv2dVDBogus
+
 from cplxmodule.nn.masked import CplxConv2dMasked, CplxLinearMasked
 
 
@@ -36,8 +40,8 @@ class SimpleConvModel(object):
 
 
 class SimpleConvModelARD(SimpleConvModel):
-    Linear = CplxLinearARD
-    Conv2d = CplxConv2dARD
+    Linear = CplxLinearVDBogus
+    Conv2d = CplxConv2dVDBogus
 
 
 class SimpleConvModelMasked(SimpleConvModel):
@@ -64,7 +68,7 @@ class SimpleDenseModel(object):
 
 
 class SimpleDenseModelARD(SimpleDenseModel):
-    Linear = CplxLinearARD
+    Linear = CplxLinearVDBogus
 
 
 class SimpleDenseModelMasked(SimpleDenseModel):
