@@ -19,7 +19,7 @@ class SimpleConvModel(object):
     Linear = CplxLinear
     Conv2d = CplxConv2d
 
-    def __new__(cls):
+    def __new__(cls, n_outputs=10):
         return torch.nn.Sequential(OrderedDict([
             ("cplx", ConcatenatedRealToCplx(copy=False, dim=-3)),
 
@@ -32,7 +32,7 @@ class SimpleConvModel(object):
             ("flat_", CplxToCplx[torch.nn.Flatten](-3, -1)),
             ("lin_1", cls.Linear(4 * 4 * 50, 500)),
             ("relu3", CplxToCplx[torch.nn.ReLU]()),
-            ("lin_2", cls.Linear(500, 10)),
+            ("lin_2", cls.Linear(500, n_outputs)),
             ("real", CplxReal()),
             # ("real", CplxToConcatenatedReal(dim=-1)),
             # ("lin_3", torch.nn.Linear(20, 10)),
@@ -52,7 +52,7 @@ class SimpleConvModelMasked(SimpleConvModel):
 class SimpleDenseModel(object):
     Linear = CplxLinear
 
-    def __new__(cls):
+    def __new__(cls, n_outputs=10):
         return torch.nn.Sequential(OrderedDict([
             ("cplx", ConcatenatedRealToCplx(copy=False, dim=-3)),
 
@@ -61,7 +61,7 @@ class SimpleDenseModel(object):
             ("relu2", CplxToCplx[torch.nn.ReLU]()),
             ("lin_2", cls.Linear(512, 512)),
             ("relu3", CplxToCplx[torch.nn.ReLU]()),
-            ("lin_3", cls.Linear(512, 10)),
+            ("lin_3", cls.Linear(512, n_outputs)),
 
             ("real", CplxReal()),
         ]))

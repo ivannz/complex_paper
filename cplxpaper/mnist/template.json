@@ -54,7 +54,8 @@
     }
   },
   "model": {
-    "cls": "<class 'cplxpaper.mnist.models.real.SimpleConvModel'>"
+    "cls": "<class 'cplxpaper.mnist.models.real.SimpleConvModel'>",
+    "n_outputs": 10
   },
   "stages": {
     "dense": {
