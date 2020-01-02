@@ -2,7 +2,7 @@ from distutils.core import setup, Extension
 
 setup(
     name="cplxpaper",
-    version="0.2",
+    version="0.3",
     description="""Package for Bayesian Sparsification """
                 """of Complex Valued Networks.""",
     license="MIT License",
@@ -15,7 +15,7 @@ setup(
         "cplxpaper.mnist",
         "cplxpaper.cifar"
     ],
-    requires=["torch", "numpy", "pandas", "cplxmodule"],
+    requires=["torch", "numpy", "pandas", "cplxmodule", "scikit-learn"],
     # install_requires=[  # uncomment for publishing
     #     "cplxmodule @ git+https://github.com/ivannz/cplxmodule.git"
     # ]
