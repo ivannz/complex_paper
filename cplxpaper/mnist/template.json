@@ -5,11 +5,13 @@
   "datasets": {
     "mnist-train": {
       "cls": "<class 'cplxpaper.mnist.dataset.MNIST_Train'>",
-      "root": "./mnist/data"
+      "root": "~/Github/complex_paper/experiments/mnist",
+      "train_size": null,
+      "random_state": null
     },
     "mnist-test": {
       "cls": "<class 'cplxpaper.mnist.dataset.MNIST_Test'>",
-      "root": "./mnist/data"
+      "root": "~/Github/complex_paper/experiments/mnist"
     }
   },
   "features": {
@@ -18,7 +20,7 @@
   "feeds": {
     "train": {
       "cls": "<class 'torch.utils.data.dataloader.DataLoader'>",
-      "dataset": "mnist-test",
+      "dataset": "mnist-train",
       "batch_size": 128,
       "shuffle": true,
       "pin_memory": true,
@@ -26,7 +28,7 @@
     },
     "test": {
       "cls": "<class 'torch.utils.data.dataloader.DataLoader'>",
-      "dataset": "mnist-train",
+      "dataset": "mnist-test",
       "batch_size": 128,
       "shuffle": false,
       "pin_memory": true,
