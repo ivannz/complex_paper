@@ -36,13 +36,16 @@ class EMNIST_Letters(object):
     times due to differences in derived class names (the usual inheritance).
 
     Another reason for __new__ is for simpler string-based importing.
+
+    Uses `target_transform` to map 1..26 to 0..25.
     """
 
     def __new__(cls, root, train=True, transform=None,
                 target_transform=None, download=False):
 
-        return EMNIST(root, split="letters", transform=transform, train=train,
-                      target_transform=target_transform, download=download)
+        return EMNIST(root, split="letters", transform=transform,
+                      target_transform=transforms.Lambda(lambda t: t - 1),
+                      train=train, download=download)
 
 
 def get_dataset(cls, root, train=True):
