@@ -1,5 +1,5 @@
 {
-  "__name__": "Example experiment manifest for fourier MNIST (reversed train-test roles)",
+  "__name__": "Example manifest for the experiment on MNIST with original real features.",
   "device": "cuda:1",
   "threshold": -0.5,
   "datasets": {
@@ -54,7 +54,7 @@
     }
   },
   "model": {
-    "cls": "<class 'cplxpaper.mnist.models.real.MNISTModel'>"
+    "cls": "<class 'cplxpaper.mnist.models.real.SimpleConvModel'>"
   },
   "stages": {
     "dense": {
@@ -93,7 +93,7 @@
       "n_epochs": 40,
       "grad_clip": 0.05,
       "model" : {
-        "cls": "<class 'cplxpaper.mnist.models.real.MNISTModelARD'>"
+        "cls": "<class 'cplxpaper.mnist.models.real.SimpleConvModelARD'>"
       },
       "lr_scheduler": {
         "cls": "<class 'cplxpaper.musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
@@ -123,7 +123,7 @@
       "n_epochs": 40,
       "grad_clip": 0.05,
       "model" : {
-        "cls": "<class 'cplxpaper.mnist.models.real.MNISTModelMasked'>"
+        "cls": "<class 'cplxpaper.mnist.models.real.SimpleConvModelMasked'>"
       },
       "lr_scheduler": {
         "cls": "<class 'cplxpaper.musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
