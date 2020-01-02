@@ -73,3 +73,27 @@ class SimpleDenseModelARD(SimpleDenseModel):
 
 class SimpleDenseModelMasked(SimpleDenseModel):
     Linear = CplxLinearMasked
+
+
+class TwoLayerDenseModel(object):
+    Linear = CplxLinear
+
+    def __new__(cls, n_outputs=10):
+        return torch.nn.Sequential(OrderedDict([
+            ("cplx", ConcatenatedRealToCplx(copy=False, dim=-3)),
+
+            ("flat_", CplxToCplx[torch.nn.Flatten](-3, -1)),
+            ("lin_1", cls.Linear(1 * 28 * 28, 4096)),
+            ("relu2", CplxToCplx[torch.nn.ReLU]()),
+            ("lin_2", cls.Linear(4096, n_outputs)),
+
+            ("real", CplxReal()),
+        ]))
+
+
+class TwoLayerDenseModelARD(TwoLayerDenseModel):
+    Linear = CplxLinearVDBogus
+
+
+class TwoLayerDenseModelMasked(TwoLayerDenseModel):
+    Linear = CplxLinearMasked

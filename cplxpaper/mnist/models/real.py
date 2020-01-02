@@ -59,3 +59,23 @@ class SimpleDenseModelARD(SimpleDenseModel):
 
 class SimpleDenseModelMasked(SimpleDenseModel):
     Linear = LinearMasked
+
+
+class TwoLayerDenseModel(object):
+    Linear = torch.nn.Linear
+
+    def __new__(cls, n_outputs=10):
+        return torch.nn.Sequential(OrderedDict([
+            ("flat_", torch.nn.Flatten(-3, -1)),
+            ("lin_1", cls.Linear(1 * 28 * 28, 4096)),
+            ("relu2", torch.nn.ReLU()),
+            ("lin_2", cls.Linear(4096, n_outputs)),
+        ]))
+
+
+class TwoLayerDenseModelARD(TwoLayerDenseModel):
+    Linear = LinearARD
+
+
+class TwoLayerDenseModelMasked(TwoLayerDenseModel):
+    Linear = LinearMasked
