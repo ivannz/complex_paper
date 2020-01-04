@@ -4,7 +4,7 @@ from collections import OrderedDict
 from cplxmodule.nn import CplxToCplx
 from cplxmodule.nn import CplxConv2d, CplxLinear
 
-from cplxmodule.nn.layers import CplxReal
+from cplxmodule.nn.layers import CplxReal, AsTypeCplx
 from cplxmodule.nn.layers import ConcatenatedRealToCplx
 from cplxmodule.nn.layers import CplxToConcatenatedReal
 
@@ -19,10 +19,13 @@ class SimpleConvModel(object):
     Linear = CplxLinear
     Conv2d = CplxConv2d
 
-    def __new__(cls, n_outputs=10, n_inputs=1):
-        return torch.nn.Sequential(OrderedDict([
-            ("cplx", ConcatenatedRealToCplx(copy=False, dim=-3)),
+    def __new__(cls, n_outputs=10, n_inputs=1, upcast=False):
+        if upcast:
+            layers = [("cplx", AsTypeCplx())]
+        else:
+            layers = [("cplx", ConcatenatedRealToCplx(copy=False, dim=-3))]
 
+        layers.extend([
             ("conv1", cls.Conv2d(n_inputs, 20, 5, 1)),
             ("relu1", CplxToCplx[torch.nn.ReLU]()),
             ("pool1", CplxToCplx[torch.nn.AvgPool2d](2, 2)),
@@ -36,7 +39,8 @@ class SimpleConvModel(object):
             ("real", CplxReal()),
             # ("real", CplxToConcatenatedReal(dim=-1)),
             # ("lin_3", torch.nn.Linear(20, 10)),
-        ]))
+        ])
+        return torch.nn.Sequential(OrderedDict(layers))
 
 
 class SimpleConvModelARD(SimpleConvModel):
@@ -52,10 +56,13 @@ class SimpleConvModelMasked(SimpleConvModel):
 class SimpleDenseModel(object):
     Linear = CplxLinear
 
-    def __new__(cls, n_outputs=10, n_inputs=1):
-        return torch.nn.Sequential(OrderedDict([
-            ("cplx", ConcatenatedRealToCplx(copy=False, dim=-3)),
+    def __new__(cls, n_outputs=10, n_inputs=1, upcast=False):
+        if upcast:
+            layers = [("cplx", AsTypeCplx())]
+        else:
+            layers = [("cplx", ConcatenatedRealToCplx(copy=False, dim=-3))]
 
+        layers.extend([
             ("flat_", CplxToCplx[torch.nn.Flatten](-3, -1)),
             ("lin_1", cls.Linear(n_inputs * 28 * 28, 512)),
             ("relu2", CplxToCplx[torch.nn.ReLU]()),
@@ -64,7 +71,8 @@ class SimpleDenseModel(object):
             ("lin_3", cls.Linear(512, n_outputs)),
 
             ("real", CplxReal()),
-        ]))
+        ])
+        return torch.nn.Sequential(OrderedDict(layers))
 
 
 class SimpleDenseModelARD(SimpleDenseModel):
@@ -78,17 +86,21 @@ class SimpleDenseModelMasked(SimpleDenseModel):
 class TwoLayerDenseModel(object):
     Linear = CplxLinear
 
-    def __new__(cls, n_outputs=10, n_inputs=1):
-        return torch.nn.Sequential(OrderedDict([
-            ("cplx", ConcatenatedRealToCplx(copy=False, dim=-3)),
+    def __new__(cls, n_outputs=10, n_inputs=1, upcast=False):
+        if upcast:
+            layers = [("cplx", AsTypeCplx())]
+        else:
+            layers = [("cplx", ConcatenatedRealToCplx(copy=False, dim=-3))]
 
+        layers.extend([
             ("flat_", CplxToCplx[torch.nn.Flatten](-3, -1)),
             ("lin_1", cls.Linear(n_inputs * 28 * 28, 4096)),
             ("relu2", CplxToCplx[torch.nn.ReLU]()),
             ("lin_2", cls.Linear(4096, n_outputs)),
 
             ("real", CplxReal()),
-        ]))
+        ])
+        return torch.nn.Sequential(OrderedDict(layers))
 
 
 class TwoLayerDenseModelARD(TwoLayerDenseModel):
