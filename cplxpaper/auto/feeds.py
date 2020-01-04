@@ -151,7 +151,7 @@ def torch_fftshift(tensor, dims=None):
     return torch.roll(tensor, shift, dims)
 
 
-def torch_as_complex(input):
+def torch_as_complex(input, dim=-1):
     """Upcast the tensor to torch's complex tensor.
 
     Details
@@ -161,14 +161,16 @@ def torch_as_complex(input):
     """
     # interleave tensor values (real) with zeros (imaginary)
     zero = torch.tensor(0.).to(input).expand_as(input)
-    return torch.stack([input, zero], dim=-1)  # slow, not cache friendly
+
+    # dim=-1 is not cache friendly and thus slower
+    return torch.stack([input, zero], dim=dim)
 
 
 def torch_rfft(input, signal_ndim, normalized=False):
     """Upcast the tensor to complex and compute fft.
     See `torch.fft` for details.
     """
-    return torch.fft(torch_as_complex(input), signal_ndim, normalized)
+    return torch.fft(torch_as_complex(input, dim=-1), signal_ndim, normalized)
 
 
 def to_fourier(input, signal_ndim=1, complex=True, shift=False):
