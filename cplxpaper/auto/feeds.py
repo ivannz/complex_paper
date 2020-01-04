@@ -151,15 +151,24 @@ def torch_fftshift(tensor, dims=None):
     return torch.roll(tensor, shift, dims)
 
 
+def torch_as_complex(input):
+    """Upcast the tensor to torch's complex tensor.
+
+    Details
+    -------
+    This is special torch's interleaved format, not to be
+    confused with Cplx.
+    """
+    # interleave tensor values (real) with zeros (imaginary)
+    zero = torch.tensor(0.).to(input).expand_as(input)
+    return torch.stack([input, zero], dim=-1)  # slow, not cache friendly
+
+
 def torch_rfft(input, signal_ndim, normalized=False):
     """Upcast the tensor to complex and compute fft.
     See `torch.fft` for details.
     """
-    # interleave tensor values (real) with zeros (imaginary)
-    zero = torch.tensor(0.).to(input).expand_as(input)
-    input = torch.stack([input, zero], dim=-1)  # slow, not cache friendly
-
-    return torch.fft(input, signal_ndim, normalized)
+    return torch.fft(torch_as_complex(input), signal_ndim, normalized)
 
 
 def to_fourier(input, signal_ndim=1, complex=True, shift=False):
