@@ -4,6 +4,8 @@ from collections import OrderedDict
 from cplxmodule.nn.relevance import Conv2dARD, LinearARD
 from cplxmodule.nn.masked import Conv2dMasked, LinearMasked
 
+from ...musicnet.trabelsi2017.base import Flatten
+
 
 class SimpleConvModel(object):
     """Simple convolutional model for MNIST.
@@ -22,7 +24,7 @@ class SimpleConvModel(object):
             ("conv2", cls.Conv2d(20, 50, 5, 1)),
             ("relu2", torch.nn.ReLU()),
             ("pool2", torch.nn.AvgPool2d(2, 2)),
-            ("flat_", torch.nn.Flatten(-3, -1)),
+            ("flat_", Flatten(-3, -1)),
             ("lin_1", cls.Linear(4 * 4 * 50, 500)),
             ("relu3", torch.nn.ReLU()),
             ("lin_2", cls.Linear(500, n_outputs)),
@@ -44,7 +46,7 @@ class SimpleDenseModel(object):
 
     def __new__(cls, n_outputs=10, n_inputs=1):
         return torch.nn.Sequential(OrderedDict([
-            ("flat_", torch.nn.Flatten(-3, -1)),
+            ("flat_", Flatten(-3, -1)),
             ("lin_1", cls.Linear(n_inputs * 28 * 28, 512)),
             ("relu2", torch.nn.ReLU()),
             ("lin_2", cls.Linear(512, 512)),
@@ -66,7 +68,7 @@ class TwoLayerDenseModel(object):
 
     def __new__(cls, n_outputs=10, n_inputs=1):
         return torch.nn.Sequential(OrderedDict([
-            ("flat_", torch.nn.Flatten(-3, -1)),
+            ("flat_", Flatten(-3, -1)),
             ("lin_1", cls.Linear(n_inputs * 28 * 28, 4096)),
             ("relu2", torch.nn.ReLU()),
             ("lin_2", cls.Linear(4096, n_outputs)),
