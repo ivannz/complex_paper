@@ -14,9 +14,9 @@ class SimpleConvModel(object):
     Linear = torch.nn.Linear
     Conv2d = torch.nn.Conv2d
 
-    def __new__(cls, n_outputs=10):
+    def __new__(cls, n_outputs=10, n_inputs=1):
         return torch.nn.Sequential(OrderedDict([
-            ("conv1", cls.Conv2d( 1, 20, 5, 1)),
+            ("conv1", cls.Conv2d(n_inputs, 20, 5, 1)),
             ("relu1", torch.nn.ReLU()),
             ("pool1", torch.nn.AvgPool2d(2, 2)),
             ("conv2", cls.Conv2d(20, 50, 5, 1)),
@@ -42,10 +42,10 @@ class SimpleConvModelMasked(SimpleConvModel):
 class SimpleDenseModel(object):
     Linear = torch.nn.Linear
 
-    def __new__(cls, n_outputs=10):
+    def __new__(cls, n_outputs=10, n_inputs=1):
         return torch.nn.Sequential(OrderedDict([
             ("flat_", torch.nn.Flatten(-3, -1)),
-            ("lin_1", cls.Linear(1 * 28 * 28, 512)),
+            ("lin_1", cls.Linear(n_inputs * 28 * 28, 512)),
             ("relu2", torch.nn.ReLU()),
             ("lin_2", cls.Linear(512, 512)),
             ("relu3", torch.nn.ReLU()),
@@ -64,10 +64,10 @@ class SimpleDenseModelMasked(SimpleDenseModel):
 class TwoLayerDenseModel(object):
     Linear = torch.nn.Linear
 
-    def __new__(cls, n_outputs=10):
+    def __new__(cls, n_outputs=10, n_inputs=1):
         return torch.nn.Sequential(OrderedDict([
             ("flat_", torch.nn.Flatten(-3, -1)),
-            ("lin_1", cls.Linear(1 * 28 * 28, 4096)),
+            ("lin_1", cls.Linear(n_inputs * 28 * 28, 4096)),
             ("relu2", torch.nn.ReLU()),
             ("lin_2", cls.Linear(4096, n_outputs)),
         ]))
