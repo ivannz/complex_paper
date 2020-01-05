@@ -32,6 +32,8 @@ class MNISTBasePerformance(BasePerformanceEvaluation):
         y_true, y_pred, logits = predict(model, feed)
 
         cm = confusion_matrix(y_true, y_pred)
+        out["confusion_matrix"] = cm
+
         tp = cm.diagonal()
         fp, fn = cm.sum(axis=1) - tp, cm.sum(axis=0) - tp
 
