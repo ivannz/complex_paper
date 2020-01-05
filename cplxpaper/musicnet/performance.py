@@ -14,7 +14,7 @@ from sklearn.metrics import confusion_matrix as base_confusion_matrix
 from sklearn.metrics import average_precision_score
 from sklearn.metrics import precision_recall_curve
 
-from cplxmodule.utils.stats import sparsity
+from cplxmodule.utils.stats import named_sparsity
 
 from ..auto.feeds import feed_forward_pass
 
@@ -74,7 +74,7 @@ class MusicNetBasePerformance(BasePerformanceEvaluation):
     def eval_impl(cls, model, feed, curves=False, threshold=-0.5):
         """Compute the multi-output binary classification performance metrics."""
         out = {
-            "sparsity": sparsity(model, threshold=threshold, hard=True)
+            "sparsity": dict(named_sparsity(model, threshold=threshold, hard=True))
         }
 
         model.eval()

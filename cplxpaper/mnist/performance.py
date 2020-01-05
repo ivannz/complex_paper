@@ -2,7 +2,7 @@ import torch
 import numpy as np
 
 from sklearn.metrics import confusion_matrix
-from cplxmodule.utils.stats import sparsity
+from cplxmodule.utils.stats import named_sparsity
 
 from ..auto.performance import BasePerformanceEvaluation, BaseEarlyStopper
 from ..auto.feeds import feed_forward_pass
@@ -25,7 +25,7 @@ class MNISTBasePerformance(BasePerformanceEvaluation):
     def eval_impl(cls, model, feed, threshold):
         """Compute the multiclass performance metrics."""
         out = {
-            "sparsity": sparsity(model, threshold=threshold, hard=True)
+            "sparsity": dict(named_sparsity(model, threshold=threshold, hard=True))
         }
 
         model.eval()
