@@ -1,0 +1,13 @@
+(wisdom_full-capacity_2016)
+Recurrent nn suffer from vanishing/exploding gradients due to repeated use of the parameter matrix
+which affects forward pass and backprop via layers' input gradients.
+
+remedies included gradient clipping, orthogonal initializations, novel architectures with
+gated, residual, or attention based pathways.
+
+unitary recurrent weight matrices make the gradient inherently stable \citep{arjovsky_unitary_2016}
+Illustrate on pixel-by-pixel mnist
+
+This paper shows the limitations of Arjovsky's parameterization and argues in favour of fully fledged
+optimization on the Stiefel manifold, i.e. the differentiable manifold of $\cplx^{n \times n}$ unitary
+matrices.
