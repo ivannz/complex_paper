@@ -11,3 +11,17 @@ Illustrate on pixel-by-pixel mnist
 This paper shows the limitations of Arjovsky's parameterization and argues in favour of fully fledged
 optimization on the Stiefel manifold, i.e. the differentiable manifold of $\cplx^{n \times n}$ unitary
 matrices.
+
+(arjovsky_unitary_2016)
+vanishing gradients adversely affect credit assignment function of backpropagation
+explicitly derive the upper bound on the norm of the gradient wrt intermediate recurrent outputs
+as a a function of depth (through extensive use of the chain-rule, and the definition of the
+operator norm of a square matrix; and if intermediate output grads die/explode, then the grad wrt
+the weight of the layers tends to die/explode). Thus they motivate the use of unitary (orthogonal)
+weight matrices.
+
+Note that in their experiments, split-re-im ReLU adversely affected the performance by
+``brutally'' destroying the pahse, and so the decision was made to use modReLU, that applies
+the rectifier to the amplitude of a complex number.
+
+Finally, they use a mixing layer to transform complex to real outputs as in \cite{wolter_yao_2018}.
