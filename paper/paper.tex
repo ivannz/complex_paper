@@ -176,6 +176,17 @@ Therefore it appears that Bayesian and stochastic sparsification techniques can 
 for models in $\cplx$ domain. \verify{$\ell_0$ -- stoch? yes}
 
 
+Bayesian inference is a very rich field of research with a large body of knowledge and techniques
+that enable practical quantification of predictive, parameter, or model uncertainty and its
+propagation into solutions of the problems of interest.
+
+The latter approach introduces stochastic masks one the parameters, which have hard-concrete
+mask distribution. It is closely related to gumbel-softmax reparameterization trick,
+\citep{kingma_auto-encoding_2014,jang_categorical_2017}: the mask is a stretched sigmoid,
+clamped to $[0,1]$, that takes random input shifted relative to a learnable location
+parameter, which indicates the degree of relevance. The penalty in the objective is a
+smooth approximation to $\ell_0$ norm, i.e. the expected number of nonzero parameters.
+
 % our contribution
 Inspired by variational sparsification we develop bayesian dropout for $\cplx$-valued
 networks.
@@ -1024,67 +1035,7 @@ complex high-dimensional time series In-phase Quadrature (IQ)
 
 % subsection tasks_and_datasets (end)
 
-\subsection{Radio Frequiency Digital Signal Predistortion} % (fold)
-\label{sub:radio_freq_dpd}
-
-Radio Frequency Power Amplifiers (PA) are devices used to increase the power of a signal for
-latter transmission via amplitude modulation over radio. One of the most important problems
-in wireless transmission is distortion caused by imperfections the amplifier, which degrades
-the throughput. Although careful circuit design can mitigate undesirable effects, they cannot
-be eliminated entirely \citep{citation_needed}. \textit{Digital Signal Predistortion} (DPD)
-aims at linearizing the amplifier by introducing computed on-the-fly compensation to the
-input that pushes the signal into the linear region of the PA. Practically, the method helps
-reduce cross-channel interference and enables higher bandwidth utilization in wireless
-transmitters, \citep{citation_needed}. The main challenge of DPD methods is efficient
-compensation on-device (with low-latency).
-
-\citet{traverso_low_2019} use \rewrite{some group delay estimators of something};
-\citet{schoukens_obtaining_2017} develop an iterative approach to inference of the predistortion
-for a given signal \todo{unclear};
-
-\citet{tarver_design_2019} model the predistorter as a paired real dense shallow neural network
-and demonstrate viability and competitiveness of this approach against polynomial based DPD on
-an FPGA implementation.
-
-% About rfWEbLab
-The ``RFWebLab'' platform is remote RF power amplifier setup with web-based API, that feeds
-the user-submitted quadrature signal through a class AB GaN amplifier and sends-back the measured
-output \citep{dpdcompetiton2018}. It is maintained by the GHz Centre at Chalmers University of
-Technolgy and National Instruments \citep{landin_rfweblab_2015}.
-
-We use a custom-written python interface to the WebLab setup that is compatible with the MATLAB
-interface form the setup owner.
-
-% subsection radio_freq_dpd (end)
-
 % section experiments (end)
-
-
-\section{Discussion and Related Research} % (fold)
-\label{sec:discussion_and_related_research}
-
-Bayesian inference is a very rich field of research with a large body of knowledge and techniques
-that enable practical quantification of predictive, parameter, or model uncertainty and its
-propagation into solutions of the problems of interest.
-
-% criticism and discussion
-based on the algebraic equivalence between $2 \times 2$ real matrices and complex numbers.
-Due to this constraint $\cplx$-networks have less expressive power for the same arithmetic
-complexity compared to a $\real$-layer with twice as many inputs and outputs.
-%
-The \verify{most fierce critique} of Bayesian approach towards model
-sparsification was voiced in \citep{gale_state_2019}, where it was show that it yielded
-inconsistent results in text translation tasks and systematically underperformed simpler
-techniques such as norm pruning and $\ell_0$-regularization, \citep{louizos_learning_2017}.
-
-The latter approach introduces stochastic masks one the parameters, which have hard-concrete
-mask distribution. It is closely related to gumbel-softmax reparameterization trick,
-\citep{kingma_auto-encoding_2014,jang_categorical_2017}: the mask is a stretched sigmoid,
-clamped to $[0,1]$, that takes random input shifted relative to a learnable location
-parameter, which indicates the degree of relevance. The penalty in the objective is a
-smooth approximation to $\ell_0$ norm, i.e. the expected number of nonzero parameters.
-
-% section discussion_and_related_research (end)
 
 
 \section{Conclusion} % (fold)
@@ -1617,106 +1568,6 @@ Uniqueness of these operators follows, if this decomposition is applied to any $
 $\Im z = 0$.
 
 % subsection c-linear_operator_representation (end)
-
-\subsubsection{MGF of a noncentral $\chi^2$} % (fold)
-\label{ssub:mgf_of_a_noncentral_chi}
-
-Consider the mgf of $W$:
-$$
-M_W(t)
-  = \mathbb{E}(e^{Wt})
-  = \prod_i \mathbb{E}(e^{(\mu_i + z_i)^2 t})
-  \,, $$
-by independence. Now for $z \sim \mathcal{N}(\mu, 1)$
-$$
-\mathbb{E}(e^{z^2 t})
-  = \tfrac1{\sqrt{2\pi}}
-  \int_{-\infty}^{+\infty}
-      e^{z^2 t} e^{-\tfrac{(z-\mu)^2}2}
-  dz
-  \,. $$
-Now, for $t < \tfrac12$
-$$
-z^2 t - \tfrac{(z - \mu)^2}2
-  = - \tfrac12 (1 - 2t) z^2 + z \mu - \tfrac{\mu^2}2
-  % = - \tfrac12 (1 - 2t) \bigl(
-  %   z^2 - 2 z \tfrac\mu{1 - 2t} + \tfrac{\mu^2}{1 - 2t}
-  % \bigr)
-  % = - \tfrac12 (1 - 2t) \bigl( z - \tfrac\mu{1 - 2t} \bigr)^2
-  % - \tfrac12 (1 - 2t) \bigl(
-  %   \tfrac{\mu^2}{1 - 2t}
-  %   - \tfrac{\mu^2}{(1 - 2t)^2}
-  % \bigr)
-  % = - \tfrac12 (1 - 2t) \bigl( z - \tfrac\mu{1 - 2t} \bigr)^2
-  %   - \tfrac{\mu^2}2 \bigl(
-  %   \tfrac{1 - 2t}{1 - 2t} - \tfrac1{1 - 2t}
-  % \bigr)
-  % = - \tfrac12 (1 - 2t) \bigl( z - \tfrac\mu{1 - 2t} \bigr)^2
-  %   + \tfrac{\mu^2}2 \tfrac{2t}{1 - 2t}
-  = - \tfrac12 (1 - 2t) \bigl( z - \tfrac\mu{1 - 2t} \bigr)^2
-    + \mu^2 \tfrac{t}{1 - 2t}
-  \,, $$
-whence
-\begin{multline}
-  \mathbb{E}(e^{z^2 t})
-    = \tfrac1{\sqrt{2\pi}}
-      \int_{-\infty}^{+\infty}
-        e^{z^2 t} e^{-\tfrac{(z-\mu)^2}2}
-      \, dz
-    % = e^{\mu^2 \tfrac{t}{1 - 2t}}
-    %   \tfrac1{\sqrt{2\pi}}
-    %   \int_{-\infty}^{+\infty}
-    %     e^{- \tfrac12 (1 - 2t) \bigl( z - \tfrac\mu{1 - 2t} \bigr)^2}
-    %   \, dz
-    \\= e^{\mu^2 \tfrac{t}{1 - 2t}}
-      \tfrac1{\sqrt{2\pi}}
-      \int_{-\infty}^{+\infty}
-        e^{- \tfrac12 (1 - 2t) z^2}
-      \, dz
-    % = [u = \sqrt{1 - 2t} z]
-    % = e^{\mu^2 \tfrac{t}{1 - 2t}}
-    %   \tfrac1{\sqrt{2\pi}}
-    %   \int_{-\infty}^{+\infty}
-    %     e^{- \tfrac12 u^2}
-    %   \, \tfrac{du}{\sqrt{1 - 2t}}
-    = \tfrac{
-        \exp{\{\mu^2 \tfrac{t}{1 - 2t}\}}
-    }{\sqrt{1 - 2t}}
-    \,.
-\end{multline}
-Therefore
-$$
-M_W(t)
-  = \mathbb{E}(e^{Wt})
-  = \prod_i \tfrac{
-      e^{\mu_i^2 \tfrac{t}{1 - 2t}}
-    }{\sqrt{1 - 2t}}
-  % = e^{\lambda \tfrac{t}{1 - 2t}}
-  %   (1 - 2t)^{-\tfrac{m}2}
-  % = e^{\lambda \tfrac{- t}{2t - 1}}
-  %   (1 - 2t)^{-\tfrac{m}2}
-  % = e^{\tfrac\lambda2 \tfrac{1 - 2t - 1}{2t - 1}}
-  %   (1 - 2t)^{-\tfrac{m}2}
-  % = e^{- \tfrac\lambda2 (1 + \tfrac1{2t - 1})}
-  %   (1 - 2t)^{-\tfrac{m}2} 
-  = e^{- \tfrac\lambda2} e^{\tfrac\lambda2 \tfrac1{1 - 2t}}
-  (1 - 2t)^{-\tfrac{m}2}
-  \,. $$
-Expanding the exponential as infinite series:
-\begin{multline}
-  M_W(t)
-    = e^{- \tfrac\lambda2} e^{\tfrac\lambda2 \tfrac1{1 - 2t}}
-    (1 - 2t)^{-\tfrac{m}2}
-    % = e^{- \tfrac\lambda2} (1 - 2t)^{-\tfrac{m}2}
-    %   \sum_{n \geq 0} \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n! (1 - 2t)^n}
-    \\= \sum_{n \geq 0} \tfrac{e^{- \tfrac\lambda2} \bigl(\tfrac\lambda2\bigr)^n}{n!}
-        (1 - 2t)^{-\tfrac{2n + m}2}
-    = \sum_{n \geq 0} \tfrac{e^{- \tfrac\lambda2} \bigl(\tfrac\lambda2\bigr)^n}{n!}
-        \mathbb{E}_{x \sim \chi^2_{m + 2n}}(e^{x t})
-    \,.
-\end{multline}
-
-% subsubsection mgf_of_a_noncentral_chi (end)
 
 % section appendix (end)
 
