@@ -76,14 +76,7 @@ especially relevant.
 
 Signal processing, specifically, audio or radio frequency signal analysis is inherently
 complex-valued, yet $\cplx$-valued models and neural networks, and, in particular, compression
-methods tailored to $\cplx$-domain remain a niche field of research. Computational efficiency
-improvement methods such as quantization, integer-based arithmetic \citep{citation_needed},
-and distillation \citep{distillation} appear to be immediately applicable to $\cplx$-field.
-%
-Some model sparsification methods, e.g. magnitude pruning \citep{zuo_compression_2019}, which
-reactivates zeroed parameters based on gradients, and sparsity inducing regularizers, can be
-adapted directly to $\cplx$-valued models. Other methods require additional considerations.
-% the more explicitly zero parameters there is, the less computations is needed.
+methods tailored to $\cplx$-domain remain a niche field of research.
 
 %%% >>>> (cplx)
 % complex nets and related stuff
@@ -101,24 +94,12 @@ dependening on the implementation.
 data that is naturally complex-valued
 studies have shown a potentially richer representation of complex nets
 \citep{hirose2003,fijulamin2009}
-% [3] Akira Hirose, Complex-valued neural networks: theories and applications, vol. 5, World Scientific, 2003.
 % [4] Md Faijul Amin and Kazuyuki Murase, “Single-layered complex-valued neural network for real-valued classification problems,” Neurocomputing, vol. 72, no. 4-6, pp. 945–955, 2009.
 
 the complex version of backpropagation algorithm  was proposed because of
 its richer representational capacity.
 % Nevio Benvenuto and Francesco Piazza, “On the complex backpropagation algorithm,” IEEE Transactions on Signal Processing, vol. 40, no. 4, pp. 967–969, 1992.
-
-\citep{yang_complex_2019} develop complex transformer, with $\cplx$-attention and complex
-encoder-decoder, and apply it to music transcription and wireless signal classification.
-
-that interfaces the rest of
-$\cplx$-valued
-the network with complex numbers
-
 that operates on the Fourier transform input speech, acoustic, of radio signals.
-
-papers related to complex-valued distributions \citep{pav_moments_2015,taubock_complex-valued_2012},
-and \citep{karseras_caution:_2014}
 
 Application of complex-valued networks is not new, \citep{citation_needed}. More recently
 they were applied to music transcription and speech recognition \citep{trabelsi_deep_2017},
@@ -127,7 +108,25 @@ pervasiveness of $\cplx$-valued data in digital signal processing \citep{citatio
 acoustic and radio signal analysis \citep{citation_needed}, and quantum systems modelling
 \citep{citation_needed}, etc. All these applications require compliance with algebraic
 operations in the field of complex numbers.
+
+\citep{yang_complex_2019} develop complex transformer, with $\cplx$-attention and complex
+encoder-decoder, and apply it to music transcription and wireless signal classification.
+
+papers related to complex-valued distributions \citep{pav_moments_2015,taubock_complex-valued_2012},
+and \citep{karseras_caution:_2014}
+
 %%% <<<< (cplx)
+
+% motivation and other methods
+Computational efficiency improvement and model compression methods such as quantization
+\citep{uhlich_differentiable_2019}, integer-based arithmetic \citep{lin_fixed_2016,chen_fxpnet_2017},
+and knowledge distillation \citep{hinton_distilling_2015} appear to be directly applicable
+to $\cplx$-valued networks.
+%
+Certain model sparsification methods, e.g. sparsity inducing regularizers, and magnitude
+pruning \citep{zuo_compression_2019}, which reactivates zeroed parameters based on gradients,
+can be adapted directly to $\cplx$-valued models. Other methods require additional considerations.
+% the more explicitly zero parameters there is, the less computations is needed.
 
 % on dropout
 Dropout, \citep{hinton_improving_2012}, prevents overfitting by injecting multiplicative
@@ -137,34 +136,39 @@ on the intermediate outputs via the Central Limit Theorem can be approximated by
 with weight-input dependent mean and variance. \citet{srivastava_dropout_2014} propose
 using independent $\mathcal{N}(1,1)$ noise, arguing that higher entropy of a Gaussian has
 better regularizing effect. In multitask learning \citet{cheung_superposition_2019}
-has shown the possibility of storing task-specific parameters in non-destructive superposition
+have shown the possibility of storing task-specific parameters in non-destructive superposition
 within a single network. Their argument implies that if the single task setting is viewed
-as replicated mutlitask learning, then by sampling uncorrelated weight masks dropout acts
+as replicated multitask learning, then by sampling uncorrelated weight masks dropout acts
 as superposition method, which better utilizes the learning capacity of the network.
 % many identical copies of the same task; \cite[Appendix A.1]{cheung_superposition_2019}
 % (fast dropout gauss-approx) wang-manning.tex
 % (gauss dropout) srivastava-et-al.tex
 
 % segue into bayesian inference
+Bayesian inference is a very rich field of research with a large body of research and
+techniques that enable practical quantification of predictive, parameter, or model
+uncertainty and its propagation into solutions of the problems of interest.
+%
 Dropout resembles averaging models with shared parameters: each model is weighted equally
 since masks are randomly sampled, unlike bayesian model averaging, which weighs according to
 the posterior distribution. \citet{kingma_variational_2015} specifically consider dropout
 as a Bayesian Inference technique: a principled framework of reasoning about uncertainty,
-whihc updates prior beliefs in accordance with the likelihood of empirical observations
+which updates prior beliefs in accordance with the likelihood of empirical observations
 into posterior belief. Under suitable modelling and prior assumptions, Bayesian methods
 can be used towards model sparsification, \citep{kingma_variational_2015,molchanov_variational_2017},
 and \citep{kharitonov_variational_2018}.
 
 % (sparsity tech large-scale models) gale-elsen-hooker.tex
-\citet{gale_state_2019} compare variational dropout \citep{kingma_variational_2015}, $\ell_0$
-regularization \citep{louizos_learning_2017} and magnitude pruning on large-scale models.
+\citet{gale_state_2019} compare variational dropout \citep{kingma_variational_2015},
+magnitude pruning, and $\ell_0$ regularization \citep{louizos_learning_2017} on large-scale
+models. The latter is a probabilistic regularization method, which penalizes the expected
+number of non-zero entries in $[0, 1]$-valued stochastic parameter masks with learnable
+hard-concrete distribution with an atom at $0$, \citep{maddison_concrete_2016,jang_categorical_2017}.
 Their results suggest that although var-dropout may achieve good accuracy-sparsity balance
-and outperform pruning on the studied architectures, overall pruning is preferable due to
-simplicity and speed. They also conclude that, although dropout and $\ell_0$ yield less
-consistent performance and are more complex, they induce non-uniform sparsity throughout
-the model, which is essential for better compression \citep{he_amc:_2018}.
-\todo{read (He et al., 2018)}
-%
+and outperform pruning and $\ell_0$ on the studied architectures, pruning is preferable for
+its simplicity and speed. They also observe that despite dropout showing more variable
+performance, than magnitude pruning, it nevertheless induces non-uniform sparsity throughout
+the model, which is essential for superior compression \citep{he_amc:_2018}.
 % Magnitude pruning induces user-specified sparsity distributions.
 %
 % L0 and dropout work in the low-to-mid sparsity range, variational dropout consistently
@@ -172,25 +176,11 @@ the model, which is essential for better compression \citep{he_amc:_2018}.
 % levels of 80\% and up. Variational dropout consistently produces models on-par or better
 % than magnitude pruning on ResNet-50, and l0 fails to produce sparse models at all.
 %
-Therefore it appears that Bayesian and stochastic sparsification techniques can be useful
-for models in $\cplx$ domain. \verify{$\ell_0$ -- stoch? yes}
-
-
-Bayesian inference is a very rich field of research with a large body of knowledge and techniques
-that enable practical quantification of predictive, parameter, or model uncertainty and its
-propagation into solutions of the problems of interest.
-
-The latter approach introduces stochastic masks one the parameters, which have hard-concrete
-mask distribution. It is closely related to gumbel-softmax reparameterization trick,
-\citep{kingma_auto-encoding_2014,jang_categorical_2017}: the mask is a stretched sigmoid,
-clamped to $[0,1]$, that takes random input shifted relative to a learnable location
-parameter, which indicates the degree of relevance. The penalty in the objective is a
-smooth approximation to $\ell_0$ norm, i.e. the expected number of nonzero parameters.
 
 % our contribution
-Inspired by variational sparsification we develop bayesian dropout for $\cplx$-valued
-networks.
-
+Inspired by variational sparsification and stochastic sparsification techniques we
+develop bayesian dropout for $\cplx$-valued networks.
+%
 The paper is structured as follows. In sec.~\ref{sec:bayesian_dropout} we review Bayesian
 dropout techniques, and in sec.~\ref{sec:c_valued_networks} we provide a brief summary of
 the inner working of complex-valued networks as functions of complex argument. The main
@@ -1073,7 +1063,7 @@ $, \citep{petersen_matrix_2012}.
 If we assume a mean field $\cplx$-Gaussian approximate posteriror for $
   W \in \cplx^{n\times m}
 $, then
-\begin{equation}  \label{eq:c-gauss-vi-general}
+\begin{equation}  \label{eq:c-gauss-vi-general-vec}
   \vec{W}
     \sim \mathcal{N}^{\cplx}_{nm} \bigl(
       \vec{\mu}, \diag{\vec{\Sigma}}, \diag{\vec{C}}
@@ -1104,7 +1094,7 @@ $, whence the covariance and relation matrices of $y$ are
 \end{align}
 Since \eqref{eq:cn-gauss-lrt-cov} and \eqref{eq:cn-gauss-lrt-rel} are diagonal, $(y_i)_{i=1}^n$
 are independent whence \eqref{eq:cn-affine} implies
-\begin{equation}  \label{eq:cplx-gauss-trick}
+\begin{equation}  \label{eq:cplx-gauss-trick-appendix}
   y_i
     \sim \mathcal{N}^{\cplx}
       \bigl(
@@ -1114,7 +1104,7 @@ are independent whence \eqref{eq:cn-affine} implies
       \bigr)
     \,.
 \end{equation}
-Hence \eqref{eq:cplx-gauss-trick} folows.
+Hence \eqref{eq:cplx-gauss-trick-appendix} folows.
 
 % subsection complex_valued_local_reparameterization (end)
 

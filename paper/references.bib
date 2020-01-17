@@ -754,3 +754,60 @@ It is well known and interesting that a complex-valued neuron can solve several 
 	keywords = {Computer Science - Machine Learning, Statistics - Machine Learning},
 	file = {arXiv Fulltext PDF:/Users/ivannazarov/Zotero/storage/UNN8IXRK/Wolter and Yao - 2019 - Fourier RNNs for Sequence Prediction.pdf:application/pdf;arXiv.org Snapshot:/Users/ivannazarov/Zotero/storage/X9W55VEW/1812.html:text/html}
 }
+
+@inproceedings{lin_fixed_2016,
+	title = {Fixed {Point} {Quantization} of {Deep} {Convolutional} {Networks}},
+	url = {http://proceedings.mlr.press/v48/linb16.html},
+	abstract = {In recent years increasingly complex architectures for deep convolution networks (DCNs) have been proposed to boost the performance on image recognition tasks. However, the gains in performance hav...},
+	language = {en},
+	urldate = {2020-01-17},
+	booktitle = {International {Conference} on {Machine} {Learning}},
+	author = {Lin, Darryl and Talathi, Sachin and Annapureddy, Sreekanth},
+	month = jun,
+	year = {2016},
+	pages = {2849--2858},
+	file = {Full Text PDF:/Users/ivannazarov/Zotero/storage/HXX5HPBD/Lin et al. - 2016 - Fixed Point Quantization of Deep Convolutional Net.pdf:application/pdf;Snapshot:/Users/ivannazarov/Zotero/storage/TX4FJ2ZG/linb16.html:text/html}
+}
+
+@inproceedings{chen_fxpnet_2017,
+	title = {{FxpNet}: {Training} a deep convolutional neural network in fixed-point representation},
+	shorttitle = {{FxpNet}},
+	doi = {10.1109/IJCNN.2017.7966159},
+	abstract = {We introduce FxpNet, a framework to train deep convolutional neural networks with low bit-width arithmetics in both forward pass and backward pass. During training FxpNet further reduces the bit-width of stored parameters (also known as primal parameters) by adaptively updating their fixed-point formats. These primal parameters are usually represented in the full resolution of floating-point values in previous binarized and quantized neural networks. In FxpNet, during forward pass fixed-point primal weights and activations are first binarized before computation, while in backward pass all gradients are represented as low resolution fixed-point values and then accumulated to corresponding fixed-point primal parameters. To have highly efficient implementations in FPGAs, ASICs and other dedicated devices, FxpNet introduces Integer Batch Normalization (IBN) and Fixed-point ADAM (FxpADAM) methods to further reduce the required floating-point operations, which will save considerable power and chip area. The evaluation on CIFAR-10 dataset indicates the effectiveness that FxpNet with 12-bit primal parameters and 12-bit gradients achieves comparable prediction accuracy with state-of-the-art binarized and quantized neural networks.},
+	booktitle = {2017 {International} {Joint} {Conference} on {Neural} {Networks} ({IJCNN})},
+	author = {Chen, Xi and Hu, Xiaolin and Zhou, Hucheng and Xu, Ningyi},
+	month = may,
+	year = {2017},
+	note = {ISSN: 2161-4407},
+	keywords = {12-bit gradients, 12-bit primal parameters, Acceleration, application specific integrated circuits, ASICs, backward pass, binarized neural networks, bit-width arithmetics, CIFAR-10 dataset, convolution, Convolution, deep convolutional neural network, field programmable gate arrays, Field programmable gate arrays, fixed point arithmetic, fixed-point ADAM, fixed-point primal parameters, fixed-point primal weights, fixed-point representation, floating point arithmetic, floating-point values, forward pass, FPGAs, FxpADAM, FxpNet, IBN, integer batch normalization, Kernel, low resolution fixed-point values, neural nets, Neural networks, Quantization (signal), quantized neural networks, Training},
+	pages = {2494--2501},
+	file = {IEEE Xplore Abstract Record:/Users/ivannazarov/Zotero/storage/TZJ7NK59/7966159.html:text/html;IEEE Xplore Full Text PDF:/Users/ivannazarov/Zotero/storage/FKJRRC3C/Chen et al. - 2017 - FxpNet Training a deep convolutional neural netwo.pdf:application/pdf}
+}
+
+@article{hinton_distilling_2015,
+	title = {Distilling the {Knowledge} in a {Neural} {Network}},
+	url = {http://arxiv.org/abs/1503.02531},
+	abstract = {A very simple way to improve the performance of almost any machine learning algorithm is to train many different models on the same data and then to average their predictions. Unfortunately, making predictions using a whole ensemble of models is cumbersome and may be too computationally expensive to allow deployment to a large number of users, especially if the individual models are large neural nets. Caruana and his collaborators have shown that it is possible to compress the knowledge in an ensemble into a single model which is much easier to deploy and we develop this approach further using a different compression technique. We achieve some surprising results on MNIST and we show that we can significantly improve the acoustic model of a heavily used commercial system by distilling the knowledge in an ensemble of models into a single model. We also introduce a new type of ensemble composed of one or more full models and many specialist models which learn to distinguish fine-grained classes that the full models confuse. Unlike a mixture of experts, these specialist models can be trained rapidly and in parallel.},
+	urldate = {2020-01-17},
+	journal = {arXiv:1503.02531 [cs, stat]},
+	author = {Hinton, Geoffrey and Vinyals, Oriol and Dean, Jeff},
+	month = mar,
+	year = {2015},
+	note = {arXiv: 1503.02531},
+	keywords = {Computer Science - Machine Learning, Computer Science - Neural and Evolutionary Computing, Statistics - Machine Learning},
+	file = {arXiv Fulltext PDF:/Users/ivannazarov/Zotero/storage/LQEPQVKJ/Hinton et al. - 2015 - Distilling the Knowledge in a Neural Network.pdf:application/pdf;arXiv.org Snapshot:/Users/ivannazarov/Zotero/storage/R2MDZY9Z/1503.html:text/html}
+}
+
+@article{uhlich_differentiable_2019,
+	title = {Differentiable {Quantization} of {Deep} {Neural} {Networks}},
+	url = {http://arxiv.org/abs/1905.11452},
+	abstract = {We propose differentiable quantization (DQ) for efficient deep neural network (DNN) inference where gradient descent is used to learn the quantizer's step size, dynamic range and bitwidth. Training with differentiable quantizers brings two main benefits: first, DQ does not introduce hyperparameters; second, we can learn for each layer a different step size, dynamic range and bitwidth. Our experiments show that DNNs with heterogeneous and learned bitwidth yield better performance than DNNs with a homogeneous one. Further, we show that there is one natural DQ parametrization especially well suited for training. We confirm our findings with experiments on CIFAR-10 and ImageNet and we obtain quantized DNNs with learned quantization parameters achieving state-of-the-art performance.},
+	urldate = {2020-01-17},
+	journal = {arXiv:1905.11452 [cs, stat]},
+	author = {Uhlich, Stefan and Mauch, Lukas and Yoshiyama, Kazuki and Cardinaux, Fabien and Garcia, Javier Alonso and Tiedemann, Stephen and Kemp, Thomas and Nakamura, Akira},
+	month = may,
+	year = {2019},
+	note = {arXiv: 1905.11452},
+	keywords = {Computer Science - Computer Vision and Pattern Recognition, Computer Science - Machine Learning, Statistics - Machine Learning},
+	file = {arXiv Fulltext PDF:/Users/ivannazarov/Zotero/storage/G6KB63EM/Uhlich et al. - 2019 - Differentiable Quantization of Deep Neural Network.pdf:application/pdf;arXiv.org Snapshot:/Users/ivannazarov/Zotero/storage/TSTRRHDE/1905.html:text/html}
+}
