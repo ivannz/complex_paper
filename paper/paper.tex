@@ -74,50 +74,34 @@ especially relevant.
 % Solving the storage and artihmetic constraints encourages development of model compression
 % and sparsification methods, that focus on favourable tradeoff between performance and size.
 
-Signal processing, specifically, audio or radio frequency signal analysis is inherently
-complex-valued, yet $\cplx$-valued models and neural networks, and, in particular, compression
-methods tailored to $\cplx$-domain remain a niche field of research.
+Inherently complex-valued nature of data in signal processing, specifically, acoustic or radio
+frequency signal analysis, has been the key driver behind adoption of $\cplx$-networks.
+%
+\citet{hirose_complex-valued_2009} argues that the key merit of $\cplx$-valued neural
+networks is simultaneous phase rotation and amplitude adjustment, intrinsic to multiplication
+in $\cplx$ field. Despite inherently higher arithmetic complexity, which stems from up to four
+floating point operations per single $\cplx$ multiplication, \citep{monning_evaluation_2018},
+$\cplx$-arithmetic reduces ineffective degrees of freedom in comparison with an analogous
+double-dimensional $\real$-valued network. \citet{hirose_complex-valued_2009} list numerous
+applications related to acoustic and radio signal processing and demonstrate superiority of
+$\cplx$-networks in the task of shallow landmine detection using ground penetrating radar
+imaging. More recently they were applied to music transcription and speech recognition
+\citep{trabelsi_deep_2017}. \citet{arjovsky_unitary_2016} propose $\cplx$-valued unitary-RNNs
+to deal with exploding~/~vanishing gradients and apply the recurrent models to long-term
+dependence prediction tasks. \citet{wisdom_full-capacity_2016} expand on their work by optimizing
+recurrent weights on the $\cplx^{n \times n}$ Stiefel manifold. And \citet{wolter_complex_2018}
+investigate different $\cplx$-valued gating mechanisms unitary-RNNs and conduct experiments
+on human motion prediction and music transcription. \citet{yang_complex_2019} develop complex
+transformer, with $\cplx$-attention and complex encoder-decoder, and apply it to music
+transcription and wireless signal classification.
 
-%%% >>>> (cplx)
-% complex nets and related stuff
-% cplx domain models
-% (cplx-transformer) yang-ma-li.tex
-% (cplx capacity) monning-manandhar.tex
-\citet{monning_evaluation_2018} state,
-that $\cplx$-networks have less intuitive architectures, inherently higher arithmetic
-complexity due to multiplication in $\cplx$, that requires 3-4 floating point multiplications,
-dependening on the implementation.
-% due to them not being true cplx and just paired real computational graphs
-
-\citep{yang_complex_2019,monning_evaluation_2018}
-
-data that is naturally complex-valued
-studies have shown a potentially richer representation of complex nets
-\citep{hirose2003,fijulamin2009}
-% [4] Md Faijul Amin and Kazuyuki Murase, “Single-layered complex-valued neural network for real-valued classification problems,” Neurocomputing, vol. 72, no. 4-6, pp. 945–955, 2009.
-
-the complex version of backpropagation algorithm  was proposed because of
-its richer representational capacity.
-% Nevio Benvenuto and Francesco Piazza, “On the complex backpropagation algorithm,” IEEE Transactions on Signal Processing, vol. 40, no. 4, pp. 967–969, 1992.
-that operates on the Fourier transform input speech, acoustic, of radio signals.
-
-Application of complex-valued networks is not new, \citep{citation_needed}. More recently
-they were applied to music transcription and speech recognition \citep{trabelsi_deep_2017},
-and \citep{yang_complex_2019}. The key motivation behind adoption of $\cplx$-networks is
-pervasiveness of $\cplx$-valued data in digital signal processing \citep{citation_needed},
-acoustic and radio signal analysis \citep{citation_needed}, and quantum systems modelling
-\citep{citation_needed}, etc. All these applications require compliance with algebraic
-operations in the field of complex numbers.
-
-\citep{yang_complex_2019} develop complex transformer, with $\cplx$-attention and complex
-encoder-decoder, and apply it to music transcription and wireless signal classification.
-
-papers related to complex-valued distributions \citep{pav_moments_2015,taubock_complex-valued_2012},
-and \citep{karseras_caution:_2014}
-
-%%% <<<< (cplx)
+% complex-valued distributions \citep{pav_moments_2015,taubock_complex-valued_2012},
+% and \citep{karseras_caution:_2014}
 
 % motivation and other methods
+However, in spite of relative success of $\cplx$-valued networks, compression methods tailored
+to $\cplx$-domain remain a niche field of research.
+%
 Computational efficiency improvement and model compression methods such as quantization
 \citep{uhlich_differentiable_2019}, integer-based arithmetic \citep{lin_fixed_2016,chen_fxpnet_2017},
 and knowledge distillation \citep{hinton_distilling_2015} appear to be directly applicable
@@ -188,7 +172,7 @@ contribution of this study is presented in sec.~\ref{sec:dropout_for_c_valued_la
 where we consider different variational approximations and priors, outline the tricks
 and derive expressions for the divergence term. In sec.~\ref{sec:experiments} we evaluate
 the sparsification rate and compare the resulting performance of various $\cplx$-networks
-proposed in prior work, and discuss the outcomes in sec.~\ref{sec:discussion_and_related_research}.
+proposed in prior work, and discuss the outcomes.
 
 % section introduction (end)
 
@@ -404,7 +388,7 @@ Gaussian prior $
   \mathcal{N}(0, \tau^{-1}_{ij})
 $ with learnable precision $\tau_{ij} > 0$. This method, known as \textit{Empirical Bayes}
 \citep{citation_needed}, fits a prior distribution while performing variational inference.
-Maximizing \eqref{eq:elbo} over $\lambda$, holding other parameters fixed, yields $
+Maximizing \eqref{eq:elbo} over $\tau$, holding other parameters fixed, yields $
   \tau^* = {(\mu^2 + \sigma^2)}^{-1}
 $, whence
 \begin{equation}  \label{eq:ard-kl-div-real}
@@ -482,20 +466,13 @@ where $
   P, Q \colon \real^{n} \to \real^{m}
 $ are unique operators such that $L = P + j Q$. A $\cplx$-convolutional layer with kernel
 $W$ can be implemented as two $\real$-convolutions with kernels $\Re{W}$ and $\Im{W}$ using
-\eqref{eq:cplx-lin-op}. Algebraic operations, trigonometric functions, are implemented
-through operations in $\real^2$, \citep{hirose_complex-valued_2009}. Activations, considered
-in \citep{trabelsi_deep_2017} include independent componentwise application of $\real$-valued
-non-linearities, $
-  z = u + j v
-    \mapsto \sigma(u) + j \sigma(v)
-$, $\cplx$-differentiable exponential and trigonometric activations, and \textit{modRelu}
-activation, which applies soft-thresholding to the modulus and preserves the angle: $
-  z = r e^{j \phi}
-    \mapsto e^{j \phi} (r - b)_+
-  % z \mapsto z \bigl(
-  %     1 - \tfracb{\lvert z \rvert}
-  %   \bigr)_+
-$ with a learnable threshold parameter $b \in \real$.
+\eqref{eq:cplx-lin-op}. Activations include trigonometric functions and representation-dependent
+non-linearities, \citep{hirose_complex-valued_2009}: polar (phase-amplitude) $
+  z \mapsto \sigma(\lvert z \rvert) e^{j \arg z}
+$ or planar (real-imaginary) $
+  z \mapsto \sigma(\Re z) + j \sigma(\Im z)
+$ for some $\real$-valued non-linearity $\sigma$, possibly with learnable parameters,
+\citep{trabelsi_deep_2017,wolter_complex_2018}.
 
 Complex networks are, in general, non-holomorphic, i.e. not $\cplx$-differentiable, which is
 exacerbated by the loss being real-valued. Indeed a $\cplx$-differentiable real-valued function is
@@ -1013,7 +990,6 @@ classification (CIFAR-10, CIFAR-100, reduced train of SVHN), music-transcription
   \item 
 \end{itemize}
 
-
 test on MusicNet, (music transcription [14])
 
 complex high-dimensional time series In-phase Quadrature (IQ)
@@ -1104,7 +1080,7 @@ are independent whence \eqref{eq:cn-affine} implies
       \bigr)
     \,.
 \end{equation}
-Hence \eqref{eq:cplx-gauss-trick-appendix} folows.
+Hence \eqref{eq:cplx-gauss-trick} folows.
 
 % subsection complex_valued_local_reparameterization (end)
 
