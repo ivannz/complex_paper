@@ -5,25 +5,25 @@
   "datasets": {
     "musicnet-train": {
       "cls": "<class 'cplxpaper.musicnet.dataset.MusicNetRAM'>",
-      "filename": "./data/musicnet_11khz_train.h5",
+      "filename": "/home/ivan.nazarov/Github/complex_paper/experiments/musicnet/data/musicnet_11khz_train.h5",
       "window": 4096,
       "stride": 1
     },
     "musicnet-train-512": {
       "cls": "<class 'cplxpaper.musicnet.dataset.MusicNetRAM'>",
-      "filename": "./data/musicnet_11khz_train.h5",
+      "filename": "/home/ivan.nazarov/Github/complex_paper/experiments/musicnet/data/musicnet_11khz_train.h5",
       "window": 4096,
       "stride": 512
     },
     "musicnet-valid-128": {
       "cls": "<class 'cplxpaper.musicnet.dataset.MusicNetRAM'>",
-      "filename": "./data/musicnet_11khz_valid.h5",
+      "filename": "/home/ivan.nazarov/Github/complex_paper/experiments/musicnet/data/musicnet_11khz_valid.h5",
       "window": 4096,
       "stride": 128
     },
     "musicnet-test-128": {
       "cls": "<class 'cplxpaper.musicnet.dataset.MusicNetRAM'>",
-      "filename": "./data/musicnet_11khz_test.h5",
+      "filename": "/home/ivan.nazarov/Github/complex_paper/experiments/musicnet/data/musicnet_11khz_test.h5",
       "window": 4096,
       "stride": 128
     }

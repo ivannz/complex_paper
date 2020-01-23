@@ -5,13 +5,13 @@
   "datasets": {
     "mnist-train": {
       "cls": "<class 'cplxpaper.mnist.dataset.MNIST_Train'>",
-      "root": "~/Github/complex_paper/experiments/mnist",
+      "root": "/home/ivan.nazarov/Github/complex_paper/experiments/mnist-like/data",
       "train_size": null,
       "random_state": null
     },
     "mnist-test": {
       "cls": "<class 'cplxpaper.mnist.dataset.MNIST_Test'>",
-      "root": "~/Github/complex_paper/experiments/mnist"
+      "root": "/home/ivan.nazarov/Github/complex_paper/experiments/mnist-like/data"
     }
   },
   "features": {
