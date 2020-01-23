@@ -63,7 +63,11 @@ def get_dataset(cls, root, train=True):
 
 def stratified_split(dataset, train_size=None, test_size=None, random_state=None):
     """Random stratified train/test split."""
-    targets = dataset.targets.cpu().numpy()
+    targets = dataset.targets
+    if not isinstance(dataset.targets, torch.Tensor):
+        targets = torch.tensor(targets)
+    targets = targets.cpu().numpy()
+
     ix_all = torch.arange(len(targets)).numpy()
 
     # use stratified split to get the required number of samples
