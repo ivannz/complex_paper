@@ -13,7 +13,8 @@ setup(
         "cplxpaper.auto",
         "cplxpaper.musicnet",
         "cplxpaper.mnist",
-        "cplxpaper.cifar"
+        "cplxpaper.cifar",
+        "cplxpaper.cifar.models"
     ],
     requires=["torch", "numpy", "pandas", "cplxmodule", "scikit-learn"],
     # install_requires=[  # uncomment for publishing
