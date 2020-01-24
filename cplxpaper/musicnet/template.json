@@ -78,8 +78,8 @@
     },
     "kl_div": {
       "cls": "<class 'cplxpaper.auto.objective.ARDPenaltyObjective'>",
-      "reduction": "mean",
-      "coef": 1.0
+      "reduction": "sum",
+      "coef": 0.00001
     }
   },
   "model": {
