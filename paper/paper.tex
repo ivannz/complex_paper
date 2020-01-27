@@ -668,7 +668,7 @@ $C = 0$. From \eqref{eq:c-gauss-entropy-derivation} its entropy is
 
 The local reparameterization trick provides both faster computations, and better statistical
 efficiency of the SGVB gradient estimator, \citep{wang_fast_2013,kingma_variational_2015}.
-We assume that weights $W \in \cplx^{n\times m}$ of a dense linear layer are drawn from a
+Suppose that weights $W \in \cplx^{n\times m}$ of a dense linear layer are drawn from a
 mean field $\cplx$-Gaussian approximate posterior
 \begin{equation}  \label{eq:c-gauss-vi-general}
   W_{ij}
@@ -681,8 +681,8 @@ where mean, \textit{variance} and \textit{relation} are given by matrices $
   \mu, \Sigma, C \in \cplx^{n\times m}
 $ with $\Sigma_{ij} \in \real$, and $
   \lvert C_{ij} \rvert^2 \leq \Sigma_{ij}
-$. Property \eqref{eq:cn-affine} and independence of $W$ imply that for any $x \in \cplx^m$
-and $b \in \cplx^n$ the components of $y = W x + b$ are independent with
+$. The property \eqref{eq:cn-affine} and independence of elements of $W$ imply that for any
+$x \in \cplx^m$ and $b \in \cplx^n$ the components of $y = W x + b$ are independent with
 \begin{equation}  \label{eq:cplx-gauss-trick}
   y_i
     \sim \mathcal{N}^{\cplx}
@@ -698,11 +698,11 @@ The trick requires three matrix operations: $\mu x + b$, $\Sigma \lvert x \rvert
 $C x^2$ with the modulus and power applied elementwise.
 
 The trick and dropout can be applied to any layer, the output of which depends linearly
-on its parameters, e.g. convolutional layers, affine and bilinear transformations $
+on its parameters, e.g. convolutional layers, affine, and bilinear transformations $
   (x, z) \mapsto x^\top W^{(j)} z + b_j
 $. Similar to $\real$ case, variational dropout for $\cplx$ convolutions draws independent
-kernel $W$ for each spatial patch in the input. The rationale is simpler computations and
-variance reduction. Reduced variance stems from decorrelated gradient estimates from
+realizations of $W$ for each spatial patch in the input. The rationale is simpler computations
+and variance reduction. The latter effect stems from decorrelated gradient estimates from
 overlapping patches, \citep{kingma_variational_2015}, which allows \eqref{eq:cplx-gauss-trick}
 to use $\cplx$ convolutions of elementwise complex squares $x^2$ and amplitudes $\lvert x \rvert^2$
 with the relation and variance kernels.
@@ -735,7 +735,7 @@ layers. For this approximation the relation coefficients \eqref{eq:cplx-gauss-tr
 zero. We use MAP estimates of bias terms, i.e. assume an independent fully factorized Dirac
 approximation.
 
-We consider two priors for Bayesian dropout: log-uniform and $\cplx$-Gaussian empirical
+We consider two priors for Bayesian dropout: \verify{log-uniform} and $\cplx$-Gaussian empirical
 Bayes, \citep{kingma_variational_2015,molchanov_variational_2017,kharitonov_variational_2018}.
 For a fully factorized approximation $q(\omega)$ and factorized prior belief $\pi(\omega)$,
 the divergence term in ELBO \eqref{eq:elbo} is
@@ -745,10 +745,9 @@ the divergence term in ELBO \eqref{eq:elbo} is
     % = \sum_{ij} \mathbb{E}_{\omega_{ij} \sim q(\omega_{ij})}
     %   \log \tfrac{q(\omega_{ij})}{\pi(\omega_{ij})}
     % = \sum_{ij} KL\bigl( q(\omega_{ij}) \| \pi(\omega_{ij}) \bigr)
-    = \sum_{ij} \bigl(
-        - \mathbb{H}(q(\omega_{ij}))
-        - \mathbb{E}_{q(\omega_{ij})} \log{\pi(\omega_{ij})}
-      \bigr)
+    = - \sum_{ij}
+        \mathbb{H}(q(\omega_{ij}))
+        + \mathbb{E}_{q(\omega_{ij})} \log{\pi(\omega_{ij})}
     \,.
 \end{equation}
 We use approximation \eqref{eq:c-gauss-vi} and omit subscripts ${ij}$ below for brevity.
@@ -976,23 +975,17 @@ noise reparameterization, \citep{molchanov_variational_2017}, cannot be used in
 \section{Experiments} % (fold)
 \label{sec:experiments}
 
-In this section we will compare the complex variational dropout techniques, discussed
-above, on the tasks and datasets, that were studied in prior research on complex-%
-valued networks.
+In this section we compare the complex variational dropout techniques discussed above
+on the tasks and datasets, that were studied in prior research on complex-valued networks.
 
 \subsection{Tasks and datasets} % (fold)
 \label{sub:tasks_and_datasets}
 
-\citet{trabelsi_deep_2017} study the applicability of complex-valued networks to image
+\citet{trabelsi_deep_2017} study the applicability of $\cplx$-valued networks to image
 classification (CIFAR-10, CIFAR-100, reduced train of SVHN), music-transcription
 (MusicNet), and Speech Spectrum prediction (TIMIT).
-\begin{itemize}
-  \item 
-\end{itemize}
 
-test on MusicNet, (music transcription [14])
-
-complex high-dimensional time series In-phase Quadrature (IQ)
+% complex high-dimensional time series In-phase Quadrature (IQ)
 
 \citep{monning_evaluation_2018}
 \citep{jankowski_complex-valued_1996}
