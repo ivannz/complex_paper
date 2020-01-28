@@ -67,7 +67,7 @@
       "grad_clip": 0.05,
       "model" : {},
       "lr_scheduler": {
-        "cls": "<class 'cplxpaper.musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
+        "cls": "<class 'cplxpaper.musicnet.lr_scheduler.Trabelsi2017LRSchedule'>"
       },
       "optimizer": {
         "cls": "<class 'torch.optim.adam.Adam'>",
@@ -97,7 +97,7 @@
         "cls": "<class 'cplxpaper.mnist.models.real.SimpleConvModelARD'>"
       },
       "lr_scheduler": {
-        "cls": "<class 'cplxpaper.musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
+        "cls": "<class 'cplxpaper.musicnet.lr_scheduler.Trabelsi2017LRSchedule'>"
       },
       "optimizer": {
         "cls": "<class 'torch.optim.adam.Adam'>",
@@ -127,7 +127,7 @@
         "cls": "<class 'cplxpaper.mnist.models.real.SimpleConvModelMasked'>"
       },
       "lr_scheduler": {
-        "cls": "<class 'cplxpaper.musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
+        "cls": "<class 'cplxpaper.musicnet.lr_scheduler.Trabelsi2017LRSchedule'>"
       },
       "optimizer": {
         "cls": "<class 'torch.optim.adam.Adam'>",

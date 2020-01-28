@@ -83,7 +83,7 @@
     }
   },
   "model": {
-    "cls": "<class 'cplxpaper.musicnet.complex.CplxDeepConvNet'>",
+    "cls": "<class 'cplxpaper.musicnet.complex.DeepConvNet'>",
     "n_seq": 4096,
     "n_channels": 1,
     "n_outputs": 84
@@ -98,7 +98,7 @@
       "grad_clip": 0.05,
       "model" : {},
       "lr_scheduler": {
-        "cls": "<class 'cplxpaper.musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
+        "cls": "<class 'cplxpaper.musicnet.lr_scheduler.Trabelsi2017LRSchedule'>"
       },
       "optimizer": {
         "cls": "<class 'torch.optim.adam.Adam'>",
@@ -133,10 +133,10 @@
       "n_epochs": 200,
       "grad_clip": 0.05,
       "model" : {
-        "cls": "<class 'cplxpaper.musicnet.complex.extensions.CplxDeepConvNetARD'>"
+        "cls": "<class 'cplxpaper.musicnet.complex.DeepConvNetARD'>"
       },
       "lr_scheduler": {
-        "cls": "<class 'cplxpaper.musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
+        "cls": "<class 'cplxpaper.musicnet.lr_scheduler.Trabelsi2017LRSchedule'>"
       },
       "optimizer": {
         "cls": "<class 'torch.optim.adam.Adam'>",
@@ -163,10 +163,10 @@
       "n_epochs": 200,
       "grad_clip": 0.05,
       "model" : {
-        "cls": "<class 'cplxpaper.musicnet.complex.extensions.CplxDeepConvNetMasked'>"
+        "cls": "<class 'cplxpaper.musicnet.complex.DeepConvNetMasked'>"
       },
       "lr_scheduler": {
-        "cls": "<class 'cplxpaper.musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
+        "cls": "<class 'cplxpaper.musicnet.lr_scheduler.Trabelsi2017LRSchedule'>"
       },
       "optimizer": {
         "cls": "<class 'torch.optim.adam.Adam'>",

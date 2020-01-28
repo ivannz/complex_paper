@@ -63,7 +63,7 @@ def defaults(options):
             "grad_clip": 0.5,
             "early": None,
             "lr_scheduler": {
-                "cls": "<class 'musicnet.trabelsi2017.base.Trabelsi2017LRSchedule'>"
+                "cls": "<class 'cplxpaper.musicnet.lr_scheduler.Trabelsi2017LRSchedule'>"
             },
             "optimizer": {
                 "cls": "<class 'torch.optim.adam.Adam'>",
