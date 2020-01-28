@@ -22,3 +22,26 @@ class Trabelsi2017LRSchedule(LambdaLR):
 
         else:
             return 1e-3  # (1e-6)
+
+
+class FastStepScheduler(LambdaLR):
+    def __init__(self, optimizer):
+        super().__init__(optimizer, self.lr_lambda)
+
+    @classmethod
+    def lr_lambda(cls, epoch):
+        """Faster lr annealing for base lr 1e-3."""
+        if epoch < 5:
+            return 1e-0  # (1e-3)
+
+        elif epoch < 10:
+            return 1e-1  # (1e-4)
+
+        elif epoch < 20:
+            return 5e-2  # (5e-5)
+
+        elif epoch < 50:
+            return 1e-2  # (1e-5)
+
+        else:
+            return 1e-3  # (1e-6)
