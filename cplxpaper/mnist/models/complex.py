@@ -8,13 +8,17 @@ from cplxmodule.nn.layers import CplxReal, AsTypeCplx
 from cplxmodule.nn.layers import ConcatenatedRealToCplx
 from cplxmodule.nn.layers import CplxToConcatenatedReal
 
-# from cplxmodule.nn.relevance import CplxConv2dARD, CplxLinearARD
+# var-dropout
 from cplxmodule.nn.relevance.extensions import CplxLinearVDBogus
 from cplxmodule.nn.relevance.extensions import CplxConv2dVDBogus
 
+# automatic relevance determination
+from cplxmodule.nn.relevance.extensions import CplxLinearARD
+from cplxmodule.nn.relevance.extensions import CplxConv2dARD
+
 from cplxmodule.nn.masked import CplxConv2dMasked, CplxLinearMasked
 
-from ...musicnet.trabelsi2017.base import Flatten
+from ...musicnet.models.real.base import Flatten
 
 
 class SimpleConvModel(object):
@@ -45,9 +49,14 @@ class SimpleConvModel(object):
         return torch.nn.Sequential(OrderedDict(layers))
 
 
-class SimpleConvModelARD(SimpleConvModel):
+class SimpleConvModelVD(SimpleConvModel):
     Linear = CplxLinearVDBogus
     Conv2d = CplxConv2dVDBogus
+
+
+class SimpleConvModelARD(SimpleConvModel):
+    Linear = CplxLinearARD
+    Conv2d = CplxConv2dARD
 
 
 class SimpleConvModelMasked(SimpleConvModel):
@@ -77,8 +86,12 @@ class SimpleDenseModel(object):
         return torch.nn.Sequential(OrderedDict(layers))
 
 
-class SimpleDenseModelARD(SimpleDenseModel):
+class SimpleDenseModelVD(SimpleDenseModel):
     Linear = CplxLinearVDBogus
+
+
+class SimpleDenseModelARD(SimpleDenseModel):
+    Linear = CplxLinearARD
 
 
 class SimpleDenseModelMasked(SimpleDenseModel):
@@ -105,8 +118,12 @@ class TwoLayerDenseModel(object):
         return torch.nn.Sequential(OrderedDict(layers))
 
 
-class TwoLayerDenseModelARD(TwoLayerDenseModel):
+class TwoLayerDenseModelVD(TwoLayerDenseModel):
     Linear = CplxLinearVDBogus
+
+
+class TwoLayerDenseModelARD(TwoLayerDenseModel):
+    Linear = CplxLinearARD
 
 
 class TwoLayerDenseModelMasked(TwoLayerDenseModel):

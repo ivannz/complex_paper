@@ -1,10 +1,17 @@
 import torch
 from collections import OrderedDict
 
-from cplxmodule.nn.relevance import Conv2dARD, LinearARD
+# var-dropout
+from cplxmodule.nn.relevance.extensions import LinearVD
+from cplxmodule.nn.relevance.extensions import Conv2dVD
+
+# automatic relevance determination
+from cplxmodule.nn.relevance.extensions import LinearARD
+from cplxmodule.nn.relevance.extensions import Conv2dARD
+
 from cplxmodule.nn.masked import Conv2dMasked, LinearMasked
 
-from ...musicnet.trabelsi2017.base import Flatten
+from ...musicnet.models.real.base import Flatten
 
 
 class SimpleConvModel(object):
@@ -31,6 +38,11 @@ class SimpleConvModel(object):
         ]))
 
 
+class SimpleConvModelVD(SimpleConvModel):
+    Linear = LinearVD
+    Conv2d = Conv2dVD
+
+
 class SimpleConvModelARD(SimpleConvModel):
     Linear = LinearARD
     Conv2d = Conv2dARD
@@ -55,6 +67,10 @@ class SimpleDenseModel(object):
         ]))
 
 
+class SimpleDenseModelVD(SimpleDenseModel):
+    Linear = LinearVD
+
+
 class SimpleDenseModelARD(SimpleDenseModel):
     Linear = LinearARD
 
@@ -73,6 +89,10 @@ class TwoLayerDenseModel(object):
             ("relu2", torch.nn.ReLU()),
             ("lin_2", cls.Linear(4096, n_outputs)),
         ]))
+
+
+class TwoLayerDenseModelVD(TwoLayerDenseModel):
+    Linear = LinearVD
 
 
 class TwoLayerDenseModelARD(TwoLayerDenseModel):
