@@ -9,10 +9,10 @@ from cplxmodule.nn.conv import CplxConv1d
 
 from cplxmodule.nn.batchnorm import CplxBatchNorm1d
 
-from ..trabelsi2017.base import Flatten, BodyMixin
+from ..real.base import Flatten, BodyMixin
 
 
-class CplxTwoLayerDense(torch.nn.Module):
+class TwoLayerDense(torch.nn.Module):
     """
     n_channels : int
         number of cplx channels (2 x floats).
@@ -41,7 +41,7 @@ def one_pool(n_seq, cls, kernel, stride):
     return n_seq, CplxToCplx[cls](kernel, stride)
 
 
-class CplxShallowConvNet(torch.nn.Module):
+class ShallowConvNet(torch.nn.Module):
     Linear = CplxLinear
     Conv1d = CplxConv1d
 
@@ -64,7 +64,7 @@ class CplxShallowConvNet(torch.nn.Module):
         ]))
 
 
-class CplxDeepConvNet(torch.nn.Module):
+class DeepConvNet(torch.nn.Module):
     Linear = CplxLinear
     Conv1d = CplxConv1d
 
