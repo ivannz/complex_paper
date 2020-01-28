@@ -86,9 +86,11 @@ class DeepConvNet(torch.nn.Module):
 
         return n_seq, torch.nn.Sequential(OrderedDict(layers))
 
-    def __new__(cls, n_seq=4096, n_channels=1, n_outputs=84):
+    def __new__(cls, n_seq=4096, n_channels=1, n_outputs=84, legacy=True):
+        k = 3 if legacy else 6  # sigh, a mistake... had to add `legacy` flag
+
         param = [
-            (  1,  16, 3, 2,  True),  # Trabelsi et al. (2017) has kernel=6 (L57)
+            (  1,  16, k, 2,  True),  # Trabelsi et al. (2017) has kernel=6 (L57)
             ( 16,  32, 3, 2,  True),
             ( 32,  64, 3, 1,  True),
             ( 64,  64, 3, 1,  True),
