@@ -94,7 +94,7 @@
       "n_epochs": 40,
       "grad_clip": 0.05,
       "model" : {
-        "cls": "<class 'cplxpaper.mnist.models.real.SimpleConvModelARD'>"
+        "cls": "<class 'cplxpaper.mnist.models.real.SimpleConvModelVD'>"
       },
       "lr_scheduler": {
         "cls": "<class 'cplxpaper.musicnet.lr_scheduler.Trabelsi2017LRSchedule'>"

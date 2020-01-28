@@ -18,7 +18,7 @@ setup(
         "cplxpaper.mnist.models",
         "cplxpaper.cifar.models"
     ],
-    requires=["torch", "numpy", "pandas", "cplxmodule", "scikit-learn"],
+    requires=["torch", "numpy", "pandas", "cplxmodule", "sklearn"],
     # install_requires=[  # uncomment for publishing
     #     "cplxmodule @ git+https://github.com/ivannz/cplxmodule.git"
     # ]
