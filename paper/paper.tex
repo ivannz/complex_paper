@@ -978,6 +978,72 @@ noise reparameterization, \citep{molchanov_variational_2017}, cannot be used in
 In this section we compare the complex variational dropout techniques discussed above
 on the tasks and datasets, that were studied in prior research on complex-valued networks.
 
+% general training strategy
+The goal of the following experiments to study the sparsity-performance trade-off of the
+proposed Bayesian sparsification methods for $\cplx$-valued networks. To this end we employ
+the following training plan in every experiment. The model is trained in three successive
+stages:
+``dense'' $\to$ ``sparsify'' $\to$ ``fine-tune''
+
+At the first, ``dense'', stage every network retains its original non-bayesian layers
+and is fit ``as-is'' using only the likelihood from \eqref{eq:elbo} without variational
+dropout.
+
+During the second stage ``sparsify'' we make the relevant layers bayesian and apply
+variational dropout sec.~\ref{ssub:variational_dropout} (or sec.~\ref{ssub:empirical_bayes})
+or their $\real$ counterparts. To be able to study the attainable sparsity levels we
+inject a coefficient $C \in (0, 1]$ at the KL divergence term in
+\eqref{eq:elbo}:
+\begin{equation}  \label{eq:elbo_with_coef}
+    - \frac{C}N KL(q_{\theta} \| \pi_{\lambda})
+    + \frac1{M} \sum_{i=1}^M
+        \log p_{\phi}(z_i \mid g(\varepsilon_i; \theta))
+    \,. \tag{\ref{eq:elbo}'}
+\end{equation}
+Increasing $C$ yields increasingly more sparse networks upon termination of this stage.
+
+Before transitioning to the ``fine-tune'' stage we compute the mask of non-zero weights
+in each layer based on the relevance scores $\alpha$ (sec.~\ref{sub:dropout}). Since
+the variational approximation factorizes into univariate distributions, whether a $\cplx$
+or $\real$ parameter is zero or not is determined from its relevance score $
+  \alpha = \tfrac{\sigma^2}{\lvert\mu\rvert^2}
+$: non-zero (relevant) if $\log \alpha \leq \tau$, zero (irrelevant) otherwise.
+In every experiment we set $\tau = -\tfrac12$, which yields extreme levels of sparsity,
+especially considering that the recommended setting in \citep{molchanov_variational_2017}
+was $3$. The rationale behind our choice was twofold: we use an extra fine tuning
+stage, and keep the weights that are away from zero with high probability.
+
+These masks are then used during ``fine-tune'' to train the remaining non-zero parameters
+similar to the ``dense'' stage, i.e. with layers non-bayesian layers, but with fixed
+sparsity masks.
+
+Unless specified otherwise we use ADAM optimizer with the base learning rate of $10^{-3}$
+and the annealing schedule from .
+
+\subsection{MNIST-like datasets} % (fold)
+\label{sub:mnist_like_datasets}
+
+We conduct a moderately sized numerical experiment on MNIST and similar datasets to see
+whether the proposed $\cplx$-var dropout indeed reasonably sparsifies complex-valued networks.
+
+We compare with the studied $\cplx$-valued networks against their classical $\real$-valued
+counterparts both in terms of the resulting sparsity and test performance.
+
+Although image data is not $\cplx$ in nature, we apply two-dimensional Fourier Transform
+in order to get $\cplx$-valued inputs. We concede that this is a rather unnatural representation
+of image data, however the selection of publicly available datasets, which are not artificially
+$\cplx$-valued, is limited to audio, speech and music. Indeed, as is shown by the numerical
+experiments, a real-valued model is trained on the Fourier transformed data underperforms
+relative to its architecturally similar twin fit to on the raw color data.
+
+\citet{trabelsi_deep_2017} study the applicability of $\cplx$-valued networks to image
+classification (CIFAR-10, CIFAR-100, and a subset of SVHN). Their approach is to either
+embed $\real$ in $\cplx$ (by $\Re z = 0$), or train a smaller auxiliary network, that
+synthesizes the imaginary component from the raw channel data. \todo{DO THIS}
+In our experiments we opt to transforming the input $2d$ data with 
+
+% subsection mnist_like_datasets (end)
+
 \subsection{Tasks and datasets} % (fold)
 \label{sub:tasks_and_datasets}
 
