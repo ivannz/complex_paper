@@ -50,12 +50,15 @@
 
 \begin{abstract}
 With continual miniaturization ever more applications of deep learning can be found in
-embedded systems. Common embedded applications include on-device image recognition and
-signal processing (audio and radio). We investigate complex-domain deep neural networks
-and complex-valued Bayesian compression thereof. To this end we conduct a large scale
-numerical study of complex-valued networks to assess quality - compression rate trade-off.
-The results of this study have direct implications for real-time signal processing
-throughput of embedded systems.
+embedded systems, where it is common to encounter data with natural complex domain
+representation. To this end we extend Variational Dropout of \citet{kingma_variational_2015}
+and \citet{kharitonov_variational_2018} to complex-valued neural networks building upon
+the work of \citet{trabelsi_deep_2017}. We verify the proposed Bayesian technique and
+assess the performance-compression trade-off by conducting a large-scale numerical study
+of $\cplx$-valued networks on two tasks: image recognition on MNIST-like and CIFAR10
+datasets and music transcription on MusicNet \citep{thickstun_learning_2017}. We reliably
+replicate the state-of-the-art result for $\cplx$-valued networks on MusicNet with $50-100\times$
+compression rate.
 \end{abstract}
 
 \section{Introduction} % (fold)
@@ -977,20 +980,27 @@ noise reparameterization, \citep{molchanov_variational_2017}, cannot be used in
 
 In this section we compare the complex variational dropout techniques discussed above
 on the tasks and datasets, that were studied in prior research on complex-valued networks.
+All experiments share the following settings unless specified otherwise:
+\begin{itemize}
+  \item ADAM optimizer with the base learning rate of $10^{-3}$
+  \item learning rate the annealing schedule from \citep{trabelsi_deep_2017}
+  \item global gradient clipping to within an $\ell_2$-norm ball of radius $0.05$
+\end{itemize}
 
-% general training strategy
+\subsection{Fitting and compression} % (fold)
+\label{sub:fitting_and_compression}
+
 The goal of the following experiments to study the sparsity-performance trade-off of the
 proposed Bayesian sparsification methods for $\cplx$-valued networks. To this end we employ
 the following training plan in every experiment. The model is trained in three successive
-stages: ``dense'' $\to$ ``sparsify'' $\to$ ``fine-tune''.
+stages: ``dense'' $\to$ ``sparsify'' $\to$ ``fine-tune''. Parameter values and the internal
+state of the optimizer for similar parameters are kept between stages.
+
+At the \textit{``dense''} stage every network is fit ``as-is'', retaining its original
+non-bayesian architecture and using only the likelihood from \eqref{eq:elbo} without
+variational dropout.
 %
-The last two stages are used to compare the .
-
-At the first, ``dense'', stage every network retains its original non-bayesian layers
-and is fit ``as-is'' using only the likelihood from \eqref{eq:elbo} without variational
-dropout.
-
-During the ``sparsify'' stage we make the relevant layers bayesian and apply $\cplx$-variational
+During the \textit{``sparsify''} stage we make every layer bayesian and apply $\cplx$-variational
 dropout sec.~\ref{ssub:variational_dropout} (or sec.~\ref{ssub:empirical_bayes}) or its $\real$
 counterpart. To be able to study the attainable sparsity levels we inject a coefficient $
   C \in (0, 1]
@@ -1002,33 +1012,75 @@ $ at the KL divergence term in \eqref{eq:elbo}:
     \,. \tag{\ref{eq:elbo}'}
 \end{equation}
 Higher $C$ yields increasingly more sparse layers upon termination of this stage.
+%
+At the \textit{``fine-tune''} stage we deduce sparsity masks from the parameters of the fit
+variational approximation and train the remaining non-zero parameters similarly to the
+``dense'' stage, i.e. with non-bayesian layers, but with fixed sparsity masks.
 
-Before transitioning to the ``fine-tune'' stage we compute the mask of non-zero weights
-in each layer based on the relevance scores $\alpha$ (sec.~\ref{sub:dropout}). Since
+Between \textit{``sparsify''} and \textit{``fine-tune''} stages we compute masks of non-zero
+weights in each layer based on the relevance scores $\alpha$ (sec.~\ref{sub:dropout}). Since
 the variational approximation factorizes into univariate distributions, whether a $\cplx$
-or $\real$ parameter is zero or not is determined from its relevance score $
+or $\real$ parameter is zero or not is determined from individual relevance scores $
   \alpha = \tfrac{\sigma^2}{\lvert\mu\rvert^2}
-$: non-zero (relevant) if $\log \alpha \leq \tau$, zero (irrelevant) otherwise. Figure~%
-\ref{fig:typical_log_alpha_distrib} depicts the distribution of $\log \alpha$ values
-from \textbf{some run}, which exhibits the typical behaviour we noticed in all experiments
-conducted: there always is a single mode within the moderately negative range, and one or
-two modes to the right of $0$. The relative mass of each mode changes with $C$ and the
-higher the coefficient is, the more mass is shifted to the positive half. However, in every
-exepriment the trough between the peaks of the negative mode and the first positive one
-is around zero.
+$: non-zero if $\log \alpha \leq \tau$, zero otherwise. Figure~\ref{fig:log-relevance}
+(top) displays general shape of the distribution of $\log \alpha$ values from the experiment
+in sec.~\ref{sub:mnist_like_datasets}, which depicts the typical behaviour noticed in all
+experiments conducted on every considered dataset: there always is a single mode within the
+moderately negative range, and one or two modes to the right of $0$. The relative mass of
+each mode changes with $C$ and the higher the coefficient is, the more mass is shifted to
+the positive half. In every experiment the trough between the peaks of the negative mode
+and the first positive one is around zero.
 
-Thus, in every experiment we set $\tau = -\tfrac12$, which is admittedly very low, especially
-considering that the recommended setting in \citep{molchanov_variational_2017} is $3$. This
-yields high levels of sparsity,
-The rationale behind our choice was twofold: we use an extra fine tuning
-stage, and keep the weights that are away from zero with high probability.
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[b]{0.9\textwidth}
+    \centering
+    \includegraphics[width=1.\linewidth,draft]{../notebooks/assets/grad_log.pdf}
+    % \caption{} \label{fig:log-relevance-kde}
+  \end{subfigure} \\
+  % \hfill
+  \begin{subfigure}[b]{0.9\textwidth}
+    \centering
+    \includegraphics[width=1.\linewidth,draft]{../notebooks/assets/grad_log.pdf}
+    % \caption{} \label{fig:log-relevance-proba}
+  \end{subfigure}
+  \caption{%
+    \textit{top}: Estimate of $\log\alpha$ density for a convolutional and dense layer
+    from the convolutional model of sec.~\ref{sub:mnist_like_datasets}.
+    \textit{bottom}: The probability of 
+  }
+  \label{fig:log-relevance}
+\end{figure}
 
-These masks are then used during ``fine-tune'' to train the remaining non-zero parameters
-similar to the ``dense'' stage, i.e. with layers non-bayesian layers, but with fixed
-sparsity masks.
+We decide if a parameter is \textit{``non-zero''} if it is within $\delta$ relative
+tolerance of its mean with high probability under the approximate posterior. Since
+\eqref{eq:c-gauss-vi} is Gaussian, $
+  \tfrac{\lvert w - \mu \rvert^2}
+        {\alpha \lvert \mu \rvert^2}
+$ is $\chi^2_k$ distributed with shape $k=1$ ($\real$) or $2$ ($\cplx$), whence
+\begin{equation} \label{eq:prob_relevant}
+  \Pr\bigl(
+    \lvert w - \mu \rvert \leq \delta \lvert \mu \rvert
+  \bigr)
+    = \Pr\biggl(
+      \frac{\lvert w - \mu \rvert^2}{\alpha \lvert \mu \rvert^2}
+        \leq \frac{\delta^2}{\alpha}
+    \biggr)
+    = \chi^2_k\biggl(\frac{\delta^2}{\alpha}\biggr)
+  \,.
+\end{equation}
+Figure~\ref{fig:log-relevance} (bottom) shows the probability of a $\real$ (or $\cplx$) 
+parameter being non-zero for various $\delta\in(0, \tfrac12)$ as a function of $\log \alpha$.
+For a reasonably generous $\delta = 25\%$ tolerance all values of $\log \alpha$ below
+$-2.5$ yield a reasonably high chance of a non-zero parameter. Given that $q_\theta$ is
+merely an approximation we opt for a slightly higher $\log \alpha$ threshold, and thus
+set $\tau = -\tfrac12$ in every experiment, despite it being lower than the recommended
+$\tau = 3$ in \citep{molchanov_variational_2017}, but yields much higher levels of sparsity.
+The rationale behind our choice was twofold: we use an extra fine tuning stage, and keep the
+parameters that are away from zero with high probability.
 
-Unless specified otherwise we use ADAM optimizer with the base learning rate of $10^{-3}$
-and the annealing schedule from .
+% subsection fitting_and_compression (end)
+
 
 \subsection{MNIST-like datasets} % (fold)
 \label{sub:mnist_like_datasets}
