@@ -1105,33 +1105,64 @@ real-valued model trained on the Fourier transformed data underperforms relative
 its architectural twin, fit to on the raw color data. At the same time complex-valued
 models
 
-% a copule of plot form mnist and fashion mnist
-% discuss the plots describing how the test -perfromance grows with compression
+% a couple of plots from MNIST and Fashion-MNIST
+% write a note on the incompressible parameters (bias, batch norm etc.)
+% discuss the plots describing how the test-performance grows with compression and then drops if the model is too sparse
 % hinting at overfitting/regularization effects of masking and sparsification
+
 
 % subsection mnist_like_datasets (end)
 
-\subsection{Tasks and datasets} % (fold)
-\label{sub:tasks_and_datasets}
+\subsection{CIFAR10/100} % (fold)
+\label{sub:cifar10_100}
 
-\citet{trabelsi_deep_2017} study the applicability of $\cplx$-valued networks to image
-classification (CIFAR-10, CIFAR-100, reduced train of SVHN), music-transcription
-(MusicNet), and Speech Spectrum prediction (TIMIT).
+% mention the same experimental setup as in MNIST
+% describe the VGG16 model and its cplx-valued modification
+% mention that fourier-features perfomed worse than raw image data embeded in to $\cplx$
+% compare compressed cplx-vgg against real-vgg
+% draw some conclusions
 
-% complex high-dimensional time series In-phase Quadrature (IQ)
+% subsection cifar10_100 (end)
 
-\citep{monning_evaluation_2018}
-\citep{jankowski_complex-valued_1996}
-\citep{amin_complex-valued_2012}
-\citep{sarroff_complex_2018}
+\subsection{MusciNet} % (fold)
+\label{sub:muscinet}
 
-% subsection tasks_and_datasets (end)
+\citet{trabelsi_deep_2017} designed a complex-valued network that achieved SOTA results
+on the music-transcription task on MusicNet, \citep{thickstun_learning_2017}.
+
+% describe musicnet as in Trabelsi et al. (2017) also get some hints from thickstun_learning_2017
+
+% mention 44khz to 11khz downsampling and the extraction of the originally recommended test set
+% and the validation set chosen by Trabelsi et al.
+
+% Describe the network by Trabelsi and then present the reslts form then model with kernel size \textbf{6} 
+% the causally mantion that you also conducted a large study of an inferior model with kenrel size 3.
+% (do not mention that this was a mistake, you dummy!)
+
+% subsection muscinet (end)
 
 % section experiments (end)
 
 
 \section{Conclusion} % (fold)
 \label{sec:conclusion}
+
+Despite having higher arithmetic complexity, complex-valued models provide built-in
+joint amplitude-phase transformations and regularization, \citep{hirose_complex-valued_2009},
+and enjoy superior performance on naturally $\cplx$-valued datasets \citep{citation_needed},
+that occur in ultra high-frequency radio communications and audio signal processing. In this
+study we address the issue of excessive the arithmetic complexity of complex-valued networks
+by extending the existing Bayesian compression techniques by \citet{kingma_variational_2015},
+\citet{molchanov_variational_2017} and \citet{kharitonov_variational_2018} to $\cplx$-valued
+model parameters. To this end we have conducted a large scale numerical study of such networks
+to assess the performance-compression rate trade-off and achieved performance, comparable
+to SOTA on the MusicNet dataset.
+
+Much like $\real$-valued variational dropout, the proposed $\cplx$-valued extension can be
+straightforwardly enhanced to provide structured sparsity. The results of this study have
+direct implications for real-time signal processing with embedded deep learning applications
+both in terms of lower storage requirements and higher throughput stemming from fewer
+floating-point multiplications.
 
 % section conclusion (end)
 
