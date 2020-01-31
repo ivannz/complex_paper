@@ -17,7 +17,7 @@
 
 \usepackage{booktabs}
 
-\title{Bayesian Sparsification of $\cplx$-valued networks}
+\title{Bayesian Sparsification of Deep $\cplx$-valued networks}
 \author{Ivan Nazarov, and Evgeny Burnaev}
 
 %% notation
@@ -49,16 +49,14 @@
 \maketitle
 
 \begin{abstract}
-With continual miniaturization ever more applications of deep learning can be found in
-embedded systems, where it is common to encounter data with natural complex domain
-representation. To this end we extend Variational Dropout of \citet{kingma_variational_2015}
-and \citet{kharitonov_variational_2018} to complex-valued neural networks building upon
-the work of \citet{trabelsi_deep_2017}. We verify the proposed Bayesian technique and
-assess the performance-compression trade-off by conducting a large-scale numerical study
-of $\cplx$-valued networks on two tasks: image recognition on MNIST-like and CIFAR10
-datasets and music transcription on MusicNet. We reliably replicate the state-of-the-art
-result by \citet{thickstun_learning_2017} for $\cplx$-valued networks on MusicNet with
-$50-100\times$ compression rate.
+With continual miniaturization ever more applications of deep learning can be found
+in embedded systems, where it is common to encounter data with natural complex domain
+representation. To this end we extend Variational Dropout to complex-valued neural
+networks. We verify the proposed Bayesian technique and assess the performance-compression
+trade-off by conducting a large-scale numerical study of $\cplx$-valued networks on
+two tasks: image recognition on MNIST-like and CIFAR10 datasets and music transcription
+on MusicNet. We reliably replicate the state-of-the-art result by \citet{trabelsi_deep_2017}
+for $\cplx$-valued networks on MusicNet with $50-100\times$ compression rate.
 \end{abstract}
 
 \section{Introduction} % (fold)
@@ -166,8 +164,13 @@ the model, which is essential for superior compression \citep{he_amc:_2018}.
 
 % our contribution
 Inspired by variational sparsification and stochastic sparsification techniques we
-develop bayesian dropout for $\cplx$-valued networks.
-%
+extend Bayesian dropout for $\cplx$-valued networks. We assess the performance-compression
+trade-off of the the proposed Bayesian technique by conducting a large-scale numerical
+study of $\cplx$-valued networks on two tasks: image recognition on MNIST-like and CIFAR10
+datasets and music transcription on MusicNet, \citep{thickstun_learning_2017}. We reproduce
+the state-of-the-art result by \citet{trabelsi_deep_2017} for $\cplx$-valued networks on
+the latter with $\approx 1-2\%$ of remaining non-zero parameters.
+
 The paper is structured as follows. In sec.~\ref{sec:bayesian_dropout} we review Bayesian
 dropout techniques, and in sec.~\ref{sec:c_valued_networks} we provide a brief summary of
 the inner working of complex-valued networks as functions of complex argument. The main
