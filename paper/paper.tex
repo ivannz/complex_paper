@@ -1046,13 +1046,13 @@ the first positive one is around zero.
   \centering
   \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=1.\linewidth,draft]{../assets/log-alpha__histograms.pdf}
+    \includegraphics[width=1.\linewidth]{../assets/log-alpha__sum__mnist__20200131-202713.pdf}
     % \caption{} \label{fig:log-relevance-kde}
   \end{subfigure} \\
   % \hfill
   \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=1.\linewidth,draft]{../assets/proba_of_nonzero.pdf}
+    \includegraphics[width=1.\linewidth]{../assets/log-alpha__sum__fashion-mnist__20200131-205926.pdf}
     % \caption{} \label{fig:log-relevance-proba}
   \end{subfigure}
   \caption{%
@@ -1119,20 +1119,21 @@ models.
 % a couple of plots from MNIST and Fashion-MNIST
 \begin{figure}[!ht]
   \centering
-  \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
+  \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=1.\linewidth,draft]{../assets/log-alpha__histograms.pdf}
+    \includegraphics[width=1.\linewidth]{../assets/sum__mnist__fine-tune.pdf}
     % \caption{} \label{fig:log-relevance-kde}
-  \end{subfigure} \\
+  \end{subfigure} \\%
   % \hfill
-  \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
+  \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=1.\linewidth,draft]{../assets/proba_of_nonzero.pdf}
+    \includegraphics[width=1.\linewidth]{../assets/sum__fashion-mnist__fine-tune.pdf}
     % \caption{} \label{fig:log-relevance-proba}
   \end{subfigure}
   \caption{%
-    \textit{top}: The performance-compression tradeoff for MNIST \citep{citation_needed}.
-    \textit{bottom}: The performance-compression tradeoff for Fashion MNIST \citep{citation_needed}.
+    The accuracy-compression tradeoff after ``fine-tune''.
+    \textit{top}: MNIST \citep{citation_needed};
+    \textit{bottom}: Fashion MNIST \citep{citation_needed}.
   }
   \label{fig:mnist-like_tradeoff}
 \end{figure}
@@ -1179,22 +1180,48 @@ the sample during SGD.
   \centering
   \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=1.\linewidth,draft]{../assets/log-alpha__histograms.pdf}
+    \includegraphics[width=1.\linewidth]{../assets/grid_cplx_fine_kl_div_v3_fast-fine-tune.pdf}
     % \caption{} \label{fig:log-relevance-kde}
   \end{subfigure} \\
   % \hfill
   \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=1.\linewidth,draft]{../assets/proba_of_nonzero.pdf}
+    \includegraphics[width=1.\linewidth]{../assets/grid_cplx_fine_kl_div_v2-fine-tune.pdf}
     % \caption{} \label{fig:log-relevance-proba}
   \end{subfigure}
   \caption{%
-    \textit{top}: MusicNet for the model of \citep{trabelsi_deep_2017} with kernel size $3$.
-    \textit{bottom}: The performance-compression tradeoff for Fashion MNIST \citep{citation_needed}.
+    Average Percision frontier for the convolutional model of \citet{trabelsi_deep_2017}.
+    Shaded horiontal region represents the $\mu\pm\sigma$ bands for the performance of the
+    uncompressed model.
+    \textit{top}: Original model ($k=6$) compressed with \textbf{\color{orange} VD}
+    (\ref{ssub:variational_dropout}) and \textbf{\color{blue} ARD} (\ref{ssub:empirical_bayes});
+    \textit{bottom}: The model of \citep{trabelsi_deep_2017} with kernel size $3$
+    compressed with \textbf{\color{blue} VD} (\ref{ssub:variational_dropout}).
   }
-  \label{fig:mnist-like_tradeoff}
+  \label{fig:musicnet_tradeoff}
 \end{figure}
 
+
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
+    \centering
+    \includegraphics[width=1.\linewidth]{../assets/grid_cplx_fine_kl_div_v3_fast-c-ard-tradeoff.pdf}
+    % \caption{} \label{fig:log-relevance-kde}
+  \end{subfigure} \\
+  % \hfill
+  \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
+    \centering
+    \includegraphics[width=1.\linewidth]{../assets/grid_cplx_fine_kl_div_v3_fast-c-ard-tradeoff.pdf}
+    % \caption{} \label{fig:log-relevance-proba}
+  \end{subfigure}
+  \caption{%
+    Pre ``finte-tune'' performance of the best models from figure \ref{fig:musicnet_tradeoff}
+    compressed with methods of sec.~\ref{sec:dropout_for_c_valued_layers}:
+    (\ref{ssub:variational_dropout} -- \textit{top}, \ref{ssub:empirical_bayes} --  \textit{bottom}).
+  }
+  \label{fig:musicnet_tradeoff_pre_fune-tune}
+\end{figure}
 % subsection muscinet (end)
 
 % section experiments (end)
