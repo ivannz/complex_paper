@@ -986,6 +986,13 @@ All experiments share the following settings unless specified otherwise:
   \item learning rate the annealing schedule from \citep{trabelsi_deep_2017}
   \item global gradient clipping within an $\ell_2$-norm ball of radius $0.05$
 \end{itemize}
+Every experiment is replicated several times to take random effects into account, e.g.
+random network initialization prior to ``dense'' stage, randomly ordered batches during
+SGD. Throughout every experiment on MNIST-like datasets (sec.~\ref{sub:mnist_like_datasets},
+we \textit{fixed} a random subset of the train split of each dataset, and used the test
+split to gauge the final performance. Same appriach was applied to CIFAR10 (sec.~%
+\ref{sub:cifar10_100} experiments, which could partly expalin the overall poor test
+perfomrnace we got from the tested VGG16 model ($\real$ and $\cplx$ version).
 
 \subsection{Fitting and compression} % (fold)
 \label{sub:fitting_and_compression}
@@ -1138,6 +1145,11 @@ on the music-transcription task on MusicNet, \citep{thickstun_learning_2017}.
 % Describe the network by Trabelsi and then present the reslts form then model with kernel size \textbf{6} 
 % the causally mantion that you also conducted a large study of an inferior model with kenrel size 3.
 % (do not mention that this was a mistake, you dummy!)
+
+The set up of the experiment is thus:
+Each full three-stage run is replicated five times take random effects into account, e.g.
+random network initialization prior to ``dense'' stage, randomly picked $1000$ batches from
+the sample during SGD.
 
 % subsection muscinet (end)
 
