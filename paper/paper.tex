@@ -56,9 +56,9 @@ and \citet{kharitonov_variational_2018} to complex-valued neural networks buildi
 the work of \citet{trabelsi_deep_2017}. We verify the proposed Bayesian technique and
 assess the performance-compression trade-off by conducting a large-scale numerical study
 of $\cplx$-valued networks on two tasks: image recognition on MNIST-like and CIFAR10
-datasets and music transcription on MusicNet \citep{thickstun_learning_2017}. We reliably
-replicate the state-of-the-art result for $\cplx$-valued networks on MusicNet with $50-100\times$
-compression rate.
+datasets and music transcription on MusicNet. We reliably replicate the state-of-the-art
+result by \citet{thickstun_learning_2017} for $\cplx$-valued networks on MusicNet with
+$50-100\times$ compression rate.
 \end{abstract}
 
 \section{Introduction} % (fold)
@@ -990,9 +990,9 @@ Every experiment is replicated several times to take random effects into account
 random network initialization prior to ``dense'' stage, randomly ordered batches during
 SGD. Throughout every experiment on MNIST-like datasets (sec.~\ref{sub:mnist_like_datasets},
 we \textit{fixed} a random subset of the train split of each dataset, and used the test
-split to gauge the final performance. Same appriach was applied to CIFAR10 (sec.~%
-\ref{sub:cifar10_100} experiments, which could partly expalin the overall poor test
-perfomrnace we got from the tested VGG16 model ($\real$ and $\cplx$ version).
+split to gauge the final performance. Same approach was applied to CIFAR10 (sec.~%
+\ref{sub:cifar10_100} experiments, which could partly explain the overall poor test
+performance we got from the tested VGG16 model ($\real$ and $\cplx$ version).
 
 \subsection{Fitting and compression} % (fold)
 \label{sub:fitting_and_compression}
@@ -1022,7 +1022,7 @@ Higher $C$ yields increasingly more sparse layers upon termination of this stage
 %
 At the \textit{``fine-tune''} stage we deduce sparsity masks from the parameters of the fit
 variational approximation and train the remaining non-zero parameters similarly to the
-``dense'' stage, i.e. with non-bayesian layers, but with fixed sparsity masks.
+``dense'' stage, i.e. with non-Bayesian layers, but with fixed sparsity masks.
 
 Between \textit{``sparsify''} and \textit{``fine-tune''} stages we compute masks of non-zero
 weights in each layer based on the relevance scores $\alpha$ (sec.~\ref{sub:dropout}). Since
@@ -1109,7 +1109,7 @@ is limited to audio, speech and music.
 
 Indeed, as is shown by the numerical experiments on MNIST-like datasets and CIFAR10, a
 real-valued model trained on the Fourier transformed data underperforms relative to
-its architectural twin, fit to on the raw color data. At the same time complex-valued
+its architectural twin, fit to on the raw colour data. At the same time complex-valued
 models
 
 % a couple of plots from MNIST and Fashion-MNIST
