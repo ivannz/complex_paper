@@ -111,5 +111,8 @@ def reconstruct_grid(parameters):
         for k, v in flat.items():
             grid[k].add(v)
 
+        for k in grid.keys() - flat.keys():
+            grid[k].add(None)
+
     # drop all static settings in the grid
     return {k: v for k, v in grid.items() if len(v) > 1}, options
