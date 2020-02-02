@@ -3,6 +3,7 @@ import os
 import copy
 import tqdm
 import json
+import time
 import warnings
 
 import torch
@@ -307,9 +308,17 @@ def run(options, folder, suffix, verbose=True, save_optim=False):
     # cudnn float32 ConvND does not seem to guarantee +ve sign of the result
     #  on inputs, that are +ve by construction.
     # torch.backends.cudnn.deterministic = True
+    dttm = time.strftime("%Y%m%d-%H%M%S")
 
     options = defaults(options)
+    options.update({
+        "__version__": __version__,
+        "__timestamp__": dttm,
+    })
+
     options_backup = copy.deepcopy(options)
+    with open(os.path.join(folder, "config.json"), "w") as fout:
+        json.dump(options_backup, fout, indent=2, sort_keys=False)
 
     # placement (dtype / device)
     devtype = dict(device=torch.device(options["device"]), dtype=None)
