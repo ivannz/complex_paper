@@ -208,6 +208,16 @@ def get_early_stopper(scorers, recipe):
     return get_instance(**recipe)
 
 
+def state_dict_with_masks(model, **kwargs):
+    """Harvest and binarize masks, and cleanup the zeroed parameters."""
+    with torch.no_grad():
+        masks = compute_ard_masks(model, **kwargs)
+        state_dict, masks = binarize_masks(model.state_dict(), masks)
+
+    state_dict.update(masks)
+    return state_dict, masks
+
+
 def state_create(recipe, stage, devtype):
     """Create a new state, i.e. model, optimizer and name-id mapper (for state
     inheritance below), from the stage and model settings.
@@ -254,11 +264,8 @@ def state_inherit(state, options, *, old=None, **sparsity_kwargs):
         optim_state, source_mapper = old.optim.state_dict(), old.mapper
         inheritable = isinstance(state.optim, type(old.optim))
 
-        # Harvest and binarize masks, and clean the related parameters
-        masks = compute_ard_masks(old.model, **sparsity_kwargs)
-        state_dict, masks = binarize_masks(old.model.state_dict(), masks)
-        state_dict.update(masks)
-
+        # Acquire sparsity masks and non-zero parameters
+        state_dict, masks = state_dict_with_masks(old.model, **sparsity_kwargs)
         if options["reset"]:
             # Explicitly instructed to transfer masks only (if available).
             #  `reset=True` makes sure that every mask in the receiving
