@@ -1,13 +1,14 @@
 import re
 import time
 import gzip
+import pickle
 
 import numpy as np
 
 import torch
 import importlib
 
-from functools import partial
+from functools import partial, update_wrapper
 from itertools import repeat
 
 
@@ -224,3 +225,46 @@ def filter_prefix(dictionary, *prefixes):
 
     # may be empty
     return out
+
+
+def file_cache(cachename, recompute=False):
+    """File-based cache decorator.
+    
+    Parameters
+    ----------
+    cachename : str, or None
+        The name of the file to use for cache storage. Caching
+        is disabled if this is set to `None`.
+
+    recompute : bool, default=False
+        Whether to update the cache on every call.
+
+    Details
+    -------
+    Arguments (keyworded and positional) to the cached function must
+    be hashable, because they are used for lookup. In essence, the
+    arguments are serialized and the resulting binary string is used
+    as key.
+    """
+    assert cachename is None or isinstance(cachename, str)
+
+    def decorator(user_function):
+        def wrapper(*args, **kwargs):
+            # dumb stategy: pickle the args and use it as a binary key
+            cache, key = {}, pickle.dumps((args, kwargs))
+            if isinstance(cachename, str) and os.path.exists(cachename):
+                with open(cachename, "rb") as fin:
+                    cache = pickle.load(fin)
+
+            if key not in cache or recompute:
+                cache[key] = user_function(*args, **kwargs)
+
+            if isinstance(cachename, str):
+                with open(cachename, "wb") as fout:
+                    pickle.dump(cache, fout)
+
+            return cache[key]
+
+        return update_wrapper(wrapper, user_function)
+
+    return decorator
