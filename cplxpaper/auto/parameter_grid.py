@@ -101,3 +101,15 @@ def flatten(parameters):
         out.update((key + k, val) for k, val in nested.items())
 
     return out
+
+
+def reconstruct_grid(parameters):
+    """"""
+    grid, options = defaultdict(set), []
+    for flat in map(flatten, parameters):
+        options.append(flat)
+        for k, v in flat.items():
+            grid[k].add(v)
+
+    # drop all static settings in the grid
+    return {k: v for k, v in grid.items() if len(v) > 1}, options
