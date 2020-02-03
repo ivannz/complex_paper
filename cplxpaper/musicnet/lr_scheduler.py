@@ -7,7 +7,12 @@ class Trabelsi2017LRSchedule(LambdaLR):
 
     @classmethod
     def lr_lambda(cls, epoch):
-        """Multiplicative LR schedule (for base lr 1e-3)."""
+        """Multiplicative LR schedule (for base lr 1e-3).
+        
+        Details
+        -------
+        Taken verbatim from https://github.com/ChihebTrabelsi/deep_complex_networks/blob/f7065cea654c8b2a049c40fcc40fd76817c15096/musicnet/scripts/train.py#L32-L53
+        """
         if epoch < 10:
             return 1e-0  # (1e-3)
 
