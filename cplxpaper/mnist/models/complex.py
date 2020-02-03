@@ -25,23 +25,24 @@ class SimpleConvModel(object):
     Linear = CplxLinear
     Conv2d = CplxConv2d
 
-    def __new__(cls, n_outputs=10, n_inputs=1, upcast=False):
+    def __new__(cls, n_outputs=10, n_inputs=1, upcast=False, half=False):
         if upcast:
             layers = [("cplx", AsTypeCplx())]
         else:
             layers = [("cplx", ConcatenatedRealToCplx(copy=False, dim=-3))]
 
+        n_features = [10, 25, 250] if half else [20, 50, 500]
         layers.extend([
-            ("conv1", cls.Conv2d(n_inputs, 20, 5, 1)),
+            ("conv1", cls.Conv2d(n_inputs, n_features[0], 5, 1)),
             ("relu1", CplxToCplx[torch.nn.ReLU]()),
             ("pool1", CplxToCplx[torch.nn.AvgPool2d](2, 2)),
-            ("conv2", cls.Conv2d(20, 50, 5, 1)),
+            ("conv2", cls.Conv2d(n_features[0], n_features[1], 5, 1)),
             ("relu2", CplxToCplx[torch.nn.ReLU]()),
             ("pool2", CplxToCplx[torch.nn.AvgPool2d](2, 2)),
             ("flat_", CplxToCplx[Flatten](-3, -1)),
-            ("lin_1", cls.Linear(4 * 4 * 50, 500)),
+            ("lin_1", cls.Linear(4 * 4 * n_features[1], n_features[2])),
             ("relu3", CplxToCplx[torch.nn.ReLU]()),
-            ("lin_2", cls.Linear(500, n_outputs)),
+            ("lin_2", cls.Linear(n_features[2], n_outputs)),
             ("real", CplxReal()),
             # ("real", CplxToConcatenatedReal(dim=-1)),
             # ("lin_3", torch.nn.Linear(20, 10)),
@@ -67,19 +68,20 @@ class SimpleConvModelMasked(SimpleConvModel):
 class SimpleDenseModel(object):
     Linear = CplxLinear
 
-    def __new__(cls, n_outputs=10, n_inputs=1, upcast=False):
+    def __new__(cls, n_outputs=10, n_inputs=1, upcast=False, half=False):
         if upcast:
             layers = [("cplx", AsTypeCplx())]
         else:
             layers = [("cplx", ConcatenatedRealToCplx(copy=False, dim=-3))]
 
+        n_features = [256, 256] if half else [512, 512]
         layers.extend([
             ("flat_", CplxToCplx[Flatten](-3, -1)),
-            ("lin_1", cls.Linear(n_inputs * 28 * 28, 512)),
+            ("lin_1", cls.Linear(n_inputs * 28 * 28, n_features[0])),
             ("relu2", CplxToCplx[torch.nn.ReLU]()),
-            ("lin_2", cls.Linear(512, 512)),
+            ("lin_2", cls.Linear(n_features[0], n_features[1])),
             ("relu3", CplxToCplx[torch.nn.ReLU]()),
-            ("lin_3", cls.Linear(512, n_outputs)),
+            ("lin_3", cls.Linear(n_features[1], n_outputs)),
 
             ("real", CplxReal()),
         ])
@@ -101,17 +103,18 @@ class SimpleDenseModelMasked(SimpleDenseModel):
 class TwoLayerDenseModel(object):
     Linear = CplxLinear
 
-    def __new__(cls, n_outputs=10, n_inputs=1, upcast=False):
+    def __new__(cls, n_outputs=10, n_inputs=1, upcast=False, half=False):
         if upcast:
             layers = [("cplx", AsTypeCplx())]
         else:
             layers = [("cplx", ConcatenatedRealToCplx(copy=False, dim=-3))]
 
+        n_features = 2048 if half else 4096
         layers.extend([
             ("flat_", CplxToCplx[Flatten](-3, -1)),
-            ("lin_1", cls.Linear(n_inputs * 28 * 28, 4096)),
+            ("lin_1", cls.Linear(n_inputs * 28 * 28, n_features)),
             ("relu2", CplxToCplx[torch.nn.ReLU]()),
-            ("lin_2", cls.Linear(4096, n_outputs)),
+            ("lin_2", cls.Linear(n_features, n_outputs)),
 
             ("real", CplxReal()),
         ])
