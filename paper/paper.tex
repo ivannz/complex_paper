@@ -1143,7 +1143,15 @@ on the input features and are summarized in table~\ref{tbl:mnist-like-model-spec
 \end{table}
 
 % discuss the plots describing how the test-performance grows with compression and then drops if the model is too sparse
+Figures~\ref{fig:mnist-like__trade-off__vd} and ~\ref{fig:mnist-like__trade-off__ard} show
+the results on the ``MNIST'' dataset for $\tau\in\{-\tfrac12, \tfrac32\}$ and $
+  C \in \{\tfrac3{2^{k+1}}\colon k=1..16\}
+$ replicated $5$ times using the method from sec.~\ref{ssub:variational_dropout} (VD)
+and~\ref{ssub:empirical_bayes} (ARD), respectively (results for other MNIST-like datasets
+are in the appendix).
 
+% discussion of TwoLayerDenseModel
+% discussion of SimpleConvModel
 % hinting at overfitting/regularization effects of masking and sparsification
 
 % a couple of plots from MNIST and Fashion-MNIST
@@ -1151,61 +1159,76 @@ on the input features and are summarized in table~\ref{tbl:mnist-like-model-spec
   \centering
   \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[draft,width=1.\linewidth]{../assets/sum__mnist__fine-tune.pdf}
+    \includegraphics[draft,width=1.\linewidth]{../assets/sum__mnist__fine-tune__TwoLayerDenseModelVD.pdf}
     % \caption{} \label{fig:log-alpha-kde}
   \end{subfigure} \\%
   % \hfill
   \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[draft,width=1.\linewidth]{../assets/sum__fashion-mnist__fine-tune.pdf}
+    \includegraphics[draft,width=1.\linewidth]{../assets/sum__mnist__fine-tune__SimpleConvModelVD.pdf}
     % \caption{} \label{fig:log-alpha-proba}
   \end{subfigure}
   \caption{%
-    The accuracy-compression trade-off after ``fine-tune''.
-    \textit{top}: MNIST \citep{citation_needed};
-    \textit{bottom}: Fashion MNIST \citep{citation_needed}.
+    The compression-accuracy trade-off after ``fine-tune'' on MNIST of \textit{TwoLayerDenseModel}
+    (top) and \textit{SimpleConvModel} (bottom) for method in sec.~\ref{ssub:variational_dropout}.
   }
-  \label{fig:mnist-like_trade-off}
+  \label{fig:mnist-like__trade-off__vd}
 \end{figure}
 
-The same approach was applied to
-CIFAR10 (sec.~\ref{sub:cifar10_100} experiments, which could partly explain the overall
-poor test performance we got from the tested VGG16 model ($\real$ and $\cplx$ version).
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
+    \centering
+    \includegraphics[draft,width=1.\linewidth]{../assets/sum__mnist__fine-tune__TwoLayerDenseModelARD.pdf}
+    % \caption{} \label{fig:log-alpha-kde}
+  \end{subfigure} \\%
+  % \hfill
+  \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
+    \centering
+    \includegraphics[draft,width=1.\linewidth]{../assets/sum__mnist__fine-tune__SimpleConvModelARD.pdf}
+    % \caption{} \label{fig:log-alpha-proba}
+  \end{subfigure}
+  \caption{%
+    The compression-accuracy trade-off after ``fine-tune'' on MNIST of \textit{TwoLayerDenseModel}
+    (top) and \textit{SimpleConvModel} (bottom) for method in sec.~\ref{ssub:empirical_bayes}.
+  }
+  \label{fig:mnist-like__trade-off__ard}
+\end{figure}
 
-% comparison strategy
-We conduct a moderately sized numerical experiment on MNIST and similar $28\times 28$
-greyscale image datasets to see whether the proposed $\cplx$-variational dropout indeed
-sparsifies complex-valued networks. We compare with the studied $\cplx$-valued networks
-against their $\real$-valued counterparts both in terms of the resulting sparsity and
-test performance. For a fair comparison, we make the $\cplx$-valued network have
-approximately half as many parameters, \citep{monning_evaluation_2018}.
+% which is better ARD or VD
+It is worth pointing out that the prior used in ARD models offers slightly more favourable
+compression-accuracy values, matching the established perception that log-uniform prior
+is \todo{too harsh for sparsification tasks}, \citep{kharitonov_variational_2018}.
 
-Although image data is not $\cplx$ in nature \citet{trabelsi_deep_2017} study the applicability
-of $\cplx$-valued networks to image classification (CIFAR-10, CIFAR-100, and a subset of
-SVHN). Their approach is to either embed $\real$ in $\cplx$ (by $\Re z = 0$), or train
-a smaller auxiliary network, that synthesizes the imaginary component from the raw channel
-data. In our experiments we apply the two-dimensional Fourier Transform to get $\cplx$-valued
-inputs. We concede that this is a rather unnatural representation of image data, however
-the selection of publicly available datasets, which are not artificially $\cplx$-valued,
-is limited to audio signals.
-
-Indeed, as is shown by the numerical experiments on MNIST-like datasets and CIFAR10, a
-real-valued model trained on the Fourier transformed data underperforms relative to
-its architectural twin, fit to on the raw colour data. At the same time complex-valued
-models.
+% hopeful conclusion
+\todo{The numerical experiments on MNIST-like datasets} demonstrate, that models using fourier
+features perform poorly in comparison to models using raw image input.
 
 % subsection mnist_like_datasets (end)
 
-\subsection{CIFAR10/100} % (fold)
-\label{sub:cifar10_100}
+
+\subsection{CIFAR10} % (fold)
+\label{sub:cifar10}
 
 % mention the same experimental setup as in MNIST
+Experiments on CIFAR10 dataset are set up similarly to MNIST-like experiment, except
+that we study VGG16 model, \citep{citation_needed}, and its $\cplx$-counterpart, fit
+on the full training split of $60k$ colour $32\times32$ images, and use only raw image
+input features (\texttt{raw}).
+
 % describe the VGG16 model and its cplx-valued modification
+The $\cplx$-VGG16 model is architecturally identical to VGG16, except for all layers
+replaced by their $\cplx$-valued versions. To maintain comparability, we half the filter
+sizes of $\cplx$ model.
+
 % mention that fourier-features perfomed worse than raw image data embeded in to $\cplx$
+
 % compare compressed cplx-vgg against real-vgg
+
 % draw some conclusions
 
 % subsection cifar10_100 (end)
+
 
 \subsection{MusciNet} % (fold)
 \label{sub:muscinet}
