@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import json
 import gzip
 import pickle
 
@@ -30,6 +31,50 @@ def load_snapshot(filename):
     pass
 
     return state
+
+
+def load_manifest(folder, create=True):
+    """Load the manifest of an experiment, falling back to snapshots if missing."""
+    # check if `config.json` resides at 'folder'
+    manifest = os.path.join(folder, "config.json")
+    if os.path.exists(manifest):
+        with open(manifest, "r") as fin:
+            return json.load(fin)
+
+    # synchronized with naming format at ./auto.py#L393
+    pat = re.compile(r"^\d+-.*\.gz$")
+
+    _, _, filenames = next(os.walk(folder))
+    for match in filter(None, map(pat.match, filenames)):
+        # load the first snapshot and quit
+        snapshot = load_snapshot(os.path.join(folder, match.string))
+        if create:
+            with open(manifest, "w") as fout:
+                json.dump(snapshot["options"], fout, indent=2, sort_keys=False)
+
+        return snapshot["options"]
+
+    raise RuntimeError(f"Could not load config at '{folder}'")
+
+
+def verify_experiment(folder):
+    """Check if the experiment at the specified folder has been completed."""
+    if not os.path.exists(folder):
+        return False
+
+    folder, _, filenames = next(os.walk(folder))
+    manifest = load_manifest(folder, create=True)
+
+    # stage map to check if any one is missing
+    stages = dict.fromkeys(manifest["stage-order"], False)
+    for j, stage in enumerate(stages.keys()):
+        # synchronized with naming format at ./auto.py#L393
+        pat = re.compile(f"^{j}-{stage}\\s+.*\\.gz$")
+
+        match = next(filter(None, map(pat.match, filenames)), None)
+        stages[stage] = match is not None
+
+    return all(stages.values())
 
 
 def load_stage_snapshot(stage, folder, mismatch="ignore"):
