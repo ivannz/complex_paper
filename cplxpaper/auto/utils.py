@@ -27,8 +27,36 @@ def load_snapshot(filename):
         state = torch.load(fin, map_location=torch.device("cpu"))
 
     # verify version
+    pass
 
     return state
+
+
+def load_stage_snapshot(stage, folder, mismatch="ignore"):
+    """Load the snapshot of the given phase from the experiment."""
+    if mismatch not in ("ignore", "raise"):
+        raise ValueError(f"`mismatch` must be either 'ignore' or 'raise'.")
+
+    # synchronized with naming format at ./auto.py#L393
+    pat = re.compile(r"^(\d+)-(\S+)\s+.*?(\d{8}-\d{6})\.gz$")
+
+    # list all filenames matching the format
+    folder, _, filenames = next(os.walk(folder))
+    matches = filter(None, map(pat.match, filenames))
+    matches = sorted(matches,
+                     key=lambda m: time.strptime(m.group(3), "%Y%m%d-%H%M%S"))
+    for m in matches:
+        if m.group(2) == stage:
+            # load and validate stage ID
+            snapshot = load_snapshot(os.path.join(folder, m.string))
+
+            # the snapshot is expected to comply with ./auto.py#L392-411
+            if snapshot["stage"][0] == stage:
+                return snapshot
+
+    if mismatch == "ignore":
+        return {}
+    raise RuntimeError(f"'{stage}' not found.")
 
 
 def param_defaults(param, **defaults):
@@ -230,7 +258,7 @@ def filter_prefix(dictionary, *prefixes):
 
 def file_cache(cachename, recompute=False):
     """File-based cache decorator.
-    
+
     Parameters
     ----------
     cachename : str, or None
