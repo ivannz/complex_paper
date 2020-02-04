@@ -1212,7 +1212,7 @@ features perform poorly in comparison to models using raw image input.
 
 % mention the same experimental setup as in MNIST
 Experiments on CIFAR10 dataset are set up similarly to MNIST-like experiment, except
-that we study VGG16 model, \citep{citation_needed}, and its $\cplx$-counterpart, fit
+that we study VGG16 model, \citep{simonyan_very_2015}, and its $\cplx$-counterpart, fit
 on the full training split of $60k$ colour $32\times32$ images, and use only raw image
 input features (\texttt{raw}).
 
@@ -1233,22 +1233,37 @@ sizes of $\cplx$ model.
 \subsection{MusciNet} % (fold)
 \label{sub:muscinet}
 
-\citet{trabelsi_deep_2017} designed a complex-valued network that achieved SOTA results
-on the music-transcription task on MusicNet, \citep{thickstun_learning_2017}.
-
 % describe musicnet as in Trabelsi et al. (2017) also get some hints from thickstun_learning_2017
+MusicNet, \citep{thickstun_learning_2017}, is an annotated audio dataset, consisting of $330$
+compositions from the public domain. Similarly to \citep{trabelsi_deep_2017}, we use this
+dataset for automatic music transcription task and study the $1d$ VGG-like $\cplx$-convent
+proposed therein. Similarly to this study, we downsample the sound from 44.1kHz to 11kHz,
+retaining only $84$ out of $128$ labels, and hold-out the same validation and test splits.
+During each training epoch we sample $1000$ mini-batches of the remaining $321$ compositions
+thus: a random full window of $4096$ samples is picked within each waveform and transformed
+from $\real$ to $\cplx$ with $1d$ FFT. Annotation labels are taken at the mid-point of the
+window.
 
-% mention 44khz to 11khz downsampling and the extraction of the originally recommended test set
-% and the validation set chosen by Trabelsi et al.
+We use training from sec.~\ref{sub:fitting_and_compression} with epochs lasting for $12$,
+$32$ and $50$ epochs, respectively. Early stopping is used only during the ``fine-tune''
+stage. Preliminary experiments with the model without sparsification have shown that early
+stopping almost always terminated the training process within the first $10-20$ epochs,
+and that the validation performance peaked at about $10-15$ epochs, much sooner than $200$
+in \citep{trabelsi_deep_2017}. Besides staged training and shorter ``dense'' stage, other
+important deviations from their setup include:
+\begin{itemize}
+  \item shifting lower frequencies to the centre of the window to maintain locality after
+  applying FFT (much like in sec.~\ref{sub:mnist_like_datasets})
+  \item clipping $\ell_2$ norm of parameters' gradients to $0.05$
+  \item faster learning rate reduction schedule (sec.~\ref{sub:fitting_and_compression})
+\end{itemize}
+Each full three-stage experiment is replicated five times to take random effects into account,
+e.g. random network initialization prior to ``dense'' stage, randomization of batches within
+each epoch during SGD, and stochasticity of Bayesian forward pass at ``sparsify'' stage.
 
 % Describe the network by Trabelsi and then present the reslts form then model with kernel size \textbf{6} 
 % the causally mantion that you also conducted a large study of an inferior model with kenrel size 3.
 % (do not mention that this was a mistake, you dummy!)
-
-The set up of the experiment is thus:
-Each full three-stage run is replicated five times take random effects into account, e.g.
-random network initialization prior to ``dense'' stage, randomly picked $1000$ batches from
-the sample during SGD.
 
 \begin{figure}[!ht]
   \centering
