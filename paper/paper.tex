@@ -81,7 +81,7 @@ frequency signal analysis, has been the key driver behind adoption of $\cplx$-ne
 \citet{hirose_complex-valued_2009} argues that the key merit of $\cplx$-valued neural
 networks is simultaneous phase rotation and amplitude adjustment, intrinsic to multiplication
 in $\cplx$ field. Despite inherently higher arithmetic complexity, which stems from up to four
-floating point operations per single $\cplx$ multiplication, \citep{monning_evaluation_2018},
+floating point operations per single $\cplx$ multiplication \citep{monning_evaluation_2018}
 $\cplx$-arithmetic reduces ineffective degrees of freedom in comparison with an analogous
 double-dimensional $\real$-valued network. \citet{hirose_complex-valued_2009} list numerous
 applications related to acoustic and radio signal processing and demonstrate superiority of
@@ -114,7 +114,7 @@ can be adapted directly to $\cplx$-valued models. Other methods require addition
 % the more explicitly zero parameters there is, the less computations is needed.
 
 % on dropout
-Dropout, \citep{hinton_improving_2012}, prevents overfitting by injecting multiplicative
+Dropout \citep{hinton_improving_2012} prevents overfitting by injecting multiplicative
 binary noise into layer's weights, which breaks up co-adaptations that could occur
 during training. \citet{wang_fast_2013} argue that the overall effect of binary dropout
 on the intermediate outputs via the Central Limit Theorem can be approximated by a Gaussian
@@ -124,7 +124,7 @@ better regularizing effect. In multitask learning \citet{cheung_superposition_20
 have shown the possibility of storing task-specific parameters in non-destructive superposition
 within a single network. Their argument implies that if the single task setting is viewed
 as replicated multitask learning, then by sampling uncorrelated weight masks dropout acts
-as superposition method, which better utilizes the learning capacity of the network.
+as a superposition method, which better utilizes the learning capacity of the network.
 % many identical copies of the same task; \cite[Appendix A.1]{cheung_superposition_2019}
 % (fast dropout gauss-approx) wang-manning.tex
 % (gauss dropout) srivastava-et-al.tex
@@ -139,21 +139,21 @@ since masks are randomly sampled, unlike bayesian model averaging, which weighs 
 the posterior distribution. \citet{kingma_variational_2015} specifically consider dropout
 as a Bayesian Inference technique: a principled framework of reasoning about uncertainty,
 which updates prior beliefs in accordance with the likelihood of empirical observations
-into posterior belief. Under suitable modelling and prior assumptions, Bayesian methods
-can be used towards model sparsification, \citep{kingma_variational_2015,molchanov_variational_2017},
-and \citep{kharitonov_variational_2018}.
+into posterior belief. Bayesian methods with suitable modelling and prior assumptions, such
+as Variational Dropout, can be used towards model sparsification
+\citep{kingma_variational_2015,molchanov_variational_2017,kharitonov_variational_2018}.
 
 % (sparsity tech large-scale models) gale-elsen-hooker.tex
 \citet{gale_state_2019} compare variational dropout \citep{kingma_variational_2015},
 magnitude pruning, and $\ell_0$ regularization \citep{louizos_learning_2017} on large-scale
 models. The latter is a probabilistic regularization method, which penalizes the expected
 number of non-zero entries in $[0, 1]$-valued stochastic parameter masks with learnable
-hard-concrete distribution with an atom at $0$, \citep{maddison_concrete_2016,jang_categorical_2017}.
+hard-concrete distribution with an atom at $0$ \citep{maddison_concrete_2016,jang_categorical_2017}.
 Their results suggest that although var-dropout may achieve good accuracy-sparsity balance
 and outperform pruning and $\ell_0$ on the studied architectures, pruning is preferable for
-its simplicity and speed. They also observe that despite dropout showing more variable
-performance, than magnitude pruning, it nevertheless induces non-uniform sparsity throughout
-the model, which is essential for superior compression \citep{he_amc:_2018}.
+its simplicity and speed. They also observe that, despite dropout showing more variable
+performance than magnitude pruning, it induces non-uniform sparsity throughout the model,
+which has been shown by \citet{he_amc:_2018} to be essential for superior compression.
 % Magnitude pruning induces user-specified sparsity distributions.
 %
 % L0 and dropout work in the low-to-mid sparsity range, variational dropout consistently
@@ -165,11 +165,11 @@ the model, which is essential for superior compression \citep{he_amc:_2018}.
 % our contribution
 Inspired by variational sparsification and stochastic sparsification techniques we
 extend Bayesian dropout for $\cplx$-valued networks. We assess the performance-compression
-trade-off of the the proposed Bayesian technique by conducting a large-scale numerical
-study of $\cplx$-valued networks on two tasks: image recognition on MNIST-like and CIFAR10
-datasets and music transcription on MusicNet, \citep{thickstun_learning_2017}. We reproduce
-the state-of-the-art result by \citet{trabelsi_deep_2017} for $\cplx$-valued networks on
-the latter with $\approx 1-2\%$ of remaining non-zero parameters.
+trade-off of the proposed Bayesian technique by conducting a large-scale numerical study
+of $\cplx$-valued networks on two tasks: image recognition on MNIST-like and CIFAR10 datasets
+and music transcription on MusicNet \citep{thickstun_learning_2017}. We reproduce the
+state-of-the-art result by \citet{trabelsi_deep_2017} for $\cplx$-valued networks on the
+latter with $\approx 5\%$ of remaining non-zero parameters.
 
 The paper is structured as follows. In sec.~\ref{sec:bayesian_dropout} we review Bayesian
 dropout techniques, and in sec.~\ref{sec:c_valued_networks} we provide a brief summary of
@@ -177,7 +177,7 @@ the inner working of complex-valued networks as functions of complex argument. T
 contribution of this study is presented in sec.~\ref{sec:dropout_for_c_valued_layers},
 where we consider different variational approximations and priors, outline the tricks
 and derive expressions for the divergence term. In sec.~\ref{sec:experiments} we evaluate
-the sparsification rate and compare the resulting performance of various $\cplx$-networks
+the sparsification rate, compare the resulting performance of various $\cplx$-networks
 proposed in prior work, and discuss the outcomes.
 
 % section introduction (end)
@@ -200,8 +200,8 @@ $ with $
 $, provides useful information about yet unobserved data and model parameters, e.g
 classification uncertainty, predictive statistics, and parameter relevance.
 
-The posterior itself is intractable, save for the relatively simple cases \citep{citation_needed},
-and therefore exact inference is traded for tractability and scalability offered by Variational
+The posterior distribution itself is intractable, save for the relatively simple cases, and
+therefore exact inference is traded for tractability and scalability offered by Variational
 Inference. Instead of deriving $p(\omega \mid D)$ using the rule, this approach recasts
 posterior inference into variational optimization problem: finding $q$ that is close to
 $p(\omega \mid D)$ in terms of a proximity score $\rho$
@@ -219,8 +219,8 @@ its members have tractable densities $
   q_\theta(\omega) d\omega
 $, can be sampled from and possess tractable $\log$-derivatives $
   \omega \mapsto \nabla_\theta \log q_\theta(\omega)
-$, \citep{williams_simple_1992}, or can be represented as differentiable transformations
-of non-parametric noise, \citep{kingma_auto-encoding_2014,figurnov_implicit_2019}.
+$ \citep{williams_simple_1992} or can be represented as differentiable transformations
+of non-parametric noise \citep{kingma_auto-encoding_2014,figurnov_implicit_2019}.
 % (reparameterization trick, pathwise gradieent) $q_{\theta}(d\omega)$ is a push-forward
 % of $p(d\varepsilon)$ by a differentiable map $g(\varepsilon; \theta)$.
 % % http://stillbreeze.github.io/REINFORCE-vs-Reparameterization-trick/#fn:1
@@ -277,9 +277,9 @@ maximizing the \textit{evidence lower bound} (ELBO)
 where the prior and likelihood are allowed to depend on explicit parameters. The most
 commonly used algorithm to optimize \eqref{eq:elbo_general} is EM-algorithm. Other
 variational objectives are possible, provided $p(\omega \mid D)$ is probed only through
-$\log p(D \mid \omega)$ and $\log \pi(\omega)$, \citep{ranganath_operator_2018}.
+$\log p(D \mid \omega)$ and $\log \pi(\omega)$ \citep{ranganath_operator_2018}.
 
-\textit{Stochastic Gradient Variational Bayes} (SGVB), proposed by \citep{kingma_auto-encoding_2014},
+\textit{Stochastic Gradient Variational Bayes} (SGVB), proposed by \citet{kingma_auto-encoding_2014},
 is a differentiable unbiased Monte-Carlo estimator of \eqref{eq:elbo_general}, which
 makes it possible to employ stochastic gradient-based optimization methods to solve
 \eqref{eq:variational-progam}. If $
@@ -310,7 +310,7 @@ $, then the SGVB is
 where $
   (\varepsilon_{l})_{l=1}^L
 $ is an iid sample from $p_\varepsilon$. Intractable KL-divergence terms can be replaced
-by differentiable unbiased sampling estimators, \citep{kingma_auto-encoding_2014}.
+by differentiable unbiased sampling estimators \citep{kingma_auto-encoding_2014}.
 %
 For the purposes of this study, we assume that the observed data is independent, and
 use minibatch version of \eqref{eq:sgvb} with $L=1$:
@@ -325,15 +325,13 @@ for a random subsample $(z_i)_{i=1}^M$ from $D$ and iid $
   (\varepsilon_i)_{i=1}^M \sim p_\varepsilon
 $.
 %
-% (DSVI) titsias-lazaro.tex
-\todo{DSVI}
-\citep{titsias_doubly_2014}
+% (DSVI) titsias-lazaro.tex \todo{DSVI} \citep{titsias_doubly_2014}
 
 \subsection{Dropout} % (fold)
 \label{sub:dropout}
 
 With a special family of posterior approximation, variational inference can be used as
-a regularization method and as model sparsification technique. \citet{kingma_variational_2015}
+a regularization method and as a model sparsification technique. \citet{kingma_variational_2015}
 consider Dropout \citep{hinton_improving_2012}, DropConnect \citep{wan_regularization_2013},
 and Gaussian dropout \citep{srivastava_dropout_2014,wang_fast_2013} through the lens
 of Bayesian inference methods and proposes \textit{Variational Dropout}. They argue that
@@ -376,11 +374,9 @@ analytically intractable terms:
 regression for truncated $\alpha \in (0, 1)$. \citet{molchanov_variational_2017}
 refine the approximation by using a nonlinear regression based on sigmoid and soft-plus.
 % see p.6 sec 3.4 of kingma_variational_2015
-%
-In sec.~\ref{sub:real-chisq-grad} we verify the approximation against Monte-Carlo
-estimates of \eqref{eq:improper-kl-div-real} for $\alpha$ varying over a fine logarithmic
-grid, and confirm its accuracy, by comparing its derivative to the exact derivative of
-\eqref{eq:improper-kl-div-real} with respect to $\log \alpha$.
+We independently verify their approximation against Monte-Carlo estimates for $\alpha$
+varying over a fine logarithmic grid and the exact expression for the derivative of
+\eqref{eq:improper-kl-div-real}, which we derive in appendix~\ref{sub:real-chisq-grad}.
 % (!) good for SGVB: gradient-based methods require unbiased gradient estimates
 
 Being the ratio of the squared mean to the effective variance, $\alpha_j$ regulates the
@@ -392,9 +388,9 @@ dropout, called \textit{Automatic Relevance Determination}, is developed in \cit
 The key difference is that the log-uniform factor $\pi(\omega_{ij})$ is replaced by a proper
 Gaussian prior $
   \mathcal{N}(0, \tau^{-1}_{ij})
-$ with learnable precision $\tau_{ij} > 0$. This method, known as \textit{Empirical Bayes}
-\citep{citation_needed}, fits a prior distribution while performing variational inference.
-Maximizing \eqref{eq:elbo} over $\tau$, holding other parameters fixed, yields $
+$ with learnable precision $\tau_{ij} > 0$. This method, known as \textit{Empirical Bayes},
+fits a prior distribution while performing variational inference. Maximizing \eqref{eq:elbo}
+over $\tau$, holding other parameters fixed, yields $
   \tau^* = {(\mu^2 + \sigma^2)}^{-1}
 $, whence
 \begin{equation}  \label{eq:ard-kl-div-real}
@@ -428,15 +424,14 @@ $ is equivalent in distribution to
 posterior approximations, the trick decorrelates ELBO estimates within the minibatch,
 making the gradient estimator $\nabla_\theta \tilde{\mathcal{L}}$ more statistically
 efficient. \citet{molchanov_variational_2017} propose an improvement by introducing
-\textit{additive noise parameterization}. They argue in favour of abandoning the
-$(\mu, \alpha)$ parameterization in favour of an equivalent $(\mu, \sigma^2)$, since
-the latter renders $
+\textit{additive noise parameterization}. They argue for rejecting the $(\mu, \alpha)$
+parameterization in favour of the equivalent $(\mu, \sigma^2)$, since the latter renders $
   \nabla_\mu \tilde{\mathcal{L}}
 $ independent from the local output noise, injected by the trick \eqref{eq:r-gauss-trick},
 and further stabilizes gradients in SGVB \eqref{eq:elbo}. The relevance $\alpha$ is
-calculated using $
+calculated using the ratio $
   \tfrac{\sigma^2}{\mu^2}
-$ when needed.
+$ when needed in the divergence term.
 
 % subsection dropout (end)
 
@@ -473,26 +468,25 @@ where $
 $ are unique operators such that $L = P + j Q$. A $\cplx$-convolutional layer with kernel
 $W$ can be implemented as two $\real$-convolutions with kernels $\Re{W}$ and $\Im{W}$ using
 \eqref{eq:cplx-lin-op}. Activations include trigonometric functions and representation-dependent
-non-linearities, \citep{hirose_complex-valued_2009}: polar (phase-amplitude) $
+non-linearities \citep{hirose_complex-valued_2009}: polar (phase-amplitude) $
   z \mapsto \sigma(\lvert z \rvert) e^{j \arg z}
 $ or planar (real-imaginary) $
   z \mapsto \sigma(\Re z) + j \sigma(\Im z)
-$ for some $\real$-valued non-linearity $\sigma$, possibly with learnable parameters,
+$ for some $\real$-valued non-linearity $\sigma$, possibly with learnable parameters
 \citep{trabelsi_deep_2017,wolter_complex_2018}.
 
 Complex networks are, in general, non-holomorphic, i.e. not $\cplx$-differentiable, which is
 exacerbated by the loss being real-valued. Indeed a $\cplx$-differentiable real-valued function is
 necessarily trivial by Cauchy-Riemann conditions. This issue is dealt with by employing Wirtinger,
 or $\cplx\real$ calculus, which generalizes holomorphic calculus to non-holomorphic functions
-of $\cplx$-argument, \citep{adali_complex-valued_2011,boeddeker_computation_2019}. It satisfies
+of $\cplx$-argument \citep{adali_complex-valued_2011,boeddeker_computation_2019}. It satisfies
 product and chain rules, respects complex conjugation and linearity, but most importantly the
 $\cplx\real$-differential of a function on $\cplx$ coincides with its classical differential as
 a function on $\real^2$. Essentially, it allows straightforward retrofiting of $\cplx$-valued
 networks into existing $\real$ deep learning auto-differentiation frameworks. It was considered
-as a basis for $\cplx$ version of backpropagation in \citep{benvenuto_complex_1992} and
-\citep{trabelsi_deep_2017}, (see sec.~\ref{sub:wirtinger_calculus} for details).
-%
-\todo{read on holomorphic nets}
+as a basis for $\cplx$ version of backpropagation by \citet{benvenuto_complex_1992} and
+\citet{trabelsi_deep_2017}, (see sec.~\ref{sub:wirtinger_calculus} for details).
+% \todo{read on holomorphic nets}
 
 % section c_valued_networks (end)
 
@@ -656,7 +650,7 @@ $C = 0$. From \eqref{eq:c-gauss-entropy-derivation} its entropy is
 %   \lvert \rho \rvert \leq 1
 % $. $\sigma^2$ determines the ``dispersion'', whereas $\rho$ is determines the
 % ``strength'' and ``direction'' of the linear relation between real and imaginary
-% parts, \citep{lapidoth_capacity_2003}.
+% parts \citep{lapidoth_capacity_2003}.
 % $$
 % \frac{\sigma^2}2
 %   \begin{pmatrix}
@@ -673,7 +667,7 @@ $C = 0$. From \eqref{eq:c-gauss-entropy-derivation} its entropy is
 %   \,. $$
 
 The local reparameterization trick provides both faster computations, and better statistical
-efficiency of the SGVB gradient estimator, \citep{wang_fast_2013,kingma_variational_2015}.
+efficiency of the SGVB gradient estimator \citep{wang_fast_2013,kingma_variational_2015}.
 Suppose that weights $W \in \cplx^{n\times m}$ of a dense linear layer are drawn from a
 mean field $\cplx$-Gaussian approximate posterior
 \begin{equation}  \label{eq:c-gauss-vi-general}
@@ -709,7 +703,7 @@ on its parameters, e.g. convolutional layers, affine, and bilinear transformatio
 $. Similar to $\real$ case, variational dropout for $\cplx$ convolutions draws independent
 realizations of $W$ for each spatial patch in the input. The rationale is simpler computations
 and variance reduction. The latter effect stems from decorrelated gradient estimates from
-overlapping patches, \citep{kingma_variational_2015}, which allows \eqref{eq:cplx-gauss-trick}
+overlapping patches \citep{kingma_variational_2015}, which allows \eqref{eq:cplx-gauss-trick}
 to use $\cplx$ convolutions of elementwise complex squares $x^2$ and amplitudes $\lvert x \rvert^2$
 with the relation and variance kernels.
 % Weight sharing is essentially pushed to shared variational parameters $\theta$ in the approximation $q_\theta$.
@@ -742,7 +736,7 @@ zero. We use MAP estimates of bias terms, i.e. assume an independent fully facto
 approximation.
 
 We consider two priors for Bayesian dropout: \verify{log-uniform} and $\cplx$-Gaussian empirical
-Bayes, \citep{kingma_variational_2015,molchanov_variational_2017,kharitonov_variational_2018}.
+Bayes \citep{kingma_variational_2015,molchanov_variational_2017,kharitonov_variational_2018}.
 For a fully factorized approximation $q(\omega)$ and factorized prior belief $\pi(\omega)$,
 the divergence term in ELBO \eqref{eq:elbo} is
 \begin{equation}  \label{eq:elbo-general-kl-div}
@@ -756,7 +750,7 @@ the divergence term in ELBO \eqref{eq:elbo} is
         + \mathbb{E}_{q(\omega_{ij})} \log{\pi(\omega_{ij})}
     \,.
 \end{equation}
-We use approximation \eqref{eq:c-gauss-vi} and omit subscripts ${ij}$ below for brevity.
+We use approximation \eqref{eq:c-gauss-vi} and omit subscripts ${ij}$ for brevity.
 
 \subsubsection{Variational dropout} % (fold)
 \label{ssub:variational_dropout}
@@ -777,7 +771,7 @@ $ with $\beta \geq 1$ is
       + \tfrac{\beta}2 \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
     \,.
 \end{equation}
-\eqref{eq:cn-affine} implies that $
+Property \eqref{eq:cn-affine} implies that $
   \mathcal{N}^{\cplx}(\mu, \sigma^2, 0)
   \sim \mu \cdot \mathcal{N}^{\cplx}(1, \alpha, 0)
 $ for $\mu \neq 0$ and $
@@ -878,7 +872,10 @@ Through \eqref{eq:expect-improper-term-cplx} and \eqref{eq:log-moment-for-chi-2}
       - \tfrac{\beta}2 \mathop{Ei}(- \tfrac1{\alpha})
       \tag{\ref{eq:c-vd-kl-div-raw}'} \,.
 \end{equation}
-% For $\beta = 2$ we add $\gamma$ to make the right-hand side nonegative. (proof needed)
+We propse settng $\beta = 2$ for $\cplx$ variational dropout, to make the divergence
+term depend only on $\alpha$.
+% For $\beta = 2$ we add $\gamma$ to make the right-hand side nonegative. (proof missing)
+%
 Since $\mathop{Ei}(x)$ has simple analytic derivative and \eqref{eq:elbo} depends additively
 on \eqref{eq:c-vd-kl-div}, it is possible to backpropagate through the divergence without
 forward evaluation.
@@ -955,7 +952,7 @@ parameterization
     \bigr)
   \,,
 \end{equation}
-which is a degenerate $\cplx$-Gaussian distribution. \eqref{eq:cplx-gauss-trick} implies
+i.e. a degenerate $\cplx$-Gaussian distribution, which implies by \eqref{eq:cplx-gauss-trick}
 \begin{equation}  \label{eq:real-scal-gauss-trick}
   y_i
     \sim \mathcal{N}^{\cplx}\bigl(
@@ -966,10 +963,10 @@ which is a degenerate $\cplx$-Gaussian distribution. \eqref{eq:cplx-gauss-trick}
     \bigr)
     \,.
 \end{equation}
-The KL-divergence term in \eqref{eq:elbo} coincides with \eqref{eq:improper-kl-div-real}.
-We use the approximation provided by \citep{molchanov_variational_2017}. Note that additive
-noise reparameterization, \citep{molchanov_variational_2017}, cannot be used in
-\eqref{eq:real-scal-gauss-trick}.
+The KL-divergence term for this approximation coincides with \eqref{eq:improper-kl-div-real},
+which is approximated by \citet{molchanov_variational_2017}. The major drawback of this method
+is inapplicability of the additive noise reparameterization in \eqref{eq:real-scal-gauss-trick},
+which disentangles the gradient with respect to $\mu$ from the local Gaussian noise.
 
 % subsubsection real_scaling_dropout (end)
 
@@ -1214,7 +1211,7 @@ are in the appendix).
 % which is better ARD or VD
 It is worth pointing out that the prior used in ARD models offers slightly more favourable
 compression-accuracy values, matching the established perception that log-uniform prior
-is \todo{too harsh for sparsification tasks}, \citep{kharitonov_variational_2018}.
+is \todo{too harsh for sparsification tasks} \citep{kharitonov_variational_2018}.
 
 % hopeful conclusion
 \todo{The numerical experiments on MNIST-like datasets} demonstrate, that models using fourier
@@ -1228,7 +1225,7 @@ features perform poorly in comparison to models using raw image input.
 
 % mention the same experimental setup as in MNIST
 Experiments on CIFAR10 dataset are set up similarly to MNIST-like experiment, except
-that we study VGG16 model, \citep{simonyan_very_2015}, and its $\cplx$-counterpart, fit
+that we study VGG16 model \citep{simonyan_very_2015} and its $\cplx$-counterpart, fit
 on the full training split of $60k$ colour $32\times32$ images, and use only raw image
 input features (\texttt{raw}).
 
@@ -1250,8 +1247,8 @@ sizes of $\cplx$ model.
 \label{sub:muscinet}
 
 % describe musicnet as in Trabelsi et al. (2017) also get some hints from thickstun_learning_2017
-MusicNet, \citep{thickstun_learning_2017}, is an annotated audio dataset, consisting of $330$
-compositions from the public domain. Similarly to \citep{trabelsi_deep_2017}, we use this
+MusicNet \citep{thickstun_learning_2017} is an annotated audio dataset, consisting of $330$
+compositions from the public domain. Folowing \citet{trabelsi_deep_2017}, we use this
 dataset for automatic music transcription task and study the $1d$ VGG-like $\cplx$-convent
 proposed therein. Similarly to this study, we downsample the sound from 44.1kHz to 11kHz,
 retaining only $84$ out of $128$ labels, and hold-out the same validation and test splits.
@@ -1265,8 +1262,8 @@ $32$ and $50$ epochs, respectively. Early stopping is used only during the ``fin
 stage. Preliminary experiments with the model without sparsification have shown that early
 stopping almost always terminated the training process within the first $10-20$ epochs,
 and that the validation performance peaked at about $10-15$ epochs, much sooner than $200$
-in \citep{trabelsi_deep_2017}. Besides staged training and shorter ``dense'' stage, other
-important deviations from their setup include:
+epoch, used by \citet{trabelsi_deep_2017}. Besides staged training and shorter ``dense''
+stage, other important deviations from their setup include:
 \begin{itemize}
   \item shifting lower frequencies to the centre of the window to maintain locality after
   applying FFT (much like in sec.~\ref{sub:mnist_like_datasets})
@@ -1300,7 +1297,7 @@ each epoch during SGD, and stochasticity of Bayesian forward pass at ``sparsify'
     uncompressed model.
     \textit{top}: Original model ($k=6$) compressed with \textbf{\color{orange} VD}
     (\ref{ssub:variational_dropout}) and \textbf{\color{blue} ARD} (\ref{ssub:empirical_bayes});
-    \textit{bottom}: The model of \citep{trabelsi_deep_2017} with kernel size $3$
+    \textit{bottom}: The model of \citet{trabelsi_deep_2017} with kernel size $3$
     compressed with \textbf{\color{blue} VD} (\ref{ssub:variational_dropout}).
   }
   \label{fig:musicnet_trade-off}
@@ -1336,8 +1333,8 @@ each epoch during SGD, and stochasticity of Bayesian forward pass at ``sparsify'
 \label{sec:conclusion}
 
 Despite having higher arithmetic complexity, complex-valued models provide built-in
-joint amplitude-phase transformations and regularization, \citep{hirose_complex-valued_2009},
-and enjoy superior performance on naturally $\cplx$-valued datasets \citep{citation_needed},
+joint amplitude-phase transformations and regularization \citep{hirose_complex-valued_2009}
+and enjoy superior performance on naturally $\cplx$-valued datasets \citep{tarver_design_2019},
 that occur in ultra high-frequency radio communications and audio signal processing. In this
 study we address the issue of excessive the arithmetic complexity of complex-valued networks
 by extending the existing Bayesian compression techniques by \citet{kingma_variational_2015},
@@ -1377,7 +1374,7 @@ for which we note the following identities $
   \vec{P Q R} = (P \otimes R^\top) \vec{Q}
 $, and $
   (P \otimes R) (C \otimes S) = P Q \otimes R S
-$, \citep{petersen_matrix_2012}.
+$ \citep{petersen_matrix_2012}.
 % It follows from the definition of the Kronecker product
 % of $P$ and $R^\top$ and the row-major order vectorization.
 
@@ -1435,9 +1432,9 @@ Hence \eqref{eq:cplx-gauss-trick} folows.
 In this section we derive the exact gradient of \eqref{eq:improper-kl-div-real}. Even
 though, ultimately, the divergence involves a hypergeometric function \todo{which one},
 and its gradient requires evaluating the Gauss error function, the analysis provides
-independent verification of the approximation, proposed in \citep{molchanov_variational_2017}.
-The logic of the derivation follows \citep{lapidoth_capacity_2003}.
-% \citep{pav_moments_2015} correctly notice that \cite[p. 2466]{lapidoth_capacity_2003} has a missing $\log{2}$ term.
+independent verification of the approximation, proposed by \citet{molchanov_variational_2017}.
+The logic of the derivation follows \citet{lapidoth_capacity_2003}.
+% \citet{pav_moments_2015} correctly notice that \cite[p. 2466]{lapidoth_capacity_2003} has a missing $\log{2}$ term.
 
 For $(z_i)_{i=1}^m \sim \mathcal{N}(0, 1)$ iid and $
   (\mu_i)_{i=1}^m \in \mathbb{R}
@@ -1562,7 +1559,7 @@ $ ($\gamma$ is Euler's constant). If we put
     = e^{-x} \sum_{n \geq 0} \frac{x^n}{n!} \psi(n + \tfrac{m}2)
     \,,
 \end{equation}
-then the desired expectation in \eqref{eq:ard-kl-div-real} equals $
+then the desired expectation in \eqref{eq:improper-kl-div-real} equals $
   \log{2} + g_1(\tfrac1{2\alpha})
 $.
 %
@@ -1669,7 +1666,8 @@ using Dawson's integral $
   \colon x \mapsto e^{-x^2} \int_0^x e^{u^2} du
 $.
 %
-Hence, the derivative of \eqref{eq:ard-kl-div-real} with respect to $\alpha$ is
+Hence, the derivative of the expectation in \eqref{eq:improper-kl-div-real} with respect
+to $\alpha$ is
 $$
 \frac{d}{d \alpha} g_1(\tfrac1{2\alpha})
   = -\frac1{2 \alpha^2} g_1'(\tfrac1{2\alpha})
@@ -1678,9 +1676,9 @@ $$
   = -\frac1{\alpha} \sqrt{\frac2{\alpha}} F(\tfrac1{\sqrt{2\alpha}})
   \,. $$
 Finally, since $\alpha$ is nonnegative, it is typically parameterized via its logarithm.
-The gradient of \eqref{eq:ard-kl-div-real} w.r.t $\log \alpha$ is
+The gradient of \eqref{eq:improper-kl-div-real} w.r.t $\log \alpha$ is
 \begin{equation}  \label{eq:real-kl-div-deriv-log}
-  \frac{d \eqref{eq:ard-kl-div-real}}{d\log \alpha}
+  \frac{d \eqref{eq:improper-kl-div-real}}{d\log \alpha}
   % \frac{d}{d\log \alpha}
   %   \frac12 \mathbb{E}_{z \sim \mathcal{N}(0,1)}
   %     \log \lvert z + \tfrac1{\sqrt{\alpha}} \rvert^2
@@ -1692,12 +1690,12 @@ The gradient of \eqref{eq:ard-kl-div-real} w.r.t $\log \alpha$ is
     \,.
 \end{equation}
 
-We compute the Monte-Carlo estimator of \eqref{eq:ard-kl-div-real} on a sample of $10^7$
+We compute the Monte-Carlo estimator of \eqref{eq:improper-kl-div-real} on a sample of $10^7$
 draws over an equally spaced grid of $\log \alpha$ in $[-12, +12]$ of size $4096$. The optimal
-coefficients of the regression, proposed by \citep{molchanov_variational_2017}, are within
+coefficients of the regression, proposed by \citet{molchanov_variational_2017}, are within
 $1\%$ relative tolerance of the reported therein.
-\begin{equation}  \label{eq:ard-kl-div-real-approx}
-  \eqref{eq:ard-kl-div-real}
+\begin{equation}  \label{eq:improper-kl-div-real-approx}
+  \eqref{eq:improper-kl-div-real}
 % - KL(\mathcal{N}(w \mid \mu, \alpha \mu^2) \|
 %     \tfrac1{\lvert w \rvert})
 %   \approx
@@ -1718,15 +1716,17 @@ $1\%$ relative tolerance of the reported therein.
 The numerically estimated derivative of the penalty term wrt $\log \alpha$ using forward
 differences seems to be following \eqref{eq:real-kl-div-deriv-log} very closely (up to
 sampling error) see fig.~\ref{fig:molchanov-derivative-replica}. The derivative of
-\eqref{eq:ard-kl-div-real-approx} with respect to $\log \alpha$ appears to be very close
-to \eqref{eq:real-kl-div-deriv-log}.
+\eqref{eq:improper-kl-div-real-approx} with respect to $\log \alpha$ appears to be very close
+to \eqref{eq:real-kl-div-deriv-log}. We compute a similar Monte-Carlo estimate for
+$\cplx$ variational dropout KL divergence term in \eqref{eq:c-vd-kl-div} with $\beta = 2$,
+fit the best approximation \eqref{eq:improper-kl-div-real-approx} and compare the derivatives.
 
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=1.\linewidth]{../notebooks/assets/grad_log.pdf}
-  \caption{$\tfrac{d f(\alpha)}{d \log{\alpha}}$ of the fit in \citep{molchanov_variational_2017},
-  MC estimate of \eqref{eq:improper-kl-div-real}, and exact derivative using
-  \eqref{eq:real-kl-div-deriv-log}.}
+  \caption{$\tfrac{d f(\alpha)}{d \log{\alpha}}$ of the fit proposed in
+  \citet{molchanov_variational_2017}, MC estimate of \eqref{eq:improper-kl-div-real},
+  and the exact derivative using \eqref{eq:real-kl-div-deriv-log}.}
   \label{fig:molchanov-derivative-replica}
 \end{figure}
 
@@ -1840,7 +1840,7 @@ $.
 Natural identification of $\cplx$ with $\real\times \real$, storing the real and imaginary
 parts in interleaved format, emulation of $\cplx$-algebra using $\real$-valued arithmetic,
 and Wirtinger calculus make it possible to reuse $\real$-backpropagation and existing
-auto-differentiation frameworks, \citep{trabelsi_deep_2017}.
+auto-differentiation frameworks \citep{trabelsi_deep_2017}.
 
 % subsection wirtinger_calculus (end)
 
