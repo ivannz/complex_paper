@@ -323,16 +323,21 @@ def file_cache(cachename, recompute=False):
     assert cachename is None or isinstance(cachename, str)
 
     def decorator(user_function):
+        cache = None
+        if isinstance(cachename, str) and os.path.exists(cachename):
+            with open(cachename, "rb") as fin:
+                cache = pickle.load(fin)
+
         def wrapper(*args, **kwargs):
+            if cache is None:
+                return user_function(*args, **kwargs)
+
             # dumb stategy: pickle the args and use it as a binary key
-            cache, key = {}, pickle.dumps((args, kwargs))
-            if isinstance(cachename, str) and os.path.exists(cachename):
-                with open(cachename, "rb") as fin:
-                    cache = pickle.load(fin)
+            key = pickle.dumps((args, kwargs), protocol=3)
+            if key in cache and not recompute:
+                return cache[key]
 
-            if key not in cache or recompute:
-                cache[key] = user_function(*args, **kwargs)
-
+            cache[key] = user_function(*args, **kwargs)
             if isinstance(cachename, str):
                 with open(cachename, "wb") as fout:
                     pickle.dump(cache, fout)
