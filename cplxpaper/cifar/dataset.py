@@ -56,10 +56,18 @@ class CIFAR100_Test(object):
 class AugmentedCIFAR10_Train(object):
     """Train sample from the CIFAR10 dataset."""
 
-    def __new__(cls, root):
+    def __new__(cls, root, disable=False):
+        if not disable:
+            transform = [
+                transforms.RandomCrop(32, padding=4),
+                transforms.RandomHorizontalFlip()
+            ]
+
+        else:
+            transform = []
+
         return datasets.CIFAR10(root, transform=transforms.Compose([
-            transforms.RandomCrop(32, padding=4),
-            transforms.RandomHorizontalFlip(),
+            *transform,
             transforms.ToTensor(),
             transforms.Normalize((0.4914, 0.4822, 0.4465),
                                  (0.2023, 0.1994, 0.2010)),
