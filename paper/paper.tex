@@ -321,9 +321,7 @@ use minibatch version of \eqref{eq:sgvb} with $L=1$:
         \log p_{\phi}(z_i \mid g(\varepsilon_i; \theta))
     \,,
 \end{equation}
-for a random subsample $(z_i)_{i=1}^M$ from $D$ and iid $
-  (\varepsilon_i)_{i=1}^M \sim p_\varepsilon
-$.
+for a random subsample $(z_i)_{i=1}^M$ from $D$ and iid $\varepsilon_i \sim p_\varepsilon$.
 %
 % (DSVI) titsias-lazaro.tex \todo{DSVI} \citep{titsias_doubly_2014}
 
@@ -485,7 +483,7 @@ $\cplx\real$-differential of a function on $\cplx$ coincides with its classical 
 a function on $\real^2$. Essentially, it allows straightforward retrofiting of $\cplx$-valued
 networks into existing $\real$ deep learning auto-differentiation frameworks. It was considered
 as a basis for $\cplx$ version of backpropagation by \citet{benvenuto_complex_1992} and
-\citet{trabelsi_deep_2017}, (see sec.~\ref{sub:wirtinger_calculus} for details).
+\citet{trabelsi_deep_2017}, (see appendix~\ref{sub:wirtinger_calculus} for details).
 % \todo{read on holomorphic nets}
 
 % section c_valued_networks (end)
@@ -668,8 +666,8 @@ $C = 0$. From \eqref{eq:c-gauss-entropy-derivation} its entropy is
 
 The local reparameterization trick provides both faster computations, and better statistical
 efficiency of the SGVB gradient estimator \citep{wang_fast_2013,kingma_variational_2015}.
-Suppose that weights $W \in \cplx^{n\times m}$ of a dense linear layer are drawn from a
-mean field $\cplx$-Gaussian approximate posterior
+Suppose that weights $W \in \cplx^{n\times m}$ of a linear layer are drawn from a mean
+field $\cplx$-Gaussian approximation
 \begin{equation}  \label{eq:c-gauss-vi-general}
   W_{ij}
     \sim \mathcal{N}^{\cplx} \bigl(
@@ -683,6 +681,7 @@ $ with $\Sigma_{ij} \in \real$, and $
   \lvert C_{ij} \rvert^2 \leq \Sigma_{ij}
 $. The property \eqref{eq:cn-affine} and independence of elements of $W$ imply that for any
 $x \in \cplx^m$ and $b \in \cplx^n$ the components of $y = W x + b$ are independent with
+distributions
 \begin{equation}  \label{eq:cplx-gauss-trick}
   y_i
     \sim \mathcal{N}^{\cplx}
@@ -750,7 +749,7 @@ the divergence term in ELBO \eqref{eq:elbo} is
         + \mathbb{E}_{q(\omega_{ij})} \log{\pi(\omega_{ij})}
     \,.
 \end{equation}
-We use approximation \eqref{eq:c-gauss-vi} and omit subscripts ${ij}$ for brevity.
+We omit subscripts ${ij}$ for brevity in the next sectons.
 
 \subsubsection{Variational dropout} % (fold)
 \label{ssub:variational_dropout}
@@ -941,8 +940,8 @@ Consider the following parameterization of $W$: $
 $ where $
   \xi_{ij} \sim \mathcal{N}(1, \alpha_{ij})
 $, yet $\mu \in \cplx^{n \times m}$. This case corresponds to inference regarding
-relevance coefficients $\xi$ rather than the parameters themselves after. Under this
-parameterization
+relevance coefficients $\xi$ rather than the parameters themselves after. Each weight
+under this parameterization is an independent degenerate $\cplx$-Gaussian distribution
 \begin{equation}  \label{eq:real-scal-gauss-vi}
   W_{ij}
     \sim \mathcal{N}^{\cplx} \bigl(
@@ -952,7 +951,7 @@ parameterization
     \bigr)
   \,,
 \end{equation}
-i.e. a degenerate $\cplx$-Gaussian distribution, which implies by \eqref{eq:cplx-gauss-trick}
+which implies by \eqref{eq:cplx-gauss-trick} the following:
 \begin{equation}  \label{eq:real-scal-gauss-trick}
   y_i
     \sim \mathcal{N}^{\cplx}\bigl(
@@ -966,7 +965,7 @@ i.e. a degenerate $\cplx$-Gaussian distribution, which implies by \eqref{eq:cplx
 The KL-divergence term for this approximation coincides with \eqref{eq:improper-kl-div-real},
 which is approximated by \citet{molchanov_variational_2017}. The major drawback of this method
 is inapplicability of the additive noise reparameterization in \eqref{eq:real-scal-gauss-trick},
-which disentangles the gradient with respect to $\mu$ from the local Gaussian noise.
+which disentangles the gradient with respect to $\mu$ from the local noise.
 
 % subsubsection real_scaling_dropout (end)
 
