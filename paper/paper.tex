@@ -376,6 +376,9 @@ We independently verify their approximation against Monte-Carlo estimates for $\
 varying over a fine logarithmic grid and the exact expression for the derivative of
 \eqref{eq:improper-kl-div-real}, which we derive in appendix~\ref{sub:real-chisq-grad}.
 % (!) good for SGVB: gradient-based methods require unbiased gradient estimates
+%
+% (in) it is in poor taste to brag about this begin the first time anyone has derived a
+% derivative of an intractable function.
 
 Being the ratio of the squared mean to the effective variance, $\alpha_j$ regulates the
 relevance of the parameter $\omega_j$ it is associated to. Thus \citet{molchanov_variational_2017}
@@ -1035,7 +1038,7 @@ is around zero.
 
 \begin{figure}[ht]
   \centering
-  \includegraphics[draft,width=1.\linewidth]{../assets/log-alpha__sum__fashion-mnist.pdf}
+  \includegraphics[draft,width=1.\linewidth]{../assets/kde-histograms-of-log-alpha-distribution.pdf}
   \caption{%
     Smoothed density of $\log\alpha$ for a convolutional and dense layer from the
     model in sec.~\ref{sub:mnist_like_datasets}.
@@ -1043,7 +1046,7 @@ is around zero.
   \label{fig:log-alpha__mnist-like}
 \end{figure}
 
-% on compression threshold
+% on chosing the threshold
 The threshold $\tau$ is picked so, that the remaining \textit{``non-zero''} parameters
 are within $\delta$ relative tolerance of their mean with high probability under the
 approximate posterior $q_\theta(W)$. Since \eqref{eq:c-gauss-vi} is Gaussian, $
@@ -1067,7 +1070,7 @@ $ is $\chi^2_k$ distributed with shape $k=1$ ($\real$) or $2$ ($\cplx$), whence
 For a reasonably generous $\delta = 25\%$ tolerance all values of $\log \alpha$ below
 $-2.5$ yield a relatively high chance of a non-zero parameter. Given that $q_\theta$
 is merely an approximation, we opt for a somewhat higher $\log \alpha$ threshold, and
-pick $\tau = -\tfrac12$, which is much lower than $\tau = 3$, recommended by
+pick $\tau \in [-\tfrac12, \tfrac32]$, which is lower than $\tau = 3$, recommended by
 \citet{molchanov_variational_2017}.
 
 % subsection fitting_and_compression (end)
@@ -1225,7 +1228,7 @@ features perform poorly in comparison to models using raw image input.
 % mention the same experimental setup as in MNIST
 Experiments on CIFAR10 dataset are set up similarly to MNIST-like experiment, except
 that we study VGG16 model \citep{simonyan_very_2015} and its $\cplx$-counterpart, fit
-on the full training split of $60k$ colour $32\times32$ images, and use only raw image
+on the full training split of $50k$ colour $32\times32$ images, and use only raw image
 input features (\texttt{raw}).
 
 % describe the VGG16 model and its cplx-valued modification
@@ -1317,7 +1320,7 @@ each epoch during SGD, and stochasticity of Bayesian forward pass at ``sparsify'
     % \caption{} \label{fig:log-alpha-proba}
   \end{subfigure}
   \caption{%
-    Pre ``finte-tune'' performance of the best models from figure \ref{fig:musicnet_trade-off}
+    Pre ``fine-tune'' performance of the best models from figure \ref{fig:musicnet_trade-off}
     compressed with methods of sec.~\ref{sec:dropout_for_c_valued_layers}:
     (\ref{ssub:variational_dropout} -- \textit{top}, \ref{ssub:empirical_bayes} --  \textit{bottom}).
   }
