@@ -1038,10 +1038,18 @@ is around zero.
 
 \begin{figure}[ht]
   \centering
-  \includegraphics[draft,width=1.\linewidth]{../assets/kde-histograms-of-log-alpha-distribution.pdf}
+  \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
+    \centering
+    \includegraphics[draft,width=1.\linewidth]{../assets/kde-histograms-of-log-alpha-distribution.pdf}
+  \end{subfigure} \\%
+  % \hfill
+  \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
+    \centering
+    \includegraphics[draft,width=1.\linewidth]{../assets/kde-histograms-of-log-alpha-distribution.pdf}
+  \end{subfigure}
   \caption{%
-    Smoothed density of $\log\alpha$ for a convolutional and dense layer from the
-    model in sec.~\ref{sub:mnist_like_datasets}.
+    Smoothed density of $\log\alpha$ for a convolutional and dense layer from a model
+    in sec.~\ref{sub:mnist_like_datasets}.
   }
   \label{fig:log-alpha__mnist-like}
 \end{figure}
@@ -1159,8 +1167,8 @@ on the input features and are summarized in table~\ref{tbl:mnist-like-model-spec
 \end{table}
 
 % discuss the plots describing how the test-performance grows with compression and then drops if the model is too sparse
-Figures~\ref{fig:mnist-like__trade-off__vd} and ~\ref{fig:mnist-like__trade-off__ard} show
-the results on the ``MNIST'' dataset for $\tau\in\{-\tfrac12, \tfrac32\}$ and $
+Plots on figure~\ref{fig:mnist-like__trade-off} show the results on the ``MNIST'' dataset for
+$\tau\in\{-\tfrac12, \tfrac32\}$ and $
   C \in \{\tfrac3{2^{k+1}}\colon k=1..16\}
 $ replicated $5$ times using the method from sec.~\ref{ssub:variational_dropout} (VD)
 and~\ref{ssub:empirical_bayes} (ARD), respectively (results for other MNIST-like datasets
@@ -1174,40 +1182,32 @@ are in the appendix).
   \centering
   \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[draft,width=1.\linewidth]{../assets/sum__mnist__fine-tune__TwoLayerDenseModelVD.pdf}
-    % \caption{} \label{fig:log-alpha-kde}
+    % \includegraphics[width=1.\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__fashionmnist__fft__-0.5.pdf}
+    \includegraphics[width=1.\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__kmnist__fft__-0.5.pdf}
   \end{subfigure} \\%
   % \hfill
   \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[draft,width=1.\linewidth]{../assets/sum__mnist__fine-tune__SimpleConvModelVD.pdf}
-    % \caption{} \label{fig:log-alpha-proba}
-  \end{subfigure}
-  \caption{%
-    The compression-accuracy trade-off after ``fine-tune'' on MNIST of \textit{TwoLayerDenseModel}
-    (top) and \textit{SimpleConvModel} (bottom) for method in sec.~\ref{ssub:variational_dropout}.
-  }
-  \label{fig:mnist-like__trade-off__vd}
-\end{figure}
-
-\begin{figure}[!ht]
-  \centering
+    % \includegraphics[width=1.\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__mnist__fft__-0.5.pdf}
+    \includegraphics[width=1.\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__emnist_letters__fft__-0.5.pdf}
+  \end{subfigure} \\%
   \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[draft,width=1.\linewidth]{../assets/sum__mnist__fine-tune__TwoLayerDenseModelARD.pdf}
-    % \caption{} \label{fig:log-alpha-kde}
+    % \includegraphics[width=1.\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__fashionmnist__raw__-0.5.pdf}
+    \includegraphics[width=1.\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__kmnist__raw__-0.5.pdf}
   \end{subfigure} \\%
   % \hfill
   \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[draft,width=1.\linewidth]{../assets/sum__mnist__fine-tune__SimpleConvModelARD.pdf}
-    % \caption{} \label{fig:log-alpha-proba}
+    % \includegraphics[width=1.\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__mnist__raw__-0.5.pdf}
+    \includegraphics[width=1.\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__emnist_letters__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
     The compression-accuracy trade-off after ``fine-tune'' on MNIST of \textit{TwoLayerDenseModel}
-    (top) and \textit{SimpleConvModel} (bottom) for method in sec.~\ref{ssub:empirical_bayes}.
+    (top) and \textit{SimpleConvModel} (bottom) for methods in sections~\ref{ssub:variational_dropout}
+    and~\ref{ssub:empirical_bayes}.
   }
-  \label{fig:mnist-like__trade-off__ard}
+  \label{fig:mnist-like__trade-off}
 \end{figure}
 
 % which is better ARD or VD
@@ -1239,6 +1239,24 @@ sizes of $\cplx$ model.
 % mention that fourier-features perfomed worse than raw image data embeded in to $\cplx$
 
 % compare compressed cplx-vgg against real-vgg
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
+    \centering
+    \includegraphics[draft,width=1.\linewidth]{../assets/figure__cifar10__trade-off/musicnetram__fft__-0.5.pdf}
+  \end{subfigure} \\%
+  % \hfill
+  \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
+    \centering
+    \includegraphics[draft,width=1.\linewidth]{../assets/figure__cifar10__threshold/cifar10__threshold.pdf}
+  \end{subfigure}
+  \caption{%
+    Pre ``fine-tune'' performance of the best models from figure \ref{fig:musicnet_trade-off}
+    compressed with methods of sec.~\ref{sec:dropout_for_c_valued_layers}:
+    (\ref{ssub:variational_dropout} -- \textit{top}, \ref{ssub:empirical_bayes} --  \textit{bottom}).
+  }
+  \label{fig:figure__cifar10__trade-off}
+\end{figure}
 
 % draw some conclusions
 
@@ -1284,48 +1302,33 @@ each epoch during SGD, and stochasticity of Bayesian forward pass at ``sparsify'
   \centering
   \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[draft,width=1.\linewidth]{../assets/grid_cplx_fine_kl_div_v3_fast-fine-tune.pdf}
-    % \caption{} \label{fig:log-alpha-kde}
-  \end{subfigure} \\
+    \includegraphics[width=1.\linewidth]{../assets/figure__musicnet__trade-off/musicnetram__fft__-0.5.pdf}
+  \end{subfigure} \\%
   % \hfill
   \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[draft,width=1.\linewidth]{../assets/grid_cplx_fine_kl_div_v2-fine-tune.pdf}
-    % \caption{} \label{fig:log-alpha-proba}
+    % \includegraphics[width=1.\linewidth]{../assets/figure__musicnet__trade-off/musicnetram__fft__-0.5.pdf}
+    \includegraphics[draft,width=1.\linewidth]{../assets/figure__musicnet__trade-off/legacy__musicnetram__fft__-0.5.pdf}
+  \end{subfigure} \\%
+  % \hfill
+  \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
+    \centering
+    % \includegraphics[width=1.\linewidth]{../assets/figure__musicnet__trade-off/musicnetram__fft__-0.5.pdf}
+    \includegraphics[draft,width=1.\linewidth]{../assets/figure__musicnet__threshold/threshold.pdf}
   \end{subfigure}
   \caption{%
     Average Percision frontier for the convolutional model of \citet{trabelsi_deep_2017}.
     Shaded horiontal region represents the $\mu\pm\sigma$ bands for the performance of the
     uncompressed model.
-    \textit{top}: Original model ($k=6$) compressed with \textbf{\color{orange} VD}
-    (\ref{ssub:variational_dropout}) and \textbf{\color{blue} ARD} (\ref{ssub:empirical_bayes});
+    \textit{top}: Original model ($k=6$) compressed with \textbf{\color{blue} VD}
+    (\ref{ssub:variational_dropout}) and \textbf{\color{orange} ARD} (\ref{ssub:empirical_bayes});
     \textit{bottom}: The model of \citet{trabelsi_deep_2017} with kernel size $3$
     compressed with \textbf{\color{blue} VD} (\ref{ssub:variational_dropout}).
   }
-  \label{fig:musicnet_trade-off}
+  \label{fig:musicnet__trade-off}
 \end{figure}
 
 
-\begin{figure}[!ht]
-  \centering
-  \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
-    \centering
-    \includegraphics[draft,width=1.\linewidth]{../assets/grid_cplx_fine_kl_div_v3_fast-c-ard-trade-off.pdf}
-    % \caption{} \label{fig:log-alpha-kde}
-  \end{subfigure} \\
-  % \hfill
-  \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
-    \centering
-    \includegraphics[draft,width=1.\linewidth]{../assets/grid_cplx_fine_kl_div_v3_fast-c-ard-trade-off.pdf}
-    % \caption{} \label{fig:log-alpha-proba}
-  \end{subfigure}
-  \caption{%
-    Pre ``fine-tune'' performance of the best models from figure \ref{fig:musicnet_trade-off}
-    compressed with methods of sec.~\ref{sec:dropout_for_c_valued_layers}:
-    (\ref{ssub:variational_dropout} -- \textit{top}, \ref{ssub:empirical_bayes} --  \textit{bottom}).
-  }
-  \label{fig:musicnet_trade-off_pre_fune-tune}
-\end{figure}
 % subsection muscinet (end)
 
 % section experiments (end)
