@@ -1027,7 +1027,7 @@ weights in each layer based on the relevance scores $\alpha$ (sec.~\ref{sub:drop
 the variational approximation factorizes into univariate distributions, whether a $\cplx$
 or $\real$ parameter is zero or not is determined from individual relevance scores $
   \alpha = \tfrac{\sigma^2}{\lvert\mu\rvert^2}
-$: non-zero if $\log \alpha \leq \tau$, zero otherwise. Figure~\ref{fig:log-alpha__mnist-like}
+$: non-zero if $\log \alpha \leq \tau$, zero otherwise. Figure~\ref{fig:hist__and__threshold__tradeoff}
 displays the general shape of the distribution of $\log \alpha$ on the Fashion-MNIST dataset
 in sec.~\ref{sub:mnist_like_datasets}. This shape appears to be typical in every experiment
 conducted in this study: there always is a single mode within the moderately negative
@@ -1045,13 +1045,13 @@ is around zero.
   % \hfill
   \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[draft,width=1.\linewidth]{../assets/kde-histograms-of-log-alpha-distribution.pdf}
+    \includegraphics[width=1.\linewidth]{../assets/figure__musicnet__threshold.pdf}
   \end{subfigure}
   \caption{%
     Smoothed density of $\log\alpha$ for a convolutional and dense layer from a model
     in sec.~\ref{sub:mnist_like_datasets}.
   }
-  \label{fig:log-alpha__mnist-like}
+  \label{fig:hist__and__threshold__tradeoff}
 \end{figure}
 
 % on chosing the threshold
@@ -1072,7 +1072,7 @@ $ is $\chi^2_k$ distributed with shape $k=1$ ($\real$) or $2$ ($\cplx$), whence
     = \chi^2_k\biggl(\frac{\delta^2}{\alpha}\biggr)
   \,.
 \end{equation}
-% Figure~\ref{fig:log-alpha__mnist-like} (bottom) shows the probability of a $\real$
+% Figure~\ref{fig:hist__and__threshold__tradeoff} (bottom) shows the probability of a $\real$
 % (or $\cplx$)  parameter being non-zero for various $\delta\in(0, \tfrac12)$ as a function
 % of $\log \alpha$.
 For a reasonably generous $\delta = 25\%$ tolerance all values of $\log \alpha$ below
@@ -1309,12 +1309,6 @@ each epoch during SGD, and stochasticity of Bayesian forward pass at ``sparsify'
     \centering
     % \includegraphics[width=1.\linewidth]{../assets/figure__musicnet__trade-off/musicnetram__fft__-0.5.pdf}
     \includegraphics[draft,width=1.\linewidth]{../assets/figure__musicnet__trade-off/legacy__musicnetram__fft__-0.5.pdf}
-  \end{subfigure} \\%
-  % \hfill
-  \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
-    \centering
-    % \includegraphics[width=1.\linewidth]{../assets/figure__musicnet__trade-off/musicnetram__fft__-0.5.pdf}
-    \includegraphics[draft,width=1.\linewidth]{../assets/figure__musicnet__threshold/threshold.pdf}
   \end{subfigure}
   \caption{%
     Average Percision frontier for the convolutional model of \citet{trabelsi_deep_2017}.
