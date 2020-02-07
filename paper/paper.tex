@@ -1082,10 +1082,10 @@ $ is $\chi^2_k$ distributed with $k=1$ ($\real$) or $2$ ($\cplx$), whence
   \Pr\bigl(
     \lvert w - \mu \rvert \leq \delta \lvert \mu \rvert
   \bigr)
-    = \Pr\biggl(
-      \frac{k \lvert w - \mu \rvert^2}{\alpha \lvert \mu \rvert^2}
-        \leq \frac{\delta^2 k}{\alpha}
-    \biggr)
+    % = \Pr\biggl(
+    %   \frac{k \lvert w - \mu \rvert^2}{\alpha \lvert \mu \rvert^2}
+    %     \leq \frac{\delta^2 k}{\alpha}
+    % \biggr)
     = \chi^2_k\biggl(\frac{\delta^2 k}{\alpha}\biggr)
   \,.
 \end{equation}
@@ -1126,22 +1126,14 @@ $\cplx$-batch normalization layers, if present.
 \subsection{MNIST-like datasets} % (fold)
 \label{sub:mnist_like_datasets}
 
-We conduct a moderately sized numerical experiment on MNIST and similar $28\times 28$
-greyscale image datasets to study the compression-performance trade-off of the proposed
-$\cplx$-variational dropout on simple architectures.
-
+We conduct a moderately sized experiment on MNIST and similar $28\times 28$ greyscale
+image datasets to study the compression-performance trade-off of the proposed $\cplx$-variational
+dropout on simple architectures.
 % dataset size
 We deliberately use a {fixed} random subset of $10k$ images from the train split of each
 dataset to fit the networks, and gauge the final performance on the usual test split.
-Limiting the size was done primarily to test the regularization strength of sparsification
-performed by variational dropout, and to make bulk experimentation faster.
-
-% image features
-Since image data is not naturally $\cplx$-valued, we preprocess images by either embedding
-$\real$-data into $\cplx$ assuming $\Re z = 0$ (\texttt{raw}), or applying the two-dimensional
-Fourier Transform (\texttt{fft}), shifting lower frequencies to the centre of the image. We
-do not investigate the option, proposed by \citet{trabelsi_deep_2017}, to train an auxiliary
-model to synthesize the imaginary component from the real data.
+Limiting the size was done primarily to test the regularization strength of compression,
+and to make bulk experimentation faster.
 
 % model architectures
 % discussion of TwoLayerDenseModel (TLDM) and SimpleConvModel (SCM)
@@ -1175,12 +1167,19 @@ The values of $n_\cdot$ depend on the input features and are summarized in table
   \end{tabular}
 \end{table}
 
+% image features
+Since image data is not naturally $\cplx$-valued, we preprocess images by either embedding
+$\real$-data into $\cplx$ assuming $\Re z = 0$ (\texttt{raw}), or applying the two-dimensional
+Fourier Transform (\texttt{fft}), shifting lower frequencies to the centre of the image. We
+do not investigate the option, proposed by \citet{trabelsi_deep_2017}, to train an auxiliary
+model to synthesize the imaginary component from the real data.
+
 % first experiment: 40-75-40 with fast scheduler
-First we try to compare the $\real$-valued networks against their $\cplx$-valued counterparts
-with approximately half as many parameters, as suggested by \citet{monning_evaluation_2018}.
-In this experiment, ``dense'', ``sparsify'' and ``fine-tune'' stages last for $40$, $75$
-and $40$ epochs, respectively. The base learning rate is scaled after $5$, $10$, and $20$
-epochs by $\tfrac1{10}$, $\tfrac1{20}$ and $\tfrac1{100}$, respectively.
+First we compare the $\real$-valued networks against their $\cplx$-valued counterparts with
+approximately half as many parameters as suggested by \citet{monning_evaluation_2018}. In
+this experiment stages last for $40$, $75$ and $40$ epochs, respectively, and the base learning
+rate is scaled after $5$, $10$, and $20$-th epoch by $\tfrac1{10}$, $\tfrac1{20}$ and $\tfrac1{100}$,
+respectively.
 
 % discuss the plots describing how the test-performance grows with compression and then drops if the model is too sparse
 Plots on figure~\ref{fig:mnist-like__trade-off} show the results on the ``MNIST'' dataset for
