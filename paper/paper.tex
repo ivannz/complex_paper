@@ -1143,29 +1143,10 @@ of illustrating the compression and understanding the effects of experiment para
 ($2\times 2$) after non-linearities with two convolutions (kernel $5\times 5$, stride $1$)
 with filters $n_1 \to n_2$ followed by dense layers $n_3 \to n_\mathtt{out}$. The second
 network, \textit{TwoLayerDenseModel} (TLDM), is a wide dense network $n_1 \to n_\mathtt{out}$.
-The values of $n_\cdot$ depend on the input features and are summarized in table~\ref{tbl:mnist-like-model-spec}.
-
-\begin{table}[hb]
-  \centering
-  \caption{Architecture parameters for models studied on MNIST-like datasets.}
-  \label{tbl:mnist-like-model-spec}
-  \begin{tabular}{lrr}
-    \toprule
-    $(n_1, n_2, n_3)$  & $\real$-\textit{SCM} & $\cplx$-\textit{SCM} \\
-    \midrule
-    (\texttt{raw}) & $20,  50,  500$ & $10, 25, 250$ \\
-    (\texttt{fft}) & $40, 100, 1000$ & $20, 50, 500$ \\
-  %   \bottomrule
-  % \end{tabular}
-  % \begin{tabular}{lrr}
-    \toprule
-    $(n_1)$  & $\real$-\textit{TLDM} & $\cplx$-\textit{TLDM} \\
-    \midrule
-    (\texttt{raw}) & $4096$ & $2048$ \\
-    (\texttt{fft}) & $8192$ & $4096$ \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+For SCM model $n_1, n_2, n_3$ are $20, 50, 500$, respectively, and for TLDM model $
+  n_1 = 4096
+$ regardless of their type ($\real$ or $\cplx$), although \citet{monning_evaluation_2018}
+argues that this renders models incomparable.
 
 % image features
 Since image data is not naturally $\cplx$-valued, we preprocess images by either embedding
@@ -1175,42 +1156,22 @@ do not investigate the option, proposed by \citet{trabelsi_deep_2017}, to train 
 model to synthesize the imaginary component from the real data.
 
 % first experiment: 40-75-40 with fast scheduler
-First we compare the $\real$-valued networks against their $\cplx$-valued counterparts with
-approximately half as many parameters as suggested by \citet{monning_evaluation_2018}. In
-this experiment stages last for $40$, $75$ and $40$ epochs, respectively, and the base learning
-rate is scaled after $5$, $10$, and $20$-th epoch by $\tfrac1{10}$, $\tfrac1{20}$ and $\tfrac1{100}$,
-respectively.
+In this experiment stages last for $40$, $75$ and $40$ epochs, respectively, and the base
+learning rate of ${10}^{-3}$ is reduced after the $10$-th epoch to ${10}^{-4}$.
 %
-Plots~\ref{fig:mnist-like__trade-off} depict performance-compression curve on MNIST-like
-datasets for the studied models and methods from sec.~\ref{ssub:variational_dropout} (VD)
-and~\ref{ssub:empirical_bayes} (ARD). Besides that we tried \texttt{raw} or \texttt{fft}
-input features, varied $
+Plots~\ref{fig:mnist-like__trade-off__kmnist} and \ref{fig:mnist-like__trade-off__emnist}
+depict samples from the performance-compression curve on KMNIST and EMNIST-Letters datasets
+for the studied models and VD compression method (sec.~\ref{ssub:variational_dropout}).
+Besides that we tried \texttt{raw} or \texttt{fft} input features, varied $
   C \in \{\tfrac3{2^{k+1}}\colon k=1..16\}
-$, and repeated the experiment $4$ times.
+$, and repeated the experiment $5$ times.
 
-% observation: raw features -- alright
-
-fft features with wide dense network exhibit improving performance with the compression rate
-up to a certain limit.
-
-% discuss the plots describing how the test-performance grows with compression and then drops if the model is too sparse
-% which is better ARD or VD
-It is worth pointing out that the prior used in ARD models offers slightly more favourable
-compression-accuracy values, matching the established perception that log-uniform prior
-is too harsh for sparsification tasks \citep{kharitonov_variational_2018}.
-
-Nevertheless, it is clear form the results depicted in \ref{where}, that VD and ARD
-methods yield very similar compression-performance frontiers.
-
-% second experiment: use scheduler Trabelsi et al. (2018) and show them plotz!
-In the second experiment we use a much slower learning rate scheduler and study only the 
-VD method.
-
-% hinting at overfitting/regularization effects of masking and sparsification
-
-% hopeful conclusion
-\todo{The numerical experiments on MNIST-like datasets} demonstrate, that models using fourier
-features perform poorly in comparison to models using raw image input.
+We make a couple of observations based on these results. First, Fourier features appear to
+perform on par with raw colour channel data in the convolutional networks across most
+compression rates, but require high compression to make wide shallow dense network work
+as well. The upward trend in manifests itself in MNIST and Fashion MNIST experiments as well
+(see appendix~\ref{sub:other_mnist_like_datasets}). Finally, overall $\cplx$ variational
+dropout methods seems to compress network adequately well, without much loss in performance.
 
 % a couple of plots from MNIST and Fashion-MNIST
 \begin{figure}[!h]
@@ -1265,12 +1226,13 @@ features perform poorly in comparison to models using raw image input.
 
 % mention the same experimental setup as in MNIST
 Experiments on CIFAR10 dataset are set up similarly to MNIST-like experiment, except
-that we study VGG16 model \citep{simonyan_very_2015} and its $\cplx$-counterpart. Each
-network is trained stagewise for $20$, $40$, and $20$ epochs on the full training split
-of $50k$ colour $32\times32$ images. We use only raw colour features (\texttt{raw}), since
-the results of the experiments on MNIST left us sceptical about the utility of the Fourier
-features for image recognition. We use fast learning rate scheduler from sec.~\ref{sub:mnist_like_datasets}
-and apply random crop and horizontal flips as augmentation.
+that we study VGG16 model \citep{simonyan_very_2015} and its $\cplx$-counterpart and
+replicate each experiment only twice. Each network is trained stagewise for $20$, $40$,
+and $20$ epochs on the full training split of $50k$ colour $32\times32$ images. We use
+only raw colour features (\texttt{raw}). We use fast learning rate scheduler and apply
+random crop and horizontal flips as augmentation. The scheduler scales the base learning
+rate after $5$, $10$, and $20$-th epoch by $\tfrac1{10}$, $\tfrac1{20}$ and $\tfrac1{100}$,
+respectively.
 
 % describe the VGG16 model and its cplx-valued modification
 The $\cplx$-VGG16 model is architecturally identical to VGG16, except for all layers are
@@ -1278,7 +1240,12 @@ replaced by their $\cplx$-valued versions. To maintain comparability, we halve t
 sizes of $\cplx$ model \citep{monning_evaluation_2018}.
 
 % draw some conclusions
-The halved $\cplx$ network significantly underperforms in comparison with its $\real$ counterpart
+Figure~\ref{fig:figure__cifar10__trade-off} shows that although the prior used in ARD method
+offers slightly less compression, it makes up for it by equally slightly better accuracy.
+Furthermore, the results imply that that the halved $\cplx$ network visibly underperforms
+in comparison with its $\real$ counterpart, although in MNIST-like experiment $\cplx$-valued
+network with the same inner feature dimensions performed on close to $\real$-valued, which
+is half the size of the former.
 
 % compare compressed cplx-vgg against real-vgg
 \begin{figure}[!h]
@@ -1469,10 +1436,10 @@ Hence \eqref{eq:cplx-gauss-trick} follows.
 \label{sub:real-chisq-grad}  % gradient_of_the_kl_divergence_in_R_case
 
 In this section we derive the exact gradient of \eqref{eq:improper-kl-div-real}. Even
-though, ultimately, the divergence involves a hypergeometric function \todo{which one},
-and its gradient requires evaluating the Gauss error function, the analysis provides
-independent verification of the approximation, proposed by \citet{molchanov_variational_2017}.
-The logic of the derivation follows \citet{lapidoth_capacity_2003}.
+though, ultimately, the divergence involves a hypergeometric function, and its gradient
+requires evaluating the Gauss error function, the analysis provides independent verification
+of the approximation, proposed by \citet{molchanov_variational_2017}. The logic of the
+derivation follows \citet{lapidoth_capacity_2003}.
 % \citet{pav_moments_2015} correctly notice that \cite[p. 2466]{lapidoth_capacity_2003} has a missing $\log{2}$ term.
 
 For $(z_i)_{i=1}^m \sim \mathcal{N}(0, 1)$ iid and $
@@ -1918,6 +1885,50 @@ Uniqueness of these operators follows, if this decomposition is applied to any $
 $\Im z = 0$.
 
 % subsection c-linear_operator_representation (end)
+
+\subsection{Other MNIST-like datasets} % (fold)
+\label{sub:other_mnist_like_datasets}
+
+We provide the figures of the MNIST-like experiments, omitted from the main paper
+due to size limitations.
+
+\begin{figure}[!h]
+  \centering
+  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
+    \centering
+    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__fashionmnist__fft__-0.5.pdf}
+  \end{subfigure} \\%
+  % \hfill
+  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
+    \centering
+    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__fashionmnist__raw__-0.5.pdf}
+  \end{subfigure}
+  \caption{%
+    The compression-accuracy trade-off on the letters part of the Fashion MNIST dataset.
+    (\textit{top}) \texttt{fft} features, (\textit{bottom}) \texttt{raw} features.
+  }
+  \label{fig:mnist-like__trade-off__fashionmnist}
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
+    \centering
+    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__mnist__fft__-0.5.pdf}
+  \end{subfigure} \\%
+  % \hfill
+  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
+    \centering
+    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__mnist__raw__-0.5.pdf}
+  \end{subfigure}
+  \caption{%
+    The compression-accuracy trade-off on the letters part of the MNIST dataset.
+    (\textit{top}) \texttt{fft} features, (\textit{bottom}) \texttt{raw} features.
+  }
+  \label{fig:mnist-like__trade-off__mnist}
+\end{figure}
+
+% subsection other_mnist_like_datasets (end)
 
 % section appendix (end)
 
