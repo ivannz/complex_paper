@@ -874,9 +874,8 @@ Through \eqref{eq:expect-improper-term-cplx} and \eqref{eq:log-moment-for-chi-2}
       - \tfrac{\beta}2 \mathop{Ei}(- \tfrac1{\alpha})
       \tag{\ref{eq:c-vd-kl-div-raw}'} \,.
 \end{equation}
-We propse settng $\beta = 2$ for $\cplx$ variational dropout, to make the divergence
-term depend only on $\alpha$.
-% For $\beta = 2$ we add $\gamma$ to make the right-hand side nonegative. (proof missing)
+We set $\beta = 2$ to make the divergence term depend only on $\alpha$ and add $\gamma$
+so that the right-hand side is nonegative \citep[eq.(84)]{lapidoth_capacity_2003}.
 %
 Since $\mathop{Ei}(x)$ has simple analytic derivative and \eqref{eq:elbo} depends additively
 on \eqref{eq:c-vd-kl-div}, it is possible to backpropagate through the divergence without
@@ -994,8 +993,8 @@ $\cplx$-valued networks ultimately have to output a real-valued logit score. Fol
 as the real part of the $\cplx$ output.
 
 
-\subsection{Stagewise fitting and compression} % (fold)
-\label{sub:fitting_and_compression}
+\subsection{Stagewise fitting and sparsification} % (fold)
+\label{sub:fitting_and_sparsification}
 
 The goal of this section to study the compression-performance trade-off of the proposed Bayesian
 sparsification methods for $\cplx$-valued networks. To this end we trained each network in
@@ -1033,25 +1032,23 @@ and the fine tune stage overfits.
 % on compresssion
 Between \textit{``sparsify''} and \textit{``fine-tune''} stages we compute masks of non-zero
 weights in each layer based on the relevance scores $\alpha$ (sec.~\ref{sub:dropout}). Since
-the variational approximation factorizes into univariate distributions, whether a $\cplx$
-or $\real$ parameter is zero or not is determined from individual relevance scores $
-  \alpha = \tfrac{\sigma^2}{\lvert\mu\rvert^2}
-$: non-zero if $\log \alpha \leq \tau$, zero otherwise. Figure~\ref{fig:hist__and__threshold__tradeoff}
-displays the general shape of the distribution of $\log \alpha$ on the Fashion-MNIST dataset
-in sec.~\ref{sub:mnist_like_datasets}. This shape appears to be typical in every experiment
-conducted in this study: there always is a single mode within the moderately negative
-range, and one or two modes to the right of zero. The relative mass of each mode changes
-with $C$ and the higher the coefficient is, the more mass is shifted to the right. In every
-experiment the trough between the peaks of the negative mode and the first positive one
-is around zero.
+the $q_\theta$ factorizes into univariate distributions, whether a $\cplx$ or $\real$ parameter
+is zero or not is determined from $\alpha = \tfrac{\sigma^2}{\lvert\mu\rvert^2}$: non-zero
+if $\log \alpha \leq \tau$, zero otherwise. Figure~\ref{fig:hist__and__threshold__tradeoff}
+(top) displays the general shape of the distribution of $\log \alpha$ on the Fashion-MNIST
+dataset in sec.~\ref{sub:mnist_like_datasets}. This shape appears to be typical in every
+experiment conducted in this study: there always is a single mode within the moderately
+negative range, and one or two modes to the right of zero. In every experiment the trough
+between the peaks of the negative mode and the first positive one is around zero. The
+relative mass of each mode changes with $C$ and the higher the coefficient is, the more
+mass is shifted to the right.
 %
-The bottom plot on figure~\ref{fig:hist__and__threshold__tradeoff} is constructed without
-running the ``fine-tune'' stage for $C=\tfrac1{2000}$, $\tfrac1{20}$, and $\frac1{200}$.
-The latter setting yields one of the better performing models on the validation split in
-sec.~\ref{sub:musicnet}. We can observe that by choosing $\tau > 0$ we end up in the
-saturation region of the performance and gain only marginal improvement, while losing
-in compression. Relative position compression curves shows that $C$ has much more substantial
-impact on the target sparsity and performance, than the choice of $\tau$.
+The bottom graph on figure~\ref{fig:hist__and__threshold__tradeoff} is constructed for
+$C \in \{\tfrac1{20}, \frac1{200}\}$ before running the ``fine-tune'' stage. From the
+relative positions of the compression curves on this plot and from the results of other
+experiments we conclude that $C$ has much more substantial impact on the sparsity and
+performance, than the choice of $\tau$. Furthermore, for $\tau > 0$ the performance quickly
+saturates and while compression continues to drop.
 
 \begin{figure}[ht]
   \centering
@@ -1076,40 +1073,40 @@ impact on the target sparsity and performance, than the choice of $\tau$.
 % on chosing the threshold
 The threshold $\tau$ is picked so, that the remaining \textit{``non-zero''} parameters
 are within $\delta$ relative tolerance of their mean with high probability under the
-approximate posterior $q_\theta(W)$. Since \eqref{eq:c-gauss-vi} is Gaussian, $
-  \tfrac{\lvert w - \mu \rvert^2}
+approximate posterior $q_\theta(W)$. Since $W$ is $\real$- or a proper $\cplx$-Gaussian,
+the random variable $
+  \tfrac{k \lvert W - \mu \rvert^2}
         {\alpha \lvert \mu \rvert^2}
-$ is $\chi^2_k$ distributed with shape $k=1$ ($\real$) or $2$ ($\cplx$), whence
+$ is $\chi^2_k$ distributed with $k=1$ ($\real$) or $2$ ($\cplx$), whence
 \begin{equation} \label{eq:prob_relevant}
   \Pr\bigl(
     \lvert w - \mu \rvert \leq \delta \lvert \mu \rvert
   \bigr)
     = \Pr\biggl(
-      \frac{\lvert w - \mu \rvert^2}{\alpha \lvert \mu \rvert^2}
-        \leq \frac{\delta^2}{\alpha}
+      \frac{k \lvert w - \mu \rvert^2}{\alpha \lvert \mu \rvert^2}
+        \leq \frac{\delta^2 k}{\alpha}
     \biggr)
-    = \chi^2_k\biggl(\frac{\delta^2}{\alpha}\biggr)
+    = \chi^2_k\biggl(\frac{\delta^2 k}{\alpha}\biggr)
   \,.
 \end{equation}
-For a reasonably generous $\delta = 25\%$ tolerance all values of $\log \alpha$ below
-$-2.5$ yield a relatively high chance of a non-zero parameter. Setting $\tau = 3$
-\citep{molchanov_variational_2017,kingma_variational_2015} is, in our opinion, detrimental
-since it retains parameters $W \sim q_\theta$, standard deviation of which significantly
-exceeds the magnitude of $\mu$, which is typically used as a stand-in for $W$ when the
-network is run in inference mode. Given that $q_\theta$ is merely an approximation,
-we pick $\tau = -\tfrac12$ as the sparsification threshold for $\log \alpha$ in our
-experiments.
+For a generous $\delta = 50\%$ tolerance all values of $\log \alpha$ below $-2.5$ yield
+at least $90\%$ chance of a non-zero $\real$/$\cplx$ parameter. In our opinion, $\tau = 3$
+\citep{molchanov_variational_2017,kingma_variational_2015} retains parameters with randomness
+that significantly exceeds the magnitude of the mean, although $\mu$ is typically used as
+a stand-in for $W$ when the network runs in inference mode. Given that $q_\theta$ is merely
+an approximation, we pick $\tau = -\tfrac12$ to exclude noisy parameters and encourage
+higher sparsity.
 
-% subsection fitting_and_compression (end)
+% subsection fitting_and_sparsification (end)
 
-\subsection{Metrics and performance} % (fold)
-\label{sub:metrics_and_performance}
+\subsection{Metrics and compression} % (fold)
+\label{sub:metrics_and_compression}
 
 % perfromance metrics
 We use accuracy as the performance metric for multi-class image classification on MNIST-like
-and CIFAR10 datasets. Similarly to \citet{trabelsi_deep_2017} the performance in MusicNet
-experiments is measured with (pooled) average precision: predicted scores and target binary
-labels for each output are pooled, and average precision is computed based on the precision-recall
+and CIFAR10 datasets. Similarly to \citet{trabelsi_deep_2017} performance in experiments with
+MusicNet is measured with (pooled) average precision: predicted scores and target binary labels
+for each output are pooled, and average precision is computed based on the precision-recall
 curve as if the task was single-output. The evaluation is done after ``dense'' stage, before
 the beginning and upon termination of the ``fine-tune'' stage.
 
@@ -1123,7 +1120,7 @@ network, but twice in a $\cplx$-network, being a pair of real-imaginary floats. 
 has incompressible parameters, such as layer biases, shift and scaling from $\real$-and
 $\cplx$-batch normalization layers, if present.
 
-% subsection metrics_and_performance (end)
+% subsection metrics_and_compression (end)
 
 
 \subsection{MNIST-like datasets} % (fold)
@@ -1148,17 +1145,13 @@ model to synthesize the imaginary component from the real data.
 
 % model architectures
 % discussion of TwoLayerDenseModel (TLDM) and SimpleConvModel (SCM)
- the following :
-To compactly describe the $\real$/$\cplx$ networks we study in this experiment we use
-the following notation: $c(n, k, s)$ is a convolution with $n$ output channels, kernel
-width $k$ and stride $s$, and $d(n)$ is a dense layer with $n$ outputs. The values of
-$n_\cdot$ depend on the input features and are summarized in table~\ref{tbl:mnist-like-model-spec}.
-\begin{itemize}
-  \item \textit{SimpleConvModel} (SCM): $2d$ convnet with Average pooling ($2\times 2$)
-  with layers $c(n_1, 5, 1) \to c(n_2, 5, 1) \to d(n_3) \to d(n_\mathtt{out})$
-  \item \textit{TwoLayerDenseModel} (TLDM): wide shallow network with structure
-  $d(n_1) \to d(n_\mathtt{out})$
-\end{itemize}
+The $\real$/$\cplx$ networks, studied in this experiment, have been chosen for the purpose 
+of illustrating the compression and understanding the effects of experiment parameters.
+\textit{SimpleConvModel} (SCM) is $2d$ ReLU convolutional networks with average pooling
+($2\times 2$) after non-linearities with two convolutions (kernel $5\times 5$, stride $1$)
+with filters $n_1 \to n_2$ followed by dense layers $n_3 \to n_\mathtt{out}$. The second
+network, \textit{TwoLayerDenseModel} (TLDM), is a wide dense network $n_1 \to n_\mathtt{out}$.
+The values of $n_\cdot$ depend on the input features and are summarized in table~\ref{tbl:mnist-like-model-spec}.
 
 \begin{table}[hb]
   \centering
@@ -1170,9 +1163,9 @@ $n_\cdot$ depend on the input features and are summarized in table~\ref{tbl:mnis
     \midrule
     (\texttt{raw}) & $20,  50,  500$ & $10, 25, 250$ \\
     (\texttt{fft}) & $40, 100, 1000$ & $20, 50, 500$ \\
-    \bottomrule
-  \end{tabular}
-  \begin{tabular}{lrr}
+  %   \bottomrule
+  % \end{tabular}
+  % \begin{tabular}{lrr}
     \toprule
     $(n_1)$  & $\real$-\textit{TLDM} & $\cplx$-\textit{TLDM} \\
     \midrule
@@ -1313,7 +1306,7 @@ thus: a random full window of $4096$ samples is picked within each waveform and 
 from $\real$ to $\cplx$ with $1d$ FFT. Annotation labels are taken at the mid-point of the
 window.
 
-We use training from sec.~\ref{sub:fitting_and_compression} with epochs lasting for $12$,
+We use training from sec.~\ref{sub:fitting_and_sparsification} with epochs lasting for $12$,
 $32$ and $50$ epochs, respectively. Early stopping is used only during the ``fine-tune''
 stage. Preliminary experiments with the model without sparsification have shown that early
 stopping almost always terminated the training process within the first $10-20$ epochs,
@@ -1324,7 +1317,7 @@ stage, other important deviations from their setup include:
   \item shifting lower frequencies to the centre of the window to maintain locality after
   applying FFT (much like in sec.~\ref{sub:mnist_like_datasets})
   \item clipping $\ell_2$ norm of parameters' gradients to $0.05$
-  \item faster learning rate reduction schedule (sec.~\ref{sub:fitting_and_compression})
+  \item faster learning rate reduction schedule (sec.~\ref{sub:fitting_and_sparsification})
 \end{itemize}
 Each full three-stage experiment is replicated five times to take random effects into account,
 e.g. random network initialization prior to ``dense'' stage, randomization of batches within
