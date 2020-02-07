@@ -1312,26 +1312,32 @@ thus: a random full window of $4096$ samples is picked within each waveform and 
 from $\real$ to $\cplx$ with $1d$ FFT. Annotation labels are taken at the mid-point of the
 window.
 
-We use training from sec.~\ref{sub:fitting_and_sparsification} with epochs lasting for $12$,
-$32$ and $50$ epochs, respectively. Early stopping is used only during the ``fine-tune''
-stage. Preliminary experiments with the model without sparsification have shown that early
-stopping almost always terminated the training process within the first $10-20$ epochs,
-and that the validation performance peaked at about $10-15$ epochs, much sooner than $200$
-epoch, used by \citet{trabelsi_deep_2017}. Besides stagewise training and shorter ``dense''
-stage, other important deviations from their setup include:
-\begin{itemize}
-  \item shifting lower frequencies to the centre of the window to maintain locality after
-  applying FFT (much like in sec.~\ref{sub:mnist_like_datasets})
-  \item clipping $\ell_2$ norm of parameters' gradients to $0.05$
-  \item faster learning rate reduction schedule (sec.~\ref{sub:fitting_and_sparsification})
-\end{itemize}
-Each full three-stage experiment is replicated five times to take random effects into account,
-e.g. random network initialization prior to ``dense'' stage, randomization of batches within
-each epoch during SGD, and stochasticity of Bayesian forward pass at ``sparsify'' stage.
+Preliminary experiments with the model without sparsification have shown that early stopping
+almost always terminated the training process within the first $10-20$ epochs, and that the
+validation performance peaked at about $10-15$ epochs, much sooner than $200$ epochs used by
+\citet{trabelsi_deep_2017}. Thus we adopt shorter lasting stages: $12$, $32$ and $50$ epochs,
+which essentially turns the ``dense'' stage into pretraining step. Early stopping, tracking
+the validation split performance, is used only during the ``fine-tune'' stage. To keep the
+learning rate schedule synchronised with such abbreviated training, we allow the base rate
+of $10^{-3}$ to be scaled after $5$, $10$, and $20$-th epoch by $\tfrac1{10}$, $\tfrac1{20}$
+and $\tfrac1{100}$, respectively. Other key deviations from the setup used by \citet{trabelsi_deep_2017}
+include: shifting lower frequencies to the centre of the window to maintain locality after
+applying FFT (sec.~\ref{sub:mnist_like_datasets}), and clipping $\ell_2$ norm of parameters'
+gradients to $0.05$.
 
-% Describe the network by Trabelsi and then present the reslts form then model with kernel size \textbf{6} 
-% the causally mantion that you also conducted a large study of an inferior model with kenrel size 3.
-% (do not mention that this was a mistake, you dummy!)
+In each experiment we varied the method and the value $C$, while keeping $\tau$ at $-\tfrac12$.
+Each full experiment is replicated five times to take random effects from network initialization
+before ``dense'', stochastic batch sequence during SGD, and randomness of Bayesian forward
+pass at ``sparsify'' stage.
+
+Figure~\ref{fig:musicnet__trade-off} shows the resulting performance-compression frontier
+for the deep network of \citet{trabelsi_deep_2017} and its version, in which we purposefully
+halve the spatial size of the first $1d$ convolution kernel from $6$ to $3$ (denoted by
+suffix \textit{k}$3$). The motivation is to test if the performance handicap introduced be
+the forced compression of the most upstream layer can be alleviated through non-uniform
+compression, induced by variational dropout. We test only VD (sec.~\ref{ssub:variational_dropout})
+method in this sub-experiment, since prior results have not demonstrated significant difference
+in performance-compression trade-off between VD and ARD (sec.~\ref{ssub:empirical_bayes}).
 
 \begin{figure}[!ht]
   \centering
@@ -1340,16 +1346,26 @@ each epoch during SGD, and stochasticity of Bayesian forward pass at ``sparsify'
     \includegraphics[width=\linewidth]{../assets/figure__musicnet__trade-off/musicnetram__fft__-0.5.pdf}
   \end{subfigure}
   \caption{%
-    Performance-compression frontier for the deep network of \citet{trabelsi_deep_2017}.
-    Shaded horizontal region represents the $\mu\pm\sigma$ bands for the performance of the
-    uncompressed model. \textbf{\color{blue} VD} and \textbf{\color{orange} ARD} denote
-    methods \ref{ssub:variational_dropout}) ans \ref{ssub:empirical_bayes}, respectively.
+    \textbf{\color{blue} VD} and \textbf{\color{orange} ARD}
+    denote
+    methods \ref{ssub:variational_dropout}) and \ref{ssub:empirical_bayes}, respectively.
     The \textbf{\color{pink} version} of the network with kernel $3$ in every convolution compressed with VD
     is (\ref{ssub:variational_dropout}).
   }
   \label{fig:musicnet__trade-off}
 \end{figure}
 
+Shaded horizontal bands represent the min-max spread of the performance of the uncompressed
+network upon termination of ``dense'' stage. Each point represents a precision-compression
+value attained by a network after ``fine-tune'' stage. The end of the tail of each point
+represents the performance gain or loss from the ``fine-tune'' stage itself.
+%
+For compression levels lower than $50$, the final stage overfits the network, since
+undercompresed remain overparameterized. For rates higher than $\approx 100$ the ``fine-tune''
+stage serves its purpose, essentially, due to the network's being sufficiently regularized
+though sparsity. There is evidence in favour of achievability of the SOTA average precision
+of \citet{trabelsi_deep_2017} within the $50$-$100$ compression region with $\cplx$-valued
+automatic relevance derivative (sec.~\ref{ssub:empirical_bayes}).
 
 % subsection muscinet (end)
 
