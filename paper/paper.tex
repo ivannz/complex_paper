@@ -1224,15 +1224,24 @@ features perform poorly in comparison to models using raw image input.
   % \hfill
   \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
-    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__mnist__fft__-0.5.pdf}
-    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__emnist_letters__fft__-0.5.pdf}
-    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/ARD__kmnist__fft__-0.5.pdf}
-  \end{subfigure} \\%
-  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
-    \centering
     % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__fashionmnist__raw__-0.5.pdf}
     \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__kmnist__raw__-0.5.pdf}
     % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/VD__kmnist__raw__-0.5.pdf}
+  \end{subfigure}
+  \caption{%
+    The compression-accuracy trade-off on KMNIST dataset.
+    (\textit{top}) \texttt{fft} features, (\textit{bottom}) \texttt{raw} features.
+  }
+  \label{fig:mnist-like__trade-off__kmnist}
+\end{figure}
+
+\begin{figure}[!h]
+  \centering
+  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
+    \centering
+    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__mnist__fft__-0.5.pdf}
+    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__emnist_letters__fft__-0.5.pdf}
+    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/ARD__kmnist__fft__-0.5.pdf}
   \end{subfigure} \\%
   % \hfill
   \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
@@ -1242,11 +1251,10 @@ features perform poorly in comparison to models using raw image input.
     % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/VD__emnist_letters__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
-    The compression-accuracy trade-off after ``fine-tune'' on MNIST of \textit{TwoLayerDenseModel}
-    (top) and \textit{SimpleConvModel} (bottom) for methods in sections~\ref{ssub:variational_dropout}
-    and~\ref{ssub:empirical_bayes}.
+    The compression-accuracy trade-off on the letters part of the Extended MNIST dataset.
+    (\textit{top}) \texttt{fft} features, (\textit{bottom}) \texttt{raw} features.
   }
-  \label{fig:mnist-like__trade-off}
+  \label{fig:mnist-like__trade-off__emnist}
 \end{figure}
 
 % subsection mnist_like_datasets (end)
