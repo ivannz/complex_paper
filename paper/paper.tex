@@ -988,17 +988,20 @@ Every experiment is replicated several times to take random effects into account
 random network initialization prior to training, randomly ordered batches during SGD.
 Unless specified otherwise, every experiment uses global gradient clipping within an
 $\ell_2$-norm ball of radius $0.5$, runs SGD with ADAM optimizer with the base learning
-rate of $10^{-3}$ which is scaled after $5$, $10$, and $20$ epochs by $\tfrac1{10}$,
-$\tfrac1{20}$ and $\tfrac1{100}$, respectively.
+rate of $10^{-3}$. We note that since our experiments are on classification tasks,
+$\cplx$-valued networks ultimately have to output a real-valued logit score. Following
+\citet{wolter_complex_2018} and \citet{trabelsi_deep_2017}, the class scores are taken
+as the real part of the $\cplx$ output.
 
-\subsection{Staged fitting and compression} % (fold)
+
+\subsection{Stagewise fitting and compression} % (fold)
 \label{sub:fitting_and_compression}
 
 The goal of this section to study the compression-performance trade-off of the proposed Bayesian
-sparsification methods for $\cplx$-valued networks. To this end we employ the following training
-plan in every experiment. The model is trained in three successive stages: ``dense'' $\to$
-``sparsify'' $\to$ ``fine-tune''. Model parameters and the optimizer are copied between
-stages, except before the ``fine-tune'' optimizer's internal state is reset.
+sparsification methods for $\cplx$-valued networks. To this end we trained each network in
+three successive stages in every experiment: ``dense'' $\to$ ``sparsify'' $\to$ ``fine-tune''.
+Model parameters and the optimizer are copied between stages, except before the final stage
+optimizer's internal state is reset.
 
 At the \textit{``dense''} stage every network is fit ``as-is'', retaining its original
 non-Bayesian architecture and using only the likelihood term from \eqref{eq:elbo} without
@@ -1016,10 +1019,16 @@ $ at the KL divergence term in \eqref{eq:elbo}:
     \,. \tag{\ref{eq:elbo}'}
 \end{equation}
 Higher $C$ yields increasingly more sparse layers upon termination of this stage.
-%
+
 The \textit{``fine-tune''} stage begins with computing the sparsity masks from the fitted
 approximation $q_\theta(W)$ and proceeds to train the non-zero parameters similarly to
 the ``dense'' stage, i.e. with non-Bayesian layers and fixed sparsity masks.
+%
+\todo{reword}
+We observe dual effect of ``fine-tune'' stage: it improves performance of highly compressed
+models since they are more regularized (by poking holes) and thus serves as further fitting.
+At the same time, undercompressed models, behave as if they were over parameterized
+and the fine tune stage overfits.
 
 % on compresssion
 Between \textit{``sparsify''} and \textit{``fine-tune''} stages we compute masks of non-zero
@@ -1035,21 +1044,31 @@ range, and one or two modes to the right of zero. The relative mass of each mode
 with $C$ and the higher the coefficient is, the more mass is shifted to the right. In every
 experiment the trough between the peaks of the negative mode and the first positive one
 is around zero.
+%
+The bottom plot on figure~\ref{fig:hist__and__threshold__tradeoff} is constructed without
+running the ``fine-tune'' stage for $C=\tfrac1{2000}$, $\tfrac1{20}$, and $\frac1{200}$.
+The latter setting yields one of the better performing models on the validation split in
+sec.~\ref{sub:musicnet}. We can observe that by choosing $\tau > 0$ we end up in the
+saturation region of the performance and gain only marginal improvement, while losing
+in compression. Relative position compression curves shows that $C$ has much more substantial
+impact on the target sparsity and performance, than the choice of $\tau$.
 
 \begin{figure}[ht]
   \centering
   \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[draft,width=1.\linewidth]{../assets/kde-histograms-of-log-alpha-distribution.pdf}
+    \includegraphics[width=\linewidth]{../assets/log-alpha__sum__fashion-mnist__20200131-205926.pdf}
   \end{subfigure} \\%
   % \hfill
   \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=1.\linewidth]{../assets/figure__musicnet__threshold.pdf}
+    \includegraphics[width=\linewidth]{../assets/figure__musicnet__threshold.pdf}
   \end{subfigure}
   \caption{%
-    Smoothed density of $\log\alpha$ for a convolutional and dense layer from a model
-    in sec.~\ref{sub:mnist_like_datasets}.
+    (\textit{top}) Smoothed density of $\log\alpha$ for some convolutional and dense layer
+    from a model in sec.~\ref{sub:mnist_like_datasets};
+    (\textit{bottom}) Test split performance and compression rate for $\cplx$-valued net
+    by \citet{trabelsi_deep_2017} on MusicNet.
   }
   \label{fig:hist__and__threshold__tradeoff}
 \end{figure}
@@ -1072,14 +1091,14 @@ $ is $\chi^2_k$ distributed with shape $k=1$ ($\real$) or $2$ ($\cplx$), whence
     = \chi^2_k\biggl(\frac{\delta^2}{\alpha}\biggr)
   \,.
 \end{equation}
-% Figure~\ref{fig:hist__and__threshold__tradeoff} (bottom) shows the probability of a $\real$
-% (or $\cplx$)  parameter being non-zero for various $\delta\in(0, \tfrac12)$ as a function
-% of $\log \alpha$.
 For a reasonably generous $\delta = 25\%$ tolerance all values of $\log \alpha$ below
-$-2.5$ yield a relatively high chance of a non-zero parameter. Given that $q_\theta$
-is merely an approximation, we opt for a somewhat higher $\log \alpha$ threshold, and
-pick $\tau \in [-\tfrac12, \tfrac32]$, which is lower than $\tau = 3$, recommended by
-\citet{molchanov_variational_2017}.
+$-2.5$ yield a relatively high chance of a non-zero parameter. Setting $\tau = 3$
+\citep{molchanov_variational_2017,kingma_variational_2015} is, in our opinion, detrimental
+since it retains parameters $W \sim q_\theta$, standard deviation of which significantly
+exceeds the magnitude of $\mu$, which is typically used as a stand-in for $W$ when the
+network is run in inference mode. Given that $q_\theta$ is merely an approximation,
+we pick $\tau = -\tfrac12$ as the sparsification threshold for $\log \alpha$ in our
+experiments.
 
 % subsection fitting_and_compression (end)
 
@@ -1091,12 +1110,8 @@ We use accuracy as the performance metric for multi-class image classification o
 and CIFAR10 datasets. Similarly to \citet{trabelsi_deep_2017} the performance in MusicNet
 experiments is measured with (pooled) average precision: predicted scores and target binary
 labels for each output are pooled, and average precision is computed based on the precision-recall
-curve as if the task was single-output.
-
-The test performance is reported befire the beginning and after termination of the ``fine-tune''
-stage. Additional rationale behind this decision is the extra fine tuning, which trains the
-compressed model.
-
+curve as if the task was single-output. The evaluation is done after ``dense'' stage, before
+the beginning and upon termination of the ``fine-tune'' stage.
 
 % write a note on the incompressible parameters (bias, batch norm etc.)
 The compression rate is computed based on the number of floating point values needed
@@ -1105,8 +1120,8 @@ to specify the model and equals $
 $, where $n_\mathtt{zer}$ is the number of explicit zeros after sparsification, $n_\mathtt{par}$
 is the total number of floats. Thus each parameter is counted once in a $\real$-valued
 network, but twice in a $\cplx$-network, being a pair of real-imaginary floats. Each model
-has incompressible parameters, such as layer biases, and shifts and scalings from $\real$-
-and $\cplx$-batch normalization layers, if present.
+has incompressible parameters, such as layer biases, shift and scaling from $\real$-and
+$\cplx$-batch normalization layers, if present.
 
 % subsection metrics_and_performance (end)
 
@@ -1116,9 +1131,7 @@ and $\cplx$-batch normalization layers, if present.
 
 We conduct a moderately sized numerical experiment on MNIST and similar $28\times 28$
 greyscale image datasets to study the compression-performance trade-off of the proposed
-$\cplx$-variational dropout on simple architectures. We compare with the $\real$-valued
-networks against their $\cplx$-valued counterparts with approximately half as many
-parameters, as suggested by \citet{monning_evaluation_2018}.
+$\cplx$-variational dropout on simple architectures.
 
 % dataset size
 We deliberately use a {fixed} random subset of $10k$ images from the train split of each
@@ -1134,16 +1147,19 @@ do not investigate the option, proposed by \citet{trabelsi_deep_2017}, to train 
 model to synthesize the imaginary component from the real data.
 
 % model architectures
-We study the following $\real$/$\cplx$ networks:
+% discussion of TwoLayerDenseModel (TLDM) and SimpleConvModel (SCM)
+ the following :
+To compactly describe the $\real$/$\cplx$ networks we study in this experiment we use
+the following notation: $c(n, k, s)$ is a convolution with $n$ output channels, kernel
+width $k$ and stride $s$, and $d(n)$ is a dense layer with $n$ outputs. The values of
+$n_\cdot$ depend on the input features and are summarized in table~\ref{tbl:mnist-like-model-spec}.
 \begin{itemize}
   \item \textit{SimpleConvModel} (SCM): $2d$ convnet with Average pooling ($2\times 2$)
   with layers $c(n_1, 5, 1) \to c(n_2, 5, 1) \to d(n_3) \to d(n_\mathtt{out})$
   \item \textit{TwoLayerDenseModel} (TLDM): wide shallow network with structure
   $d(n_1) \to d(n_\mathtt{out})$
 \end{itemize}
-where $c(n, k, s)$ denotes a convolution with $n$ output channels, kernel width $k$ and
-stride $s$, and $d(n)$ is a dense layer with $n$ outputs. The values of $n_\cdot$ depend
-on the input features and are summarized in table~\ref{tbl:mnist-like-model-spec}.
+
 \begin{table}[hb]
   \centering
   \caption{Architecture parameters for models studied on MNIST-like datasets.}
@@ -1152,7 +1168,7 @@ on the input features and are summarized in table~\ref{tbl:mnist-like-model-spec
     \toprule
     $(n_1, n_2, n_3)$  & $\real$-\textit{SCM} & $\cplx$-\textit{SCM} \\
     \midrule
-    (\texttt{raw}) & $20, 50, 500$ & $10, 25, 250$ \\
+    (\texttt{raw}) & $20,  50,  500$ & $10, 25, 250$ \\
     (\texttt{fft}) & $40, 100, 1000$ & $20, 50, 500$ \\
     \bottomrule
   \end{tabular}
@@ -1166,6 +1182,13 @@ on the input features and are summarized in table~\ref{tbl:mnist-like-model-spec
   \end{tabular}
 \end{table}
 
+% first experiment: 40-75-40 with fast scheduler
+First we try to compare the $\real$-valued networks against their $\cplx$-valued counterparts
+with approximately half as many parameters, as suggested by \citet{monning_evaluation_2018}.
+In this experiment, ``dense'', ``sparsify'' and ``fine-tune'' stages last for $40$, $75$
+and $40$ epochs, respectively. The base learning rate is scaled after $5$, $10$, and $20$
+epochs by $\tfrac1{10}$, $\tfrac1{20}$ and $\tfrac1{100}$, respectively.
+
 % discuss the plots describing how the test-performance grows with compression and then drops if the model is too sparse
 Plots on figure~\ref{fig:mnist-like__trade-off} show the results on the ``MNIST'' dataset for
 $\tau\in\{-\tfrac12, \tfrac32\}$ and $
@@ -1174,33 +1197,52 @@ $ replicated $5$ times using the method from sec.~\ref{ssub:variational_dropout}
 and~\ref{ssub:empirical_bayes} (ARD), respectively (results for other MNIST-like datasets
 are in the appendix).
 
-% discussion of TwoLayerDenseModel (TLDM) and SimpleConvModel (SCM)
+% which is better ARD or VD
+It is worth pointing out that the prior used in ARD models offers slightly more favourable
+compression-accuracy values, matching the established perception that log-uniform prior
+is too harsh for sparsification tasks \citep{kharitonov_variational_2018}.
+
+Nevertheless, it is clear form the results depicted in \ref{where}, that VD and ARD
+methods yield very similar compression-performance frontiers.
+
+% second experiment: use scheduler Trabelsi et al. (2018) and show them plotz!
+In the second experiment we use a much slower learning rate scheduler and study only the 
+VD method.
+
 % hinting at overfitting/regularization effects of masking and sparsification
+
+% hopeful conclusion
+\todo{The numerical experiments on MNIST-like datasets} demonstrate, that models using fourier
+features perform poorly in comparison to models using raw image input.
 
 % a couple of plots from MNIST and Fashion-MNIST
 \begin{figure}[!ht]
   \centering
-  \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
+  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
-    % \includegraphics[width=1.\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__fashionmnist__fft__-0.5.pdf}
-    \includegraphics[width=1.\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__kmnist__fft__-0.5.pdf}
+    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__fashionmnist__fft__-0.5.pdf}
+    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__kmnist__fft__-0.5.pdf}
+    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/VD__kmnist__fft__-0.5.pdf}
   \end{subfigure} \\%
   % \hfill
-  \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
+  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
-    % \includegraphics[width=1.\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__mnist__fft__-0.5.pdf}
-    \includegraphics[width=1.\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__emnist_letters__fft__-0.5.pdf}
+    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__mnist__fft__-0.5.pdf}
+    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__emnist_letters__fft__-0.5.pdf}
+    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/ARD__kmnist__fft__-0.5.pdf}
   \end{subfigure} \\%
-  \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
+  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
-    % \includegraphics[width=1.\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__fashionmnist__raw__-0.5.pdf}
-    \includegraphics[width=1.\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__kmnist__raw__-0.5.pdf}
+    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__fashionmnist__raw__-0.5.pdf}
+    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__kmnist__raw__-0.5.pdf}
+    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/VD__kmnist__raw__-0.5.pdf}
   \end{subfigure} \\%
   % \hfill
-  \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
+  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
-    % \includegraphics[width=1.\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__mnist__raw__-0.5.pdf}
-    \includegraphics[width=1.\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__emnist_letters__raw__-0.5.pdf}
+    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__mnist__raw__-0.5.pdf}
+    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__emnist_letters__raw__-0.5.pdf}
+    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/VD__emnist_letters__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
     The compression-accuracy trade-off after ``fine-tune'' on MNIST of \textit{TwoLayerDenseModel}
@@ -1210,15 +1252,6 @@ are in the appendix).
   \label{fig:mnist-like__trade-off}
 \end{figure}
 
-% which is better ARD or VD
-It is worth pointing out that the prior used in ARD models offers slightly more favourable
-compression-accuracy values, matching the established perception that log-uniform prior
-is \todo{too harsh for sparsification tasks} \citep{kharitonov_variational_2018}.
-
-% hopeful conclusion
-\todo{The numerical experiments on MNIST-like datasets} demonstrate, that models using fourier
-features perform poorly in comparison to models using raw image input.
-
 % subsection mnist_like_datasets (end)
 
 
@@ -1227,28 +1260,30 @@ features perform poorly in comparison to models using raw image input.
 
 % mention the same experimental setup as in MNIST
 Experiments on CIFAR10 dataset are set up similarly to MNIST-like experiment, except
-that we study VGG16 model \citep{simonyan_very_2015} and its $\cplx$-counterpart, fit
-on the full training split of $50k$ colour $32\times32$ images, and use only raw image
-input features (\texttt{raw}).
+that we study VGG16 model \citep{simonyan_very_2015} and its $\cplx$-counterpart. Each
+network is trained stagewise for $20$, $40$, and $20$ epochs on the full training split
+of $50k$ colour $32\times32$ images. We use only raw colour features (\texttt{raw}), since
+the results of the experiments on MNIST left us sceptical about the utility of the Fourier
+features for image recognition. We use fast learning rate scheduler from sec.~\ref{sub:mnist_like_datasets}.
+
+% mention that fourier-features perfomed worse than raw image data embeded in to $\cplx$
 
 % describe the VGG16 model and its cplx-valued modification
 The $\cplx$-VGG16 model is architecturally identical to VGG16, except for all layers
-replaced by their $\cplx$-valued versions. To maintain comparability, we half the filter
-sizes of $\cplx$ model.
-
-% mention that fourier-features perfomed worse than raw image data embeded in to $\cplx$
+replaced by their $\cplx$-valued versions. To maintain comparability, we halve the
+filter sizes of $\cplx$ model \citep{monning_evaluation_2018}. 
 
 % compare compressed cplx-vgg against real-vgg
 \begin{figure}[!ht]
   \centering
   \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[draft,width=1.\linewidth]{../assets/figure__cifar10__trade-off/musicnetram__fft__-0.5.pdf}
+    \includegraphics[draft,width=\linewidth]{../assets/figure__cifar10__trade-off/musicnetram__fft__-0.5.pdf}
   \end{subfigure} \\%
   % \hfill
   \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[draft,width=1.\linewidth]{../assets/figure__cifar10__threshold/cifar10__threshold.pdf}
+    \includegraphics[draft,width=\linewidth]{../assets/figure__cifar10__threshold/cifar10__threshold.pdf}
   \end{subfigure}
   \caption{%
     Pre ``fine-tune'' performance of the best models from figure \ref{fig:musicnet_trade-off}
@@ -1259,12 +1294,13 @@ sizes of $\cplx$ model.
 \end{figure}
 
 % draw some conclusions
+The halved $\cplx$ network significantly underperforms in comparison with its $\real$ counterpart
 
 % subsection cifar10_100 (end)
 
 
 \subsection{MusciNet} % (fold)
-\label{sub:muscinet}
+\label{sub:musicnet}
 
 % describe musicnet as in Trabelsi et al. (2017) also get some hints from thickstun_learning_2017
 MusicNet \citep{thickstun_learning_2017} is an annotated audio dataset, consisting of $330$
@@ -1282,7 +1318,7 @@ $32$ and $50$ epochs, respectively. Early stopping is used only during the ``fin
 stage. Preliminary experiments with the model without sparsification have shown that early
 stopping almost always terminated the training process within the first $10-20$ epochs,
 and that the validation performance peaked at about $10-15$ epochs, much sooner than $200$
-epoch, used by \citet{trabelsi_deep_2017}. Besides staged training and shorter ``dense''
+epoch, used by \citet{trabelsi_deep_2017}. Besides stagewise training and shorter ``dense''
 stage, other important deviations from their setup include:
 \begin{itemize}
   \item shifting lower frequencies to the centre of the window to maintain locality after
@@ -1300,15 +1336,9 @@ each epoch during SGD, and stochasticity of Bayesian forward pass at ``sparsify'
 
 \begin{figure}[!ht]
   \centering
-  \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
+  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=1.\linewidth]{../assets/figure__musicnet__trade-off/musicnetram__fft__-0.5.pdf}
-  \end{subfigure} \\%
-  % \hfill
-  \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
-    \centering
-    % \includegraphics[width=1.\linewidth]{../assets/figure__musicnet__trade-off/musicnetram__fft__-0.5.pdf}
-    \includegraphics[draft,width=1.\linewidth]{../assets/figure__musicnet__trade-off/legacy__musicnetram__fft__-0.5.pdf}
+    \includegraphics[width=\linewidth]{../assets/figure__musicnet__trade-off/musicnetram__fft__-0.5.pdf}
   \end{subfigure}
   \caption{%
     Average Percision frontier for the convolutional model of \citet{trabelsi_deep_2017}.
@@ -1722,7 +1752,7 @@ fit the best approximation \eqref{eq:improper-kl-div-real-approx} and compare th
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=1.\linewidth]{../notebooks/assets/grad_log.pdf}
+  \includegraphics[width=\linewidth]{../notebooks/assets/grad_log.pdf}
   \caption{$\tfrac{d f(\alpha)}{d \log{\alpha}}$ of the fit proposed in
   \citet{molchanov_variational_2017}, MC estimate of \eqref{eq:improper-kl-div-real},
   and the exact derivative using \eqref{eq:real-kl-div-deriv-log}.}
