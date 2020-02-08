@@ -41,11 +41,8 @@ def one_experiment(wid, device, manifest):
     options["device"] = device
 
     # create the target folder
-    path = os.path.dirname(manifest)
-    name = os.path.basename(manifest)
-
-    name, ext = os.path.splitext(name)
-    target = os.path.join(path, name)
+    target, ext = os.path.splitext(manifest)
+    name = os.path.basename(target)
 
     # run the experiment
     flag = os.path.join(target, "INCOMPLETE")
@@ -89,15 +86,14 @@ def main(path, devices=("cuda:1", "cuda:3"), n_per_device=1):
         workers.append(p)
 
     # gather and enqueue all manifests from the folder
-    for fn in os.listdir(path):
-        if not fn.endswith(".json"):
+    for name, ext in map(os.path.splitext, os.listdir(path)):
+        if ext != ".json" or name.startswith("."):
             continue
 
-        if fn.startswith("."):
-            print(f"Not an experiment {fn}...", flush=True)
-            continue
-
-        manifests.put_nowait(os.path.join(path, fn))
+        experiment = os.path.join(path, name)
+        flag = os.path.join(experiment, "INCOMPLETE")
+        if not os.path.isdir(experiment) or os.path.isfile(flag):
+            manifests.put_nowait(experiment + ".json")
 
     # enqueue `stop` signals as well
     for w in workers:
