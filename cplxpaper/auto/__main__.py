@@ -48,11 +48,14 @@ def one_experiment(wid, device, manifest):
     target = os.path.join(path, name)
 
     # run the experiment
-    if not os.path.exists(target):
-        os.makedirs(target, exist_ok=False)
+    flag = os.path.join(target, "INCOMPLETE")
+    if not os.path.isdir(target) or os.path.isfile(flag):
+        os.makedirs(target, exist_ok=True)  # once created it is kept
 
+        open(flag, "wb").close()  # set busy flag
         print(f">>> {wid:03d}-{device} {name}")
         run(options, target, time.strftime("%Y%m%d-%H%M%S"), verbose=False)
+        os.remove(flag)  # if run raises the flag is not reset
 
 
 def worker(wid, jobs, devarray, devices):
