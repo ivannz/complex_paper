@@ -88,7 +88,9 @@ def load_stage_snapshot(stage, folder, mismatch="ignore"):
     # list all filenames matching the format
     folder, _, filenames = next(os.walk(folder))
     matches = filter(None, map(pat.match, filenames))
-    matches = sorted(matches,
+
+    # search from the most recently modified to the oldest snapshot
+    matches = sorted(matches, reverse=True,
                      key=lambda m: time.strptime(m.group(3), "%Y%m%d-%H%M%S"))
     for m in matches:
         if m.group(2) == stage:
