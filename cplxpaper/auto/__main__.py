@@ -57,7 +57,7 @@ def one_experiment(wid, device, manifest):
 
 def worker(wid, jobs, devarray, devices):
     """Poll the job queue and dispatch to a device."""
-    job = jobs.get()
+    job, n_retries = jobs.get()
     while job is not None:
         # Acquire the next free device for this job and make sure the
         #  resources are released.
@@ -65,16 +65,22 @@ def worker(wid, jobs, devarray, devices):
         try:
             one_experiment(wid, devices[devid], job)
 
+        except Exception as e:
+            # gobble up any exception, and reschedule if necessary
+            if n_retries > 0:
+                print(f"reschedule due to {type(e).__name__}({str(e)})")
+                jobs.put_nowait((job, n_retries - 1))
+
         finally:
             release(devarray, devid)
             jobs.task_done()
 
-        job = jobs.get()
+        job, n_retries = jobs.get()
 
     jobs.task_done()
 
 
-def main(path, devices=("cuda:1", "cuda:3"), n_per_device=1):
+def main(path, devices=("cuda:1", "cuda:3"), n_per_device=1, n_retries=1):
     # create a pool of workers and a device availability array
     workers, manifests = [], JoinableQueue()
     devarray = Array("i", len(devices) * [n_per_device])
@@ -93,12 +99,13 @@ def main(path, devices=("cuda:1", "cuda:3"), n_per_device=1):
         experiment = os.path.join(path, name)
         flag = os.path.join(experiment, "INCOMPLETE")
         if not os.path.isdir(experiment) or os.path.isfile(flag):
-            manifests.put_nowait(experiment + ".json")
+            # a job is a manifset and retry counter (incl. zero-th retry)
+            manifests.put_nowait((experiment + ".json", n_retries))
 
     # enqueue `stop` signals as well
     for w in workers:
         # each worker immediately stops querying for a next job
-        manifests.put(None)
+        manifests.put((None, 0))
 
     # wait for completion and stop workers
     manifests.join()
