@@ -65,6 +65,9 @@ def worker(wid, jobs, devarray, devices):
         try:
             one_experiment(wid, devices[devid], job)
 
+        except KeyboardInterrupt:
+            break  # abort, and exit this thread
+
         except Exception as e:
             # gobble up any exception, and reschedule if necessary
             if n_retries > 0:
