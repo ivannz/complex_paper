@@ -33,7 +33,7 @@ def release(array, ix):
 def one_experiment(wid, device, manifest):
     # Import torch inside this function, because it is called in a subprocess.
     # This makes sure that torch's RNG context is initialized afresh.
-    import torch
+#     from cplxpaper.auto.auto import debug as run
     from cplxpaper.auto import run
 
     # open manifest

@@ -1,5 +1,6 @@
 __version__ = "0.2"
 import os
+import gc
 import copy
 import tqdm
 import json
@@ -300,11 +301,7 @@ def state_inherit(state, options, *, old=None, **sparsity_kwargs):
 
 
 def run(options, folder, suffix, verbose=True, save_optim=False):
-    """The main procedure that choreographs staged training.
-
-    Parameters
-    ----------
-    """
+    """The main procedure that choreographs staged training."""
     # cudnn float32 ConvND does not seem to guarantee +ve sign of the result
     #  on inputs, that are +ve by construction.
     # torch.backends.cudnn.deterministic = True
@@ -418,4 +415,25 @@ def run(options, folder, suffix, verbose=True, save_optim=False):
         if not is_benign_emergency:
             break
 
+    # this might help with creeping gpu memory
+    gc.collect()
+    torch.cuda.empty_cache()
+
     return snapshots
+
+
+def debug(options, folder, suffix, verbose=True, save_optim=False):
+    """For the purposes of debugging randomness and GPU memory."""
+    device = torch.device(options["device"])
+    values = torch.randn(1024, device=device)
+
+    final_snapshot = save_snapshot(
+        os.path.join(folder, f"blob{suffix}.gz"),
+        values=values.cpu()
+    )
+
+    # this might help with creeping gpu memory
+    gc.collect()
+    torch.cuda.empty_cache()
+
+    return final_snapshot
