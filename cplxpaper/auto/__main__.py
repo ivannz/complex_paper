@@ -1,4 +1,5 @@
 import os
+import tqdm
 import json
 import time
 import argparse
@@ -18,7 +19,7 @@ def one_experiment(wid, device, manifest):
 
     # create the target folder
     target, ext = os.path.splitext(manifest)
-    name = os.path.basename(target)
+    # name = os.path.basename(target)
 
     # run the experiment
     flag = os.path.join(target, "INCOMPLETE")
@@ -26,7 +27,7 @@ def one_experiment(wid, device, manifest):
         os.makedirs(target, exist_ok=True)  # once created it is kept
 
         open(flag, "wb").close()  # set busy flag
-        print(f">>> {wid:03d}-{device} {name}")
+        # print(f">>> {wid:03d}-{device} {name}")
         run(options, target, time.strftime("%Y%m%d-%H%M%S"), verbose=False)
         os.remove(flag)  # if run raises the flag is not reset
 
@@ -78,7 +79,7 @@ def worker(wid, index, jobs, budget):
         except Exception as e:
             # gobble up any exception, and reschedule if necessary
             if n_retries > 0:
-                print(f"reschedule due to {type(e).__name__}({str(e)})")
+                # print(f"reschedule due to {type(e).__name__}({str(e)})")
                 jobs.put_nowait((job, n_retries - 1))
                 rescheduled = True
 
@@ -106,7 +107,7 @@ def main(path, devices=("cuda:1", "cuda:3"), n_per_device=1, n_retries=1):
         p.start()
 
     # gather and enqueue all manifests from the folder
-    for name, ext in map(os.path.splitext, os.listdir(path)):
+    for name, ext in map(os.path.splitext, tqdm.tqdm(os.listdir(path))):
         if ext != ".json" or name.startswith("."):
             continue
 
