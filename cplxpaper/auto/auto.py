@@ -318,7 +318,8 @@ def run(options, folder, suffix, verbose=True, save_optim=False):
         json.dump(options_backup, fout, indent=2, sort_keys=False)
 
     # placement (dtype / device)
-    devtype = dict(device=torch.device(options["device"]), dtype=None)
+    device = torch.device(options["device"])
+    devtype = dict(device=device, dtype=None)
 
     # The data feeds are built from three layers:
     #   Dataset -> DataLoader -> *FeedTransformer
@@ -417,6 +418,7 @@ def run(options, folder, suffix, verbose=True, save_optim=False):
 
     # this might help with creeping gpu memory
     gc.collect()
+    torch.cuda.set_device(device)
     torch.cuda.empty_cache()
 
     return snapshots
@@ -434,6 +436,7 @@ def debug(options, folder, suffix, verbose=True, save_optim=False):
 
     # this might help with creeping gpu memory
     gc.collect()
+    torch.cuda.set_device(device)
     torch.cuda.empty_cache()
 
     return final_snapshot
