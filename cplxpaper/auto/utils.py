@@ -59,18 +59,22 @@ def load_manifest(folder, create=True):
 
 def verify_experiment(folder):
     """Check if the experiment at the specified folder has been completed."""
-    if not os.path.exists(folder):
+    if not os.path.isdir(folder):
         return False
 
-    folder, _, filenames = next(os.walk(folder))
-    manifest = load_manifest(folder, create=True)
+    filename = os.path.join(folder, "config.json")
+    if not os.path.isfile(filename):
+        return False
+
+    with open(filename, "r") as fin:
+        manifest = json.load(fin)
 
     # stage map to check if any one is missing
+    folder, _, filenames = next(os.walk(folder))
     stages = dict.fromkeys(manifest["stage-order"], False)
     for j, stage in enumerate(stages.keys()):
         # synchronized with naming format at ./auto.py#L393
         pat = re.compile(f"^{j}-{stage}\\s+.*\\.gz$")
-
         match = next(filter(None, map(pat.match, filenames)), None)
         stages[stage] = match is not None
 
