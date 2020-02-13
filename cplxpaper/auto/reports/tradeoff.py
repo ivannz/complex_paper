@@ -141,9 +141,9 @@ def evaluate_experiment(folder, *, device):
 
     # this might help with creeping gpu memory
     del models, scorers
-    torch.cuda.set_device(device)
-    for _ in range(10):
-        gc.collect()
-        torch.cuda.empty_cache()
 
-    return options, dict(scores)
+    gc.collect()
+    torch.cuda.set_device(device)
+    torch.cuda.empty_cache()
+
+    return folder, options, dict(scores)
