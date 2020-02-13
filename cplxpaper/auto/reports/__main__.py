@@ -45,8 +45,8 @@ class Budget(object):
 
     Details
     -------
-    Keeps a semaphore for the total number of resources available, and
-    a device-specific atmoic counter of available slots.
+    Keeps a semaphore for the total number of resources available,
+    and a device-specific atomic counter of available slots.
     """
     def __init__(self, devices, n_per_device):
         self.devices, self.n_per_device = devices, n_per_device
@@ -74,7 +74,7 @@ class Budget(object):
 
 
 def store(filename, queue):
-    """Store objects streamed throught a queue in a binary file.
+    """Store objects streamed through a queue in a binary file.
 
     Details
     -------
@@ -82,9 +82,9 @@ def store(filename, queue):
     on `.get()` if empty, but it is entirely possible for the jobs to
     be so heavy and log, that the queue starves.
 
-    We could use wait for a `.get()` on a closed queue, becasue semantically
+    We could use wait for a `.get()` on a closed queue, because semantically
     `.close()` also indicates that the queue no longer accepts new results
-    (see the docs for `multiprocessing`). However this is not so, and a clsed
+    (see the docs for `multiprocessing`). However this is not so, and a closed
     queue is closed entirely and cannot be read from.
 
     Using a special sentinel value not elegant, but is the most viable option.
@@ -92,10 +92,10 @@ def store(filename, queue):
     with open(filename, "wb") as storage:
         result = queue.get()
         while result is not None:
+            storage.write(pickle.dumps(result))
+
             # `.get()` on a closed queue raises `EOFError`, otherwise
             # blocks if empty
-            storage.write(pickle.dumps(result, protocol=4))
-
             result = queue.get()
 
 
@@ -111,8 +111,6 @@ def restore(filename):
     with open(filename, "rb") as storage:
         while True:
             try:
-                #  Pickle streams are entirely self-contained
-                # unpickling will unpickle one entire object at a time.
                 yield pickle.load(storage)
 
             except EOFError:
@@ -152,7 +150,7 @@ def verify_experiment(folder):
     folder, _, filenames = next(os.walk(folder))
     stages = dict.fromkeys(manifest["stage-order"], False)
     for j, stage in enumerate(stages.keys()):
-        # synchronized with naming format at ./auto.py#L393
+        # synchronized with naming format at ../auto.py#L393
         pat = re.compile(f"^{j}-{stage}\\s+.*\\.gz$")
         match = next(filter(None, map(pat.match, filenames)), None)
         stages[stage] = match is not None
@@ -193,7 +191,7 @@ def main(paths, kind, filename, devices=("cuda:1", "cuda:3"), n_per_device=1):
                 queues[-1], budget, output
             )))
 
-    # start everone
+    # start everyone
     collector.start()
     for p in pool:
         p.start()
@@ -204,7 +202,7 @@ def main(paths, kind, filename, devices=("cuda:1", "cuda:3"), n_per_device=1):
     for experiment in tqdm.tqdm(experiments, disable=False):
         queues[budget.acquire()].put_nowait(experiment)
 
-    # terminated subprocesses by signalling empty job
+    # terminated subprocesses by signaling empty job
     for q in queues:
         for _ in range(n_per_device):
             q.put(None)
@@ -215,7 +213,6 @@ def main(paths, kind, filename, devices=("cuda:1", "cuda:3"), n_per_device=1):
 
     # all jobs are done once we are here, so join the collector thread
     output.put(None)
-
     collector.join()
 
     print(f">>> complete `{filename}`")
