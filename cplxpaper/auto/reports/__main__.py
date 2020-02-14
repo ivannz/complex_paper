@@ -28,7 +28,7 @@ def analyze_experiment(kind, experiment, *, device):
         import torch
 
         # delay = float(numpy.random.rand(1))
-        delay = float(torch.rand(1))
+        delay = float(torch.rand(1, device=torch.device(device)).cpu())
 
         # time.sleep(max(1 - experiment / 10000, 0))
         time.sleep(delay)
@@ -73,7 +73,7 @@ class Budget(object):
         return self.devices[index]
 
 
-def store(filename, queue):
+def store(queue, report, append):
     """Store objects streamed through a queue in a binary file.
 
     Details
@@ -89,7 +89,7 @@ def store(filename, queue):
 
     Using a special sentinel value not elegant, but is the most viable option.
     """
-    with open(filename, "wb") as storage:
+    with open(report, "ab" if append else "wb") as storage:
         result = queue.get()
         while result is not None:
             storage.write(pickle.dumps(result))
@@ -99,7 +99,7 @@ def store(filename, queue):
             result = queue.get()
 
 
-def restore(filename):
+def restore(report):
     """Recover stored objects from a binary file.
 
     Details
@@ -108,7 +108,7 @@ def restore(filename):
     > `Pickle streams are entirely self-contained, so unpickling [from
     an open file] unpickles one object at a time.`
     """
-    with open(filename, "rb") as storage:
+    with open(report, "rb") as storage:
         while True:
             try:
                 yield pickle.load(storage)
@@ -176,16 +176,20 @@ def enumerate_experiments(grid):
         yield experiment
 
 
-def main(paths, kind, filename, devices=("cuda:1", "cuda:3"), n_per_device=1):
+def main(*, paths, kind, report, append=False,
+         devices=("cuda:1", "cuda:3"), per_device=1):
+    if os.path.isfile(report) and not append:
+        raise RuntimeError(f"Refusing to overwrite existing `{report}`")
+
     # create a thread, to collect and commit results into storage
     output = Queue()
-    collector = Thread(target=store, args=(filename, output))
+    collector = Thread(target=store, args=(output, report, append))
 
     # each device is associated with its own process pool
-    queues, pool, budget = [], [], Budget(devices, n_per_device)
+    queues, pool, budget = [], [], Budget(devices, per_device)
     for index, device in enumerate(devices):
-        queues.append(JoinableQueue(n_per_device))
-        for _ in range(n_per_device):
+        queues.append(JoinableQueue(per_device))
+        for _ in range(per_device):
             pool.append(Process(target=worker, args=(
                 len(pool), kind, index,
                 queues[-1], budget, output
@@ -204,7 +208,7 @@ def main(paths, kind, filename, devices=("cuda:1", "cuda:3"), n_per_device=1):
 
     # terminated subprocesses by signaling empty job
     for q in queues:
-        for _ in range(n_per_device):
+        for _ in range(per_device):
             q.put(None)
         q.join()
 
@@ -215,8 +219,8 @@ def main(paths, kind, filename, devices=("cuda:1", "cuda:3"), n_per_device=1):
     output.put(None)
     collector.join()
 
-    print(f">>> complete `{filename}`")
-    return filename
+    print(f">>> complete `{report}`")
+    return report
 
 
 parser = argparse.ArgumentParser(description='Auto report generation',
@@ -230,18 +234,15 @@ parser.add_argument(
     help='the maximum number of jobs per device')
 
 parser.add_argument(
-    'kind', type=str,
-    help='the type of report to preprocess results for')
+    '--append', action='store_true', required=False,
+    default=False, help='Append to report, instead of creating new one')
+
 parser.add_argument(
-    'output', type=str,
-    help='the name of the output pickle')
+    'kind', type=str, help='the type of report to preprocess results for')
+parser.add_argument(
+    'report', type=str, help='the name of the report pickle')
 parser.add_argument(
     'paths', type=str, nargs='+',
     help='path to grids or particular experiment results')
 
-args = parser.parse_args()
-
-filename = args.output
-if not os.path.isfile(filename):
-    main(args.paths, args.kind, filename, args.devices, args.per_device)
-    # print(len([*restore(filename)]))
+main(**vars(parser.parse_args()))
