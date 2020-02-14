@@ -45,7 +45,7 @@ def get_model_tag(opt):
     # extract the class name
     cls = opt["stages__sparsify__model__cls"]
 
-    pat = re.compile(r"^<class '.*?\.models\.(.*?)'>$")
+    pat = re.compile(r"^<class '.*\.models.*\.((?:real|complex)\..+)'>$")
     cls = pat.sub(r"\1", cls)
 
     # get the model kind: real/complex
