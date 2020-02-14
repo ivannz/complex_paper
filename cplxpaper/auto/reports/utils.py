@@ -81,7 +81,7 @@ def get_dataset(opt):
                             "datasets__test__cls")
     assert cls is not None
 
-    pat = re.compile(r"^<class '.*?\.(?:mnist|musicnet)\.dataset\.(.*?)'>$")
+    pat = re.compile(r"^<class '.*?\.(?:mnist|musicnet|cifar)\.dataset\.(.*?)'>$")
     cls = pat.sub(r"\1", cls).lower()
 
     return {"dataset": cls.replace("_test", "")}
