@@ -107,7 +107,9 @@ def main(path, devices=("cuda:1", "cuda:3"), n_per_device=1, n_retries=1):
         p.start()
 
     # gather and enqueue all manifests from the folder
-    for name, ext in map(os.path.splitext, tqdm.tqdm(os.listdir(path))):
+    path = os.path.abspath(os.path.normpath(path))
+    path, _, filenames = next(os.walk(path))
+    for name, ext in map(os.path.splitext, tqdm.tqdm(filenames)):
         if ext != ".json" or name.startswith("."):
             continue
 
