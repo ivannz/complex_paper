@@ -19,7 +19,7 @@
 
 \graphicspath{{../assets/appendix/}}
 
-\title{Bayesian Sparsification of Deep $\cplx$-valued networks -- Extendeed appendix}
+\title{Bayesian Sparsification of Deep $\cplx$-valued networks -- Extended appendix}
 \author{Ivan Nazarov, and Evgeny Burnaev}
 
 %% notation
@@ -52,7 +52,7 @@ the fine-tuning.
 
 We recap the set up of each experiment on MNIST-like:
 \begin{itemize}
-  \item staged training, with weight transfer
+  \item staged training, with weight and optimizer state transfer
   \item $40$, $75$, and $40$ epochs for ``dense'', ``sparsify'', and ``fine-tune'' stagers, respectively
   \item ADAM optimizer with learning rate $10^{-3}$ before the $10$-th, and $10^{-4}$
   afterwards
@@ -65,12 +65,17 @@ We recap the set up of each experiment on MNIST-like:
   $
   \item the sparsification threshold $\tau$ is set to $-\tfrac12$
 \end{itemize}
+Each experiment was performed $5$ times to obtain a small sample of performance-compression
+values for each setting of $C$. By reevaluating each setting several times we can account
+for randomness in initialization of the uncompressed network at ``dense'', stochasticity of
+variational dropout layers, and randomness of batch sequences during SDG, and non-determinism
+of computations on GPUs.
 
 Each figure shows the compression-accuracy trade-off of a particular method and input features
 for \textit{SimpleConvModel} and \textit{TwoLayerDenseModel} models for all four of the studied
 datasets (described in the main text): \emph{top-left} EMNIST-Letters, \emph{top-right} KMNIST,
 \emph{bottom-left} Fashion MNIST, and \emph{bottom-right} MNIST.
-
+%
 Figures \ref{fig:appendix__mnist-like__trade-off__ARD__fft}, \ref{fig:appendix__mnist-like__trade-off__VD__fft},
 \ref{fig:appendix__mnist-like__trade-off__ARD__raw}, and \ref{fig:appendix__mnist-like__trade-off__VD__raw}
 compare $\real$ models against $\cplx$ with \emph{the same architecture}, i.e. incomparable
@@ -85,7 +90,7 @@ double the number of parameters against $\cplx$ for Fourier input features on fi
 \ref{fig:appendix__cmp__mnist-like__trade-off__ARD__fft} and
 \ref{fig:appendix__cmp__mnist-like__trade-off__VD__fft}.
 
-The experimental yield the following observations
+The following observations could be made from the conducted experiment:
 \begin{itemize}
   \item $\cplx$-valued networks do not have as much spare capacity as $2 \real$ due to
   constants imposed by multiplication in $\cplx$ numbers (\ref{fig:appendix__cmp__mnist-like__trade-off__ARD__raw},
@@ -94,10 +99,8 @@ The experimental yield the following observations
   trade-off, with negligibly lower compression by the latter (both $\real$ and $\cplx$ versions,
   e.g. figures \ref{fig:appendix__mnist-like__trade-off__ARD__raw} and \ref{fig:appendix__mnist-like__trade-off__VD__raw})
   \item smaller networks tend to be less compressible (figures \ref{fig:appendix__cmp__mnist-like__trade-off__ARD__fft},
-\ref{fig:appendix__cmp__mnist-like__trade-off__VD__fft})
+  \ref{fig:appendix__cmp__mnist-like__trade-off__VD__fft})
 \end{itemize}
-
-results lend evidence to the following generally accepted rules:
 
 \begin{figure}[ht]
   \centering
@@ -293,15 +296,41 @@ results lend evidence to the following generally accepted rules:
 
 % section mnist_like_experiments (end)
 
+\clearpage
+
 \section{CIFAR10 experiments} % (fold)
 \label{sec:cifar_experiments}
 
+For the CIFAR10 experiment we reuse the setup of the MNIST-like experiment with the
+following exceptions:
+\begin{itemize}
+  \item we allocate $20$, $40$, and $20$ epochs to each stage
+  \item the weight of the KL divergence term varies over a smaller grid $
+    C \in \{
+      \tfrac32 2^{-\tfrac{k}2} \colon k=7, \cdots, 15
+    \}
+  $
+  \item we use full $50$k training split of the CIFAR10 dataset for training and raw color
+  features only
+  \item dataset is randomly augmented: every image within a batch of size $128$ is randomly
+  cropped and flipped horizontally
+\end{itemize}
+Random cropping is done by zero-padding each side of a $32\times 32$ image by four pixels
+and then a extracting a random $32\times 32$ patch from the $40\times 40$ intermediate image.
+
+We experiment with $\real$ VGG16 network \citep{simonyan_very_2015} and its $\cplx$-valued
+variant, which straightforwardly replaces $\real$ layers with their $\cplx$ counterparts.
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=\linewidth]{figure__cifar__trade-off/appendix__augmentedcifar10__raw__-0.5.pdf}
+  \caption{%
+    The compression-accuracy trade-off for $\real$ and $\cplx$ VGG16 using raw input features.
+  }
+  \label{fig:appendix__cifar__trade-off__VGG16__raw}
+\end{figure}
+
 % section cifar_experiments (end)
-
-\section{MusicNet experiments} % (fold)
-\label{sec:muscinet_experiments}
-
-% section muscinet_experiments (end)
 
 \clearpage
 
