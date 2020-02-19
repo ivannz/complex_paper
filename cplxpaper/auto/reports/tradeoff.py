@@ -1,5 +1,6 @@
 import re
 import gc
+import copy
 import torch
 
 from functools import partial
@@ -63,6 +64,17 @@ def load_experiment(folder):
     return options, models
 
 
+def patch_feed(feed):
+    feed = copy.deepcopy(feed)
+
+    # force disable feed, if it is specified in the recipe
+    if feed.get("pin_memory", False):
+        # pinnig wastes memory on gpu 0 by allocating extra device context
+        feed["pin_memory"] = False
+
+    return feed
+
+
 def get_scorers(options, **devtype):
     """Creat scoring objects suitable for the experiment.
 
@@ -76,7 +88,8 @@ def get_scorers(options, **devtype):
     threshold = options["threshold"]
 
     # remove any feed that is tagged as train
-    feeds_recipes = {tag: feed for tag, feed in options["feeds"].items()
+    feeds_recipes = {tag: patch_feed(feed)
+                     for tag, feed in options["feeds"].items()
                      if "train" not in tag}
 
     dataset_tags = set(feed["dataset"] for feed in feeds_recipes.values())
