@@ -8,6 +8,23 @@ from ..utils import verify_experiment
 from .. import auto
 
 
+def restore(report):
+    """Recover sequentially pickled objects from a binary file.
+
+    Details
+    -------
+    Pickled objects can be concatenated, and unpickling extracts one
+    object at a time and advances the stream location.
+    """
+    with open(report, "rb") as storage:
+        while True:
+            try:
+                yield pickle.load(storage)
+
+            except EOFError:
+                break
+
+
 def enumerate_experiments(grid):
     """Iterate over all complete experiments in a grid."""
     grid = os.path.abspath(os.path.normpath(grid))

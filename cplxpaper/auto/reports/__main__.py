@@ -99,24 +99,6 @@ def store(queue, report, append):
             result = queue.get()
 
 
-def restore(report):
-    """Recover stored objects from a binary file.
-
-    Details
-    -------
-    https://stackoverflow.com/a/12762056
-    > `Pickle streams are entirely self-contained, so unpickling [from
-    an open file] unpickles one object at a time.`
-    """
-    with open(report, "rb") as storage:
-        while True:
-            try:
-                yield pickle.load(storage)
-
-            except EOFError:
-                break
-
-
 def worker(wid, kind, index, jobs, budget, output):
     """Wait until a job in the queue appears and perform it."""
     job = jobs.get()
