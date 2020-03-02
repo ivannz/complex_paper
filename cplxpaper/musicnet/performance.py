@@ -14,7 +14,7 @@ from sklearn.metrics import confusion_matrix as base_confusion_matrix
 from sklearn.metrics import average_precision_score
 from sklearn.metrics import precision_recall_curve
 
-from cplxmodule.utils.stats import named_sparsity
+from cplxmodule.nn.utils.sparsity import named_sparsity
 
 from ..auto.feeds import feed_forward_pass
 

@@ -2,7 +2,7 @@ import torch
 import numpy as np
 
 from sklearn.metrics import confusion_matrix
-from cplxmodule.utils.stats import named_sparsity
+from cplxmodule.nn.utils.sparsity import named_sparsity
 
 from ..auto.performance import BasePerformanceEvaluation, BaseEarlyStopper
 from ..auto.feeds import feed_forward_pass
