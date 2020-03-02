@@ -93,7 +93,7 @@ def get_model_tag(opt):
     return {"model": cls, "kind": kind, "method": method}
 
 
-def get_dataset(opt):
+def get_dataset_tag(opt):
     cls = dict_get_one(opt, "datasets__musicnet-test-128__cls",
                             "datasets__test__cls")
     assert cls is not None
@@ -104,7 +104,7 @@ def get_dataset(opt):
     return {"dataset": cls.replace("_test", "")}
 
 
-def get_features(opt):
+def get_features_tag(opt):
     cls = opt["features__cls"]
 
     pat = re.compile(r"^<class '.*?\.feeds\.(.*?)'>$")
