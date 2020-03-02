@@ -10,7 +10,7 @@ from multiprocessing import Process, Array, Semaphore
 from multiprocessing import JoinableQueue, Queue
 from threading import Thread
 
-from itertools import chain
+from itertools import chain, product
 
 
 def analyze_experiment(kind, experiment, *, device):
@@ -24,7 +24,8 @@ def analyze_experiment(kind, experiment, *, device):
 
     elif kind == "threshold":
         from cplxpaper.auto.reports.threshold import evaluate_experiment
-        result = evaluate_experiment(experiment, device=device)
+        folder, threshold = experiment
+        result = evaluate_experiment(folder, threshold, device=device)
 
     elif kind == "debug":
         # process-local import
@@ -200,11 +201,14 @@ def main(*, paths, kind, report, append=False,
 
     elif kind == "threshold":
         # the paths are individual manifests
-        experiments = enumerate_experiments(paths)
+        experiments = product(
+            enumerate_experiments(paths),
+            [i / 4 for i in range(-24, 24 + 1)]  # a grid from -5 to +5 (incl)
+        )
 
     elif kind == "debug":
         # just some iterable for debug
-        experiment = range(100)
+        experiments = range(100)
 
     else:
         raise ValueError(f"Unrecognized report `{kind}`.")
