@@ -13,11 +13,14 @@ setup(
         "cplxpaper.auto",
         "cplxpaper.auto.reports",
         "cplxpaper.musicnet",
-        "cplxpaper.mnist",
-        "cplxpaper.cifar",
         "cplxpaper.musicnet.models",
+        "cplxpaper.musicnet.models.real",
+        "cplxpaper.musicnet.models.complex",
+        "cplxpaper.mnist",
         "cplxpaper.mnist.models",
-        "cplxpaper.cifar.models"
+        "cplxpaper.cifar",
+        "cplxpaper.cifar.models",
+        "cplxpaper.cifar.models.vgg",
     ],
     requires=[
         "torch",
