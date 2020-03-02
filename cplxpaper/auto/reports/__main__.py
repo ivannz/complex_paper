@@ -22,6 +22,10 @@ def analyze_experiment(kind, experiment, *, device):
         from cplxpaper.auto.reports.tradeoff import evaluate_experiment
         result = evaluate_experiment(experiment, device=device)
 
+    elif kind == "threshold":
+        from cplxpaper.auto.reports.threshold import evaluate_experiment
+        result = evaluate_experiment(experiment, device=device)
+
     elif kind == "debug":
         # process-local import
         # import numpy
@@ -140,18 +144,25 @@ def verify_experiment(folder):
     return all(stages.values())
 
 
-def enumerate_experiments(grid):
+def enumerate_grid(grid):
     """Iterate over all complete experiments in a grid."""
     grid = os.path.abspath(os.path.normpath(grid))
     if not os.path.isdir(grid):
         return
 
     grid, _, filenames = next(os.walk(grid))
-    for name, ext in map(os.path.splitext, filenames):
+    manifests = (os.path.join(grid, name) for name in filenames)
+    yield from enumerate_experiments(manifests)
+
+
+def enumerate_experiments(manifests):
+    """Return the experiment associated with each manifest."""
+    for manifest, ext in map(os.path.splitext, manifests):
+        path, name = os.path.split(manifest)
         if ext != ".json" or name.startswith("."):
             continue
 
-        experiment = os.path.join(grid, name)
+        experiment = os.path.join(path, name)
         if not verify_experiment(experiment):
             continue
 
@@ -183,8 +194,21 @@ def main(*, paths, kind, report, append=False,
         p.start()
 
     # main job queue
-    # gather and enqueue all experiments from the folder
-    experiments = chain(*map(enumerate_experiments, paths))
+    if kind == "trade-off":
+        # gather and enqueue all experiments from the folder
+        experiments = chain(*map(enumerate_grid, paths))
+
+    elif kind == "threshold":
+        # the paths are individual manifests
+        experiments = enumerate_experiments(paths)
+
+    elif kind == "debug":
+        # just some iterable for debug
+        experiment = range(100)
+
+    else:
+        raise ValueError(f"Unrecognized report `{kind}`.")
+
     for experiment in tqdm.tqdm(experiments, disable=False):
         queues[budget.acquire()].put_nowait(experiment)
 
