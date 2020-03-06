@@ -1,10 +1,12 @@
 # var-dropout
-from cplxmodule.nn.relevance.extensions import CplxLinearVDBogus
-from cplxmodule.nn.relevance.extensions import CplxConv1dVDBogus
+# from cplxmodule.nn.relevance import CplxLinearVD
+from cplxmodule.nn.relevance.extensions import CplxLinearVDBogus as CplxLinearVD
+# from cplxmodule.nn.relevance import CplxConv1dVD
+from cplxmodule.nn.relevance.extensions import CplxConv1dVDBogus as CplxConv1dVD
 
 # automatic relevance determination
-from cplxmodule.nn.relevance.extensions import CplxLinearARD
-from cplxmodule.nn.relevance.extensions import CplxConv1dARD
+from cplxmodule.nn.relevance import CplxLinearARD
+from cplxmodule.nn.relevance import CplxConv1dARD
 
 from cplxmodule.nn.masked import CplxLinearMasked
 from cplxmodule.nn.masked import CplxConv1dMasked
@@ -15,7 +17,7 @@ from .base import DeepConvNet
 
 
 class TwoLayerDenseVD(TwoLayerDense):
-    Linear = CplxLinearVDBogus
+    Linear = CplxLinearVD
 
 
 class TwoLayerDenseARD(TwoLayerDense):
@@ -27,8 +29,8 @@ class TwoLayerDenseMasked(TwoLayerDense):
 
 
 class ShallowConvNetVD(ShallowConvNet):
-    Linear = CplxLinearVDBogus
-    Conv1d = CplxConv1dVDBogus
+    Linear = CplxLinearVD
+    Conv1d = CplxConv1dVD
 
 
 class ShallowConvNetARD(ShallowConvNet):
@@ -42,8 +44,8 @@ class ShallowConvNetMasked(ShallowConvNet):
 
 
 class DeepConvNetVD(DeepConvNet):
-    Linear = CplxLinearVDBogus
-    Conv1d = CplxConv1dVDBogus
+    Linear = CplxLinearVD
+    Conv1d = CplxConv1dVD
 
 
 class DeepConvNetARD(DeepConvNet):

@@ -5,21 +5,23 @@ import torch
 from collections import OrderedDict
 
 from cplxmodule import cplx
-from cplxmodule.nn.layers import CplxToCplx
-from cplxmodule.nn.layers import ConcatenatedRealToCplx
-from cplxmodule.nn.layers import CplxReal, AsTypeCplx
+from cplxmodule.nn import CplxToCplx
+from cplxmodule.nn import CplxReal, AsTypeCplx
+from cplxmodule.nn.modules.casting import ConcatenatedRealToCplx
 
-from cplxmodule.nn.layers import CplxLinear
-from cplxmodule.nn.conv import CplxConv2d
-from cplxmodule.nn.batchnorm import CplxBatchNorm2d
+from cplxmodule.nn import CplxLinear
+from cplxmodule.nn import CplxConv2d
+from cplxmodule.nn import CplxBatchNorm2d
 
 # var-dropout
-from cplxmodule.nn.relevance.extensions import CplxLinearVDBogus
-from cplxmodule.nn.relevance.extensions import CplxConv2dVDBogus
+# from cplxmodule.nn.relevance import CplxLinearVD
+from cplxmodule.nn.relevance.extensions import CplxLinearVDBogus as CplxLinearVD
+# from cplxmodule.nn.relevance import CplxConv2dVD
+from cplxmodule.nn.relevance.extensions import CplxConv2dVDBogus as CplxConv2dVD
 
 # automatic relevance determination
-from cplxmodule.nn.relevance.extensions import CplxLinearARD
-from cplxmodule.nn.relevance.extensions import CplxConv2dARD
+from cplxmodule.nn.relevance import CplxLinearARD
+from cplxmodule.nn.relevance import CplxConv2dARD
 
 from cplxmodule.nn.masked import CplxConv2dMasked, CplxLinearMasked
 
@@ -62,8 +64,8 @@ class VGG(torch.nn.Module):
 
 
 class VGGVD(VGG):
-    Linear = CplxLinearVDBogus
-    Conv2d = CplxConv2dVDBogus
+    Linear = CplxLinearVD
+    Conv2d = CplxConv2dVD
 
 
 class VGGARD(VGG):

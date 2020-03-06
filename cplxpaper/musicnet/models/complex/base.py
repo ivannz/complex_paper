@@ -1,13 +1,12 @@
 import torch
 from collections import OrderedDict
 
-from cplxmodule.nn.layers import CplxToCplx, CplxReal, CplxImag
-from cplxmodule.nn.layers import ConcatenatedRealToCplx
+from cplxmodule.nn import CplxToCplx, CplxReal, CplxImag
+from cplxmodule.nn.modules.casting import ConcatenatedRealToCplx
 
-from cplxmodule.nn.layers import CplxLinear
-from cplxmodule.nn.conv import CplxConv1d
-
-from cplxmodule.nn.batchnorm import CplxBatchNorm1d
+from cplxmodule.nn import CplxLinear
+from cplxmodule.nn import CplxConv1d
+from cplxmodule.nn import CplxBatchNorm1d
 
 from ..real.base import Flatten, BodyMixin
 

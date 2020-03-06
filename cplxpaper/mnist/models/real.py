@@ -2,12 +2,12 @@ import torch
 from collections import OrderedDict
 
 # var-dropout
-from cplxmodule.nn.relevance.extensions import LinearVD
-from cplxmodule.nn.relevance.extensions import Conv2dVD
+from cplxmodule.nn.relevance import LinearVD
+from cplxmodule.nn.relevance import Conv2dVD
 
 # automatic relevance determination
-from cplxmodule.nn.relevance.extensions import LinearARD
-from cplxmodule.nn.relevance.extensions import Conv2dARD
+from cplxmodule.nn.relevance import LinearARD
+from cplxmodule.nn.relevance import Conv2dARD
 
 from cplxmodule.nn.masked import Conv2dMasked, LinearMasked
 

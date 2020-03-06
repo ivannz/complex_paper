@@ -4,17 +4,19 @@ from collections import OrderedDict
 from cplxmodule.nn import CplxToCplx
 from cplxmodule.nn import CplxConv2d, CplxLinear
 
-from cplxmodule.nn.layers import CplxReal, AsTypeCplx
-from cplxmodule.nn.layers import ConcatenatedRealToCplx
-from cplxmodule.nn.layers import CplxToConcatenatedReal
+from cplxmodule.nn import CplxReal, AsTypeCplx
+from cplxmodule.nn.modules.casting import ConcatenatedRealToCplx
+from cplxmodule.nn.modules.casting import CplxToConcatenatedReal
 
 # var-dropout
-from cplxmodule.nn.relevance.extensions import CplxLinearVDBogus
-from cplxmodule.nn.relevance.extensions import CplxConv2dVDBogus
+# from cplxmodule.nn.relevance import CplxLinearVD
+from cplxmodule.nn.relevance.extensions import CplxLinearVDBogus as CplxLinearVD
+# from cplxmodule.nn.relevance import CplxConv2dVD
+from cplxmodule.nn.relevance.extensions import CplxConv2dVDBogus as CplxConv2dVD
 
 # automatic relevance determination
-from cplxmodule.nn.relevance.extensions import CplxLinearARD
-from cplxmodule.nn.relevance.extensions import CplxConv2dARD
+from cplxmodule.nn.relevance import CplxLinearARD
+from cplxmodule.nn.relevance import CplxConv2dARD
 
 from cplxmodule.nn.masked import CplxConv2dMasked, CplxLinearMasked
 
@@ -51,8 +53,8 @@ class SimpleConvModel(object):
 
 
 class SimpleConvModelVD(SimpleConvModel):
-    Linear = CplxLinearVDBogus
-    Conv2d = CplxConv2dVDBogus
+    Linear = CplxLinearVD
+    Conv2d = CplxConv2dVD
 
 
 class SimpleConvModelARD(SimpleConvModel):
@@ -89,7 +91,7 @@ class SimpleDenseModel(object):
 
 
 class SimpleDenseModelVD(SimpleDenseModel):
-    Linear = CplxLinearVDBogus
+    Linear = CplxLinearVD
 
 
 class SimpleDenseModelARD(SimpleDenseModel):
@@ -122,7 +124,7 @@ class TwoLayerDenseModel(object):
 
 
 class TwoLayerDenseModelVD(TwoLayerDenseModel):
-    Linear = CplxLinearVDBogus
+    Linear = CplxLinearVD
 
 
 class TwoLayerDenseModelARD(TwoLayerDenseModel):
