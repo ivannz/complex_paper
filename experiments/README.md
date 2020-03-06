@@ -103,10 +103,10 @@ Real networks ordinary network in real domain
 * (~missing~ fixed) **cplxmodule.nn.relevance**: Conv1d{ARD, Masked}, Conv2d{ARD, Masked} (see `mlss2019`)
 
 Complex-valued networks uxing `Cplx` form `cplxmodule`
-* (existing) **cplxmodule.nn.layers**: CplxConv1d, CplxLinear, RealToCplx, AsTypeCplx, CplxToReal;
+* (existing) **cplxmodule.nn**: CplxConv1d, CplxLinear, RealToCplx, AsTypeCplx, CplxToReal;
   **cplxmodule.nn.relevance**: CplxLinear{ARD, Masked}
 * (~missing~ fixed) **cplxmodule.nn.relevance**: CplxConv1d{ARD, Masked},  CplxConv2d{ARD, Masked}
-* (~missing~ fixed) **cplxmodule.nn.layers**: CplxBatchNorm1d
+* (~missing~ fixed) **cplxmodule.nn**: CplxBatchNorm1d
 
 
 * raw signal: 
