@@ -102,6 +102,11 @@ class BaseCompositeObjective(BaseObjective):
     ----------
     **terms : keyword arguments
         A mapping of the variable names to objective terms.
+
+    Attributes
+    ----------
+    component_values_ : dict
+        A dict of fp values of each term (non differentiable).
     """
 
     def __init__(self, **terms):
@@ -152,7 +157,7 @@ class BaseCompositeObjective(BaseObjective):
             else:
                 components[name] = term(output, target)
 
-        self.component_values_ = tuple(map(float, components.values()))
+        self.component_values_ = {k: float(v) for k, v in components.items()}
         return components
 
 

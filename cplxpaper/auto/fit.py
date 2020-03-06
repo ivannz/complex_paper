@@ -6,7 +6,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.nn.utils import clip_grad_norm_
 
 from .delayed import DelayedKeyboardInterrupt
-from .utils import state_dict_to_cpu, collate_history
+from .utils import state_dict_to_cpu, TermsHistory
 
 
 def fit_one_epoch(model, objective, feed, optim, grad_clip=0., callback=None):
@@ -64,7 +64,8 @@ def fit_one_epoch(model, objective, feed, optim, grad_clip=0., callback=None):
         if callable(callback):
             # track zero-th parameter group's learning rate
             lrs = [group.get("lr", np.nan) for group in optim.param_groups]
-            callback((*objective.component_values_, grad_norm, lrs[0]))
+            callback({"lr": lrs[0], "|g|": grad_norm,
+                      **objective.component_values_})
 
         # abort on nan -- no need to waste compute
         if np.isnan(losses[-1]):
@@ -129,15 +130,14 @@ def fit(model, objective, feed, optim, *, sched=None, early=None,
     into `eval` mode afterwards.
     """
     model.train()
-    history, model_backup = [], {}
+    history, model_backup = TermsHistory(), {}
     with tqdm.tqdm(range(n_epochs), disable=not verbose) as bar:
         def history_append(values):
             history.append(values)
             if verbose:
                 # format the components of the loss objective
-                *terms, grad_norm, lr = map("{:.2e}".format, values)
-                status = repr(terms).replace("'", "")
-                bar.set_postfix_str(f"{status} |g| {grad_norm} lr {lr}")
+                status = " ".join(f"{k} {v:.2e}" for k, v in values.items())
+                bar.set_postfix_str(status)
 
         # try-catch for graceful return
         try:
@@ -175,8 +175,5 @@ def fit(model, objective, feed, optim, *, sched=None, early=None,
         # all exceptions, not handled explicitly, are critical faults
         #  and constitute severe emergencies.
 
-    # Collect histories of objective's components and the norm of the gradient
-    history = collate_history(history, [*objective.terms, "|g|", "lr"])
-
     model.eval()
-    return model, emergency, history
+    return model, emergency, dict(history)

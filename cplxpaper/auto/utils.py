@@ -276,21 +276,19 @@ def state_dict_to_cpu(state_dict):
     return {key: par.detach().cpu() for key, par in state_dict.items()}
 
 
-def collate_history(history, fields):
-    """Repack the list of tuples into a dict of arrays keyed by `fields`.
+class TermsHistory(object):
+    def __init__(self, *fields):
+        self.records = {k: [] for k in fields}
 
-    Examples
-    --------
-    >>> collate_history([(1., 2.), (3., 4.)], ["a", "b"])
-    {'a': array([1., 3.]), 'b': array([2., 4.])}
-    """
-    if history:
-        values = map(np.array, zip(*history))
+    def append(self, record):
+        for k, v in record.items():
+            self.records.setdefault(k, []).append(v)
 
-    else:
-        values = map(np.empty, repeat(0, len(fields)))
+    def __getitem__(self, key):
+        return np.array(self.records[key])
 
-    return dict(zip(fields, values))
+    def __iter__(self):
+        yield from ((k, np.array(v)) for k, v in self.records.items())
 
 
 def filter_prefix(dictionary, *prefixes):
