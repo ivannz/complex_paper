@@ -22,17 +22,14 @@ setup(
         "cplxpaper.cifar.models",
         "cplxpaper.cifar.models.vgg",
     ],
-    requires=[
-        "torch",
+    install_requires=[
+        "torch>=1.4",
+        "cplxmodule @ git+https://github.com/ivannz/cplxmodule.git",
         "numpy",
         "pandas",
-        "cplxmodule",
         "sklearn",
         "ncls",
         "resampy",
-        "h5py"
+        "h5py",
     ],
-    # install_requires=[  # uncomment for publishing
-    #     "cplxmodule @ git+https://github.com/ivannz/cplxmodule.git"
-    # ]
 )
