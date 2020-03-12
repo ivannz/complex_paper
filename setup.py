@@ -24,7 +24,7 @@ setup(
     ],
     install_requires=[
         "torch>=1.4",
-        "cplxmodule @ git+https://github.com/ivannz/cplxmodule.git",
+        "cplxmodule @ https://github.com/ivannz/cplxmodule/archive/v2020.03.tar.gz",
         "numpy",
         "pandas",
         "sklearn",
