@@ -1,9 +1,20 @@
-# Sparsifying Complex-valued Networks
+# Bayesian Sparsification of Deep Complex-valued Networks
 
-A paper on experimenting with complex-valued networks and complex var dropout.
+This repository accompanies the paper `<PAPER TITLE>` and contains the source code of the library for reproducing its results en masse.
 
-# References
+The key dependency is [cplxmodule](https://github.com/ivannz/cplxmodule.git) library, which implements the basic building blocks for complex-valued networks and the Bayesian sparsification methods described in the paper.
 
-.. [1]: Trabelsi, C., Bilaniuk, O., Zhang, Y., Serdyuk, D., Subramanian,
-       S., Santos, J. F., ... & Pal, C. J. (2017). Deep complex networks.
-       arXiv preprint arXiv:1705.09792
+# Citation
+
+```text
+@article{nazarov_burnaev_2020,
+    title = {<PAPER TITLE>},
+    url = {},
+    urldate = {},
+    journal = {},
+    author = {Nazarov, Ivan and Burnaev, Evgeny},
+    month = {Mar},
+    year = {2020},
+    keywords = {Statistics - Machine Learning, Computer Science - Machine Learning}
+}
+```
