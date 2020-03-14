@@ -69,29 +69,29 @@ applications can be found in embedded systems. Common embedded applications incl
 on-device image recognition and signal processing. Despite recent advances in generalization
 and optimization theory specific to deep networks, deploying in actual embedded hardware
 remains a challenge due to storage, real-time throughput, and arithmetic (computational)
-complexity restrictions \citep{he_amc:_2018}. Therefore compression methods for achieving
+complexity restrictions \citep{he_amc:_2018}. Therefore, compression methods for achieving
 high model sparsity and numerical efficiency without losing much in performance are
 especially relevant.
 % Solving the storage and artihmetic constraints encourages development of model compression
 % and sparsification methods, that focus on favourable trade-off between performance and size.
 
 Inherently complex-valued nature of data in signal processing, specifically, acoustic or radio
-frequency signal analysis, has been the key driver behind adoption of $\cplx$-networks.
+frequency signal analysis, has been the key driver behind the adoption of $\cplx$-networks.
 %
 \citet{hirose_complex-valued_2009} argues that the key merit of $\cplx$-valued neural
 networks is simultaneous phase rotation and amplitude adjustment, intrinsic to multiplication
 in $\cplx$ field. Despite inherently higher arithmetic complexity, which stems from up to four
 floating point operations per single $\cplx$ multiplication \citep{monning_evaluation_2018}
 $\cplx$-arithmetic reduces ineffective degrees of freedom in comparison with an analogous
-double-dimensional $\real$-valued network. \citet{hirose_complex-valued_2009} list numerous
-applications related to acoustic and radio signal processing and demonstrate superiority of
+double-dimensional $\real$-valued network. \citet{hirose_complex-valued_2009} lists numerous
+applications related to acoustic and radio signal processing and demonstrates superiority of
 $\cplx$-networks in the task of shallow landmine detection using ground penetrating radar
-imaging. More recently they were applied to music transcription and speech recognition
+imaging. More recently they have been applied to music transcription and speech recognition
 \citep{trabelsi_deep_2017}. \citet{arjovsky_unitary_2016} propose $\cplx$-valued unitary-RNNs
 to deal with exploding~/~vanishing gradients and apply the recurrent models to long-term
 dependence prediction tasks. \citet{wisdom_full-capacity_2016} expand on their work by optimizing
 recurrent weights on the $\cplx^{n \times n}$ Stiefel manifold. And \citet{wolter_complex_2018}
-investigate different $\cplx$-valued gating mechanisms unitary-RNNs and conduct experiments
+investigate different $\cplx$-valued gating mechanisms for unitary-RNNs and conduct experiments
 on human motion prediction and music transcription. \citet{yang_complex_2019} develop complex
 transformer, with $\cplx$-attention and complex encoder-decoder, and apply it to music
 transcription and wireless signal classification.
@@ -130,9 +130,9 @@ as a superposition method, which better utilizes the learning capacity of the ne
 % (gauss dropout) srivastava-et-al.tex
 
 % segue into bayesian inference
-Bayesian inference is a very rich field of research with a large body of research and
-techniques that enable practical quantification of predictive, parameter, or model
-uncertainty and its propagation into solutions of the problems of interest.
+Bayesian inference is a very rich field with a large body of research and techniques that
+enable practical quantification of predictive, parameter, or model uncertainty and its 
+propagation into solutions of the problems of interest.
 %
 Dropout resembles averaging models with shared parameters: each model is weighted equally
 since masks are randomly sampled, unlike Bayesian model averaging, which weighs according to
@@ -202,7 +202,7 @@ classification uncertainty, predictive statistics, and parameter relevance.
 
 The posterior distribution itself is intractable, save for the relatively simple cases, and
 therefore exact inference is traded for tractability and scalability offered by Variational
-Inference. Instead of deriving $p(\omega \mid D)$ using the rule, this approach recasts
+Inference. Instead of deriving $p(\omega \mid D)$ using the Bayes rule, this approach recasts
 posterior inference into variational optimization problem: finding $q$ that is close to
 $p(\omega \mid D)$ in terms of a proximity score $\rho$
 \begin{equation}  \label{eq:variational-progam}
@@ -217,7 +217,7 @@ over a tractable parametric family of distributions on the parameter space $
 $, $\theta$ -- generic variational parameter. The class $\mathcal{Q}$ is picked so that
 its members have tractable densities $
   q_\theta(\omega) d\omega
-$, can be sampled from and possess tractable $\log$-derivatives $
+$, can be sampled from and have either tractable $\log$-derivatives $
   \omega \mapsto \nabla_\theta \log q_\theta(\omega)
 $ \citep{williams_simple_1992} or can be represented as differentiable transformations
 of non-parametric noise \citep{kingma_auto-encoding_2014,figurnov_implicit_2019}.
@@ -332,7 +332,7 @@ With a special family of posterior approximation, variational inference can be u
 a regularization method and as a model sparsification technique. \citet{kingma_variational_2015}
 consider Dropout \citep{hinton_improving_2012}, DropConnect \citep{wan_regularization_2013},
 and Gaussian dropout \citep{srivastava_dropout_2014,wang_fast_2013} through the lens
-of Bayesian inference methods and proposes \textit{Variational Dropout}. They argue that
+of Bayesian inference methods and propose \textit{Variational Dropout}. They argue that
 the multiplicative noise introduced by these methods induces a distribution equivalent to
 a fully factorized variational posterior of the form $
   q_\theta(\omega) = \prod_j q_{\theta}(\omega_j)
@@ -369,8 +369,8 @@ analytically intractable terms:
   \,.
 \end{equation}
 \citet{kingma_variational_2015} approximate this expression by a non-linear polynomial
-regression for truncated $\alpha \in (0, 1)$. \citet{molchanov_variational_2017}
-refine the approximation by using a nonlinear regression based on sigmoid and soft-plus.
+regression over $\alpha \in (0, 1)$. \citet{molchanov_variational_2017} refine the
+approximation by using a nonlinear regression based on sigmoid and soft-plus.
 % see p.6 sec 3.4 of kingma_variational_2015
 We independently verify their approximation against Monte-Carlo estimates for $\alpha$
 varying over a fine logarithmic grid and the exact expression for the derivative of
@@ -381,13 +381,13 @@ varying over a fine logarithmic grid and the exact expression for the derivative
 % derivative of an intractable function.
 
 Being the ratio of the squared mean to the effective variance, $\alpha_j$ regulates the
-relevance of the parameter $\omega_j$ it is associated to. Thus \citet{molchanov_variational_2017}
+relevance of the parameter $\omega_j$ it is associated to. Thus, \citet{molchanov_variational_2017}
 focus on the model sparsification capabilities of Variational Dropout, optimizing $\alpha$
 for each individual parameter. Flexibility in specification of $q_\theta$ enables structured
 dropout with shared $\alpha$ across groups of parameters $\omega$. Another Bayesian dropout
-method, called \textit{Automatic Relevance Determination}, is developed in \citep{kharitonov_variational_2018}.
+method, called \textit{Automatic Relevance Determination}, has been developed in \citep{kharitonov_variational_2018}.
 The key difference is that the log-uniform factor $\pi(\omega_{ij})$ is replaced by a proper
-Gaussian prior $
+ARD Gaussian prior $
   \mathcal{N}(0, \tau^{-1}_{ij})
 $ with learnable precision $\tau_{ij} > 0$. This method, known as \textit{Empirical Bayes},
 fits a prior distribution while performing variational inference. Maximizing \eqref{eq:elbo}
@@ -442,13 +442,13 @@ $ when needed in the divergence term.
 \section{$\cplx$-valued networks} % (fold)
 \label{sec:c_valued_networks}
 
-In this section we briefly review $\cplx$-valued networks, their distinction from the
+In this section we briefly review $\cplx$-valued networks, and their distinction from the
 ordinary $\real$-valued networks.
 
 \citet{trabelsi_deep_2017} outline the building blocks for deep $\cplx$-valued networks
 and describe suitable representation and operations including convolutional and dense layers,
 $\cplx$-valued activations, complex batch-normalization and suitable weight initialization.
-Their approach makes a complex-valued network into an intricately connected $\real$-valued
+Their approach transforms a complex-valued network into an intricately connected $\real$-valued
 computational graph that respects $\cplx$-arithmetic.
 %
 In particular, natural identification of $\cplx$ and $\real^2$ implies that linear layers $
@@ -481,7 +481,7 @@ exacerbated by the loss being real-valued. Indeed a $\cplx$-differentiable real-
 necessarily trivial by Cauchy-Riemann conditions. This issue is dealt with by employing Wirtinger,
 or $\cplx\real$ calculus, which generalizes holomorphic calculus to non-holomorphic functions
 of $\cplx$-argument \citep{adali_complex-valued_2011,boeddeker_computation_2019}. It satisfies
-product and chain rules, respects complex conjugation and linearity, but most importantly the
+the product and chain rules, respects complex conjugation and linearity, but most importantly the
 $\cplx\real$-differential of a function on $\cplx$ coincides with its classical differential as
 a function on $\real^2$. Essentially, it allows straightforward retrofiting of $\cplx$-valued
 networks into existing $\real$ deep learning auto-differentiation frameworks. It was considered
@@ -718,7 +718,9 @@ with the relation and variance kernels.
 \label{sub:priors_and_kullback_leibler_divergence}
 
 For $\cplx$-variational dropout we propose using mean-field proper $\cplx$-Gaussian approximate
-posterior, e.g. parameters $W \in \cplx^{n\times m}$ of a dense linear layer follow
+posterior and MAP estimates of bias terms, i.e. parameters $W \in \cplx^{n\times m}$ of a dense
+linear layer follow
+% We use MAP estimates of bias terms, i.e. assume an independent fully factorized Dirac approximation.
 \begin{equation}  \label{eq:c-gauss-vi}
   % (we omit the subscript $m=1$ for brevity)
   W \sim q(W)
@@ -734,8 +736,7 @@ posterior, e.g. parameters $W \in \cplx^{n\times m}$ of a dense linear layer fol
 \end{equation}
 and we use similar factorized approximation for convolutions and other, effectively, linear
 layers. For this approximation the relation coefficients \eqref{eq:cplx-gauss-trick} are
-zero. We use MAP estimates of bias terms, i.e. assume an independent fully factorized Dirac
-approximation.
+zero.
 
 We consider two priors for Bayesian dropout: \verify{log-uniform} and $\cplx$-Gaussian empirical
 Bayes \citep{kingma_variational_2015,molchanov_variational_2017,kharitonov_variational_2018}.
@@ -966,8 +967,8 @@ which implies by \eqref{eq:cplx-gauss-trick} the following:
 \end{equation}
 The KL-divergence term for this approximation coincides with \eqref{eq:improper-kl-div-real},
 which is approximated by \citet{molchanov_variational_2017}. The major drawback of this method
-is inapplicability of the additive noise reparameterization in \eqref{eq:real-scal-gauss-trick},
-which disentangles the gradient with respect to $\mu$ from the local noise.
+is that the additive noise reparameterization in \eqref{eq:real-scal-gauss-trick}, which
+disentangles the gradient with respect to $\mu$ from the local noise, cannot be applied.
 
 % subsubsection real_scaling_dropout (end)
 
@@ -980,7 +981,7 @@ which disentangles the gradient with respect to $\mu$ from the local noise.
 \label{sec:experiments}
 
 In this section we study the complex variational dropout techniques discussed above
-on the tasks and datasets, that were studied in prior research on complex-valued networks.
+on the tasks and datasets, that have been studied in prior research on complex-valued networks.
 
 % common experiment settings
 Every experiment is replicated several times to take random effects into account, e.g.
@@ -1024,10 +1025,10 @@ approximation $q_\theta(W)$ and proceeds to train the non-zero parameters simila
 the ``dense'' stage, i.e. with non-Bayesian layers and fixed sparsity masks. 
 %
 The benefit of the ``fine-tune'' stage appears to be strongly influenced by the compression
-rate. In this experiment and more prominently in MusicNet (sec.~\ref{sub:musicnet}), we
-can observe that the more ``holes'' Bayesian dropout poked in the model, the more regularized
-it becomes, the less capacity it maintains for overfitting and the more ``fine-tune'' serves
-as extended training.
+rate. We can observe in this and, more prominently, in MusicNet experiment (sec.~\ref{sub:musicnet})
+that higher compression rate render the model more regularized, leaving less capacity for
+overfitting.
+% more ``holes'' Bayesian dropout ``poked'' makes the ``fine-tune'' serve as extended training.
 
 % on compresssion
 Between \textit{``sparsify''} and \textit{``fine-tune''} stages we compute masks of non-zero
@@ -1045,7 +1046,7 @@ is, the more mass is shifted to the right.
 The bottom graph on figure~\ref{fig:hist__and__threshold__tradeoff} is constructed
 for $C \in \{\tfrac1{20}, \frac1{200}\}$ before running the ``fine-tune'' stage. From
 \eqref{eq:elbo_with_coef}, the relative positions of the compression curves on this
-plot and the results of experiments below, it can be concluded that $C$ has much more
+plot, and the results of experiments below it can be concluded that $C$ has much more
 substantial impact on the sparsity and performance, than the choice of $\tau$. Furthermore,
 for $\tau > 0$ the performance quickly saturates while compression creeps downwards.
 
@@ -1053,7 +1054,7 @@ for $\tau > 0$ the performance quickly saturates while compression creeps downwa
   \centering
   \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=\linewidth]{../assets/log-alpha__sum__fashion-mnist__20200131-205926.pdf}
+    \includegraphics[width=\linewidth,draft]{../assets/log-alpha__sum__fashion-mnist__20200131-205926.pdf}
   \end{subfigure} \\%
   % \hfill
   \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
@@ -1115,7 +1116,7 @@ The compression rate is computed based on the number of floating point values ne
 specify the model and equals $
   \tfrac{n_\mathtt{par}}{n_\mathtt{par} - n_\mathtt{zer}}
 $, where $n_\mathtt{zer}$ is the number of explicit zeros after sparsification, $n_\mathtt{par}$
-is the total number of floats. Thus each parameter is counted once in a $\real$-valued
+is the total number of floats. Thus, each parameter is counted once in a $\real$-valued
 network, but twice in a $\cplx$-network, being a pair of real-imaginary floats. Each model
 has incompressible parameters, such as layers' biases, shift and scaling from $\real$-and
 $\cplx$-batch normalization layers, if present.
@@ -1139,14 +1140,14 @@ and to make bulk experimentation faster.
 % discussion of TwoLayerDenseModel (TLDM) and SimpleConvModel (SCM)
 The $\real$/$\cplx$ networks, studied in this experiment, have been chosen for the purpose 
 of illustrating the compression and understanding the effects of experiment parameters.
-\textit{SimpleConvModel} (SCM) is $2d$ ReLU convolutional networks with average pooling
+\textit{SimpleConvModel} (SCM) is a $2d$ ReLU convolutional network with average pooling
 ($2\times 2$) after non-linearities with two convolutions (kernel $5\times 5$, stride $1$)
 with filters $n_1 \to n_2$ followed by dense layers $n_3 \to n_\mathtt{out}$. The second
 network, \textit{TwoLayerDenseModel} (TLDM), is a wide dense network $n_1 \to n_\mathtt{out}$.
 For SCM model $n_1, n_2, n_3$ are $20, 50, 500$, respectively, and for TLDM model $
   n_1 = 4096
 $ regardless of their type ($\real$ or $\cplx$), although \citet{monning_evaluation_2018}
-argues that this renders models incomparable.
+argue that this renders models incomparable.
 
 % image features
 Since image data is not naturally $\cplx$-valued, we preprocess images by either embedding
@@ -1168,7 +1169,7 @@ $, and repeated the experiment $5$ times.
 
 We make a couple of observations based on these results. First, Fourier features appear to
 perform on par with raw colour channel data in the convolutional networks across most
-compression rates, but require high compression to make wide shallow dense network work
+compression rates, but require high compression rate to make wide shallow dense network work
 as well. The upward trend in manifests itself in MNIST and Fashion MNIST experiments as well
 (see appendix~\ref{sub:other_mnist_like_datasets}). Finally, overall $\cplx$ variational
 dropout methods seems to compress network adequately well, without much loss in performance.
@@ -1229,13 +1230,13 @@ Experiments on CIFAR10 dataset are set up similarly to MNIST-like experiment, ex
 that we study VGG16 model \citep{simonyan_very_2015} and its $\cplx$-counterpart and
 replicate each experiment only twice. Each network is trained stagewise for $20$, $40$,
 and $20$ epochs on the full training split of $50k$ colour $32\times32$ images. We use
-only raw colour features (\texttt{raw}). We use fast learning rate scheduler and apply
-random crop and horizontal flips as augmentation. The scheduler scales the base learning
+only raw colour features (\texttt{raw}). We apply random crop and horizontal flips as
+data augmentation and use a learning rate scheduler in SGD, which scales the base learning
 rate after $5$, $10$, and $20$-th epoch by $\tfrac1{10}$, $\tfrac1{20}$ and $\tfrac1{100}$,
 respectively.
 
 % describe the VGG16 model and its cplx-valued modification
-The $\cplx$-VGG16 model is architecturally identical to VGG16, except for all layers are
+The $\cplx$-VGG16 model is architecturally identical to VGG16, except for all layers being
 replaced by their $\cplx$-valued versions. To maintain comparability, we halve the filter
 sizes of $\cplx$ model \citep{monning_evaluation_2018}.
 
@@ -1252,7 +1253,7 @@ is half the size of the former.
   \centering
   \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=\linewidth]{../assets/figure__cifar__trade-off/augmentedcifar10__raw__-0.5.pdf}
+    \includegraphics[width=\linewidth]{../assets/figure__cifar__trade-off/legacy__augmentedcifar10__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
     Compression-accuracy frontier for $\real$ and $\tfrac12 \cplx$ versions of VGG16 on CIFAR10.
@@ -1264,7 +1265,7 @@ is half the size of the former.
   \centering
   \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=\linewidth]{../assets/figure__musicnet__trade-off/musicnetram__fft__-0.5.pdf}
+    \includegraphics[width=\linewidth]{../assets/figure__musicnet__trade-off/paper__musicnetram__fft__-0.5.pdf}
   \end{subfigure}
   \caption{%
     Performance-compression trade-off using \textbf{\color{blue} VD} and \textbf{\color{orange} ARD}.
@@ -1286,28 +1287,28 @@ compositions from the public domain. Folowing \citet{trabelsi_deep_2017}, we use
 dataset for automatic music transcription task and study the $1d$ VGG-like $\cplx$-convent
 proposed therein. Similarly to this study, we downsample the audio from 44.1kHz to 11kHz,
 retaining only $84$ out of $128$ labels, and hold-out the same validation and test splits.
-During each training epoch we sample $1000$ mini-batches of the remaining $321$ compositions
-thus: a random full window of $4096$ samples is picked within each waveform and transformed
-from $\real$ to $\cplx$ with $1d$ FFT. Annotation labels are taken at the mid-point of the
-window.
+During each training epoch we sample $1000$ mini-batches of the remaining $321$ compositions,
+each mini-batch comprised of a random full window of $4096$ samples picked from each waveform
+and transformed from $\real$ to $\cplx$ with $1d$ FFT. Annotation labels are taken at the
+mid-point of the window.
 
 Preliminary experiments with the model without sparsification have shown that early stopping
-almost always terminated the training process within the first $10-20$ epochs, and that the
-validation performance peaked at about $10-15$ epochs, much sooner than $200$ epochs used by
+almost always terminates the training process within the first $10-20$ epochs, and that the
+validation performance peakeing at about $10-15$ epochs, much sooner than $200$ epochs used by
 \citet{trabelsi_deep_2017}. Thus we adopt shorter lasting stages: $12$, $32$ and $50$ epochs,
 which essentially turns the ``dense'' stage into pretraining step. Early stopping, tracking
 the validation split performance, is used only during the ``fine-tune'' stage. To keep the
 learning rate schedule synchronised with such abbreviated training, we allow the base rate
 of $10^{-3}$ to be scaled after $5$, $10$, and $20$-th epoch by $\tfrac1{10}$, $\tfrac1{20}$
-and $\tfrac1{100}$, respectively. Other key deviations from the setup used by \citet{trabelsi_deep_2017}
+and $\tfrac1{100}$, respectively. Other key deviations from the set-up used by \citet{trabelsi_deep_2017}
 include: shifting lower frequencies to the centre of the window to maintain locality after
 applying FFT (sec.~\ref{sub:mnist_like_datasets}), and clipping $\ell_2$ norm of parameters'
 gradients to $0.05$.
 
 In each experiment we varied the method and the value $C$, while keeping $\tau$ at $-\tfrac12$.
-Each full experiment is replicated five times to take random effects from network initialization
-before ``dense'', stochastic batch sequence during SGD, and randomness of Bayesian forward
-pass at ``sparsify'' stage.
+Each full experiment is replicated five times to take into account random effects from network
+initialization before ``dense'', randomness of the mini-batch sequence during SGD, and
+stochasticity of intermediate layers on forward pass at ``sparsify'' stage.
 
 Figure~\ref{fig:musicnet__trade-off} shows the resulting performance-compression frontier
 for the deep network of \citet{trabelsi_deep_2017} and its version, in which we purposefully
@@ -1324,11 +1325,11 @@ value attained by a network after ``fine-tune'' stage. The end of the tail of ea
 represents the performance gain or loss from the ``fine-tune'' stage itself.
 %
 For compression levels lower than $50$, the final stage overfits the network, since
-undercompresed remain overparameterized. For rates higher than $\approx 100$ the ``fine-tune''
-stage serves its purpose, essentially, due to the network's being sufficiently regularized
-though sparsity. There is evidence in favour of achievability of the SOTA average precision
-of \citet{trabelsi_deep_2017} within the $50$-$100$ compression region with $\cplx$-valued
-automatic relevance derivative (sec.~\ref{ssub:empirical_bayes}).
+it sill remains overparameterized. For rates higher than $\approx 100$ the ``fine-tune''
+stage serves its purpose, essentially, due regularization effects if high sparsity. There
+is evidence in favour of achievability of the SOTA average precision of \citet{trabelsi_deep_2017}
+within the $50$-$100$ compression region with $\cplx$-valued variational dropout with ARD
+prior (sec.~\ref{ssub:empirical_bayes}).
 
 % subsection musicnet (end)
 
@@ -1346,7 +1347,7 @@ study we address the issue of excessive the arithmetic complexity of complex-val
 by extending the existing Bayesian compression techniques by \citet{kingma_variational_2015},
 \citet{molchanov_variational_2017} and \citet{kharitonov_variational_2018} to $\cplx$-valued
 model parameters. To this end we have conducted a large scale numerical study of such networks
-to assess the performance-compression rate trade-off and achieved performance, comparable
+to assess the performance-compression rate trade-off and have achieved performance, comparable
 to SOTA on the MusicNet dataset.
 
 Much like $\real$-valued variational dropout, the proposed $\cplx$-valued extension can be
@@ -1444,7 +1445,7 @@ derivation follows \citet{lapidoth_capacity_2003}.
 
 For $(z_i)_{i=1}^m \sim \mathcal{N}(0, 1)$ iid and $
   (\mu_i)_{i=1}^m \in \mathbb{R}
-$. The random variable $W = \sum_i (\mu_i + z_i)^2$ noncentral $\chi^2$ with shape $m$
+$, the random variable $W = \sum_i (\mu_i + z_i)^2$ is noncentral $\chi^2$ with shape $m$
 and noncentrality parameter $\lambda = \sum_i \mu_i^2$, i.e. $W\sim \chi^2_m(\lambda)$.
 Its density is
 \begin{equation}  \label{eq:nonchisq-density}
@@ -1719,18 +1720,18 @@ $1\%$ relative tolerance of the reported therein.
 \end{equation}
 % in parctial implementations we suggest using softplus to numerically comptue the last
 % term, since it is typically implemented in a floating-point stable fashion.
-The numerically estimated derivative of the penalty term wrt $\log \alpha$ using forward
-differences seems to be following \eqref{eq:real-kl-div-deriv-log} very closely (up to
-sampling error) see fig.~\ref{fig:molchanov-derivative-replica}. The derivative of
+The numerically estimated derivative of the penalty term with respect to $\log \alpha$ using
+forward differences seems to be following \eqref{eq:real-kl-div-deriv-log} very closely (up to
+sampling error), see fig.~\ref{fig:molchanov-derivative-replica}. The derivative of
 \eqref{eq:improper-kl-div-real-approx} with respect to $\log \alpha$ appears to be very close
 to \eqref{eq:real-kl-div-deriv-log}. We compute a similar Monte-Carlo estimate for
 $\cplx$ variational dropout KL divergence term in \eqref{eq:c-vd-kl-div} with $\beta = 2$,
-fit the best approximation \eqref{eq:improper-kl-div-real-approx} and compare the derivatives.
+fit the best approximation \eqref{eq:improper-kl-div-real-approx}, and compare the derivatives.
 
 \begin{figure}[!h]
   \centering
   \includegraphics[width=\linewidth]{../notebooks/assets/grad_log.pdf}
-  \caption{$\tfrac{d f(\alpha)}{d \log{\alpha}}$ of the fit proposed in
+  \caption{$\tfrac{d f(\alpha)}{d \log{\alpha}}$ of the fit proposed by
   \citet{molchanov_variational_2017}, MC estimate of \eqref{eq:improper-kl-div-real},
   and the exact derivative using \eqref{eq:real-kl-div-deriv-log}.}
   \label{fig:molchanov-derivative-replica}

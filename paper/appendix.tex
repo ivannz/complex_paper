@@ -17,7 +17,7 @@
 
 \usepackage{grffile}
 
-\graphicspath{{../assets/appendix/}}
+\graphicspath{{../assets/}}
 
 \title{Bayesian Sparsification of Deep $\cplx$-valued networks -- Extended appendix}
 \author{Ivan Nazarov, and Evgeny Burnaev}
@@ -45,34 +45,33 @@
 
 To supplement the results, reported in the main text (figures \ref{fig:paper__mnist-like__trade-off__VD__fft}
 and \ref{fig:paper__mnist-like__trade-off__VD__raw}), we conduct additional experiments
-with the same basic setup, but over a finer grid of KL-divergence term coefficients.
+with the same basic set-up, but over a finer grid of KL-divergence term coefficients.
 %
-These experiments lend further evidence in supporting the conclusions, draw in the main
-paper, namely that the $\cplx$-valued extension of the $\real$-valued variational dropout
+These experiments lend further evidence in support of the conclusions, drawn in the main
+paper, namely, that the $\cplx$-valued extension of the $\real$-valued variational dropout
 can offer significant compression levels without much loss in performance. At the same
 time, the test performance of both $\real$ and $\cplx$ compressed networks benefits from
 an extra fine-tuning stage, during which sparsity masks are fixed.
 
-One intriguing observation, is that on MNIST-like images the dense network taking Fourier
+One intriguing observation, is that on MNIST-like images the dense network, taking Fourier
 features on input, exhibits gradually improving test-split performance. This is in stark
-contrast to raw image input, where the performance stays at the one level in the small
-compression regime, and then gradually decays at high compression levels. Noteworthy is
-the presence of a trough in the pre fine-tuning stage performance in the small compression
-regime on figures
+contrast to raw image input, where the performance stays at one level in the small compression
+regime, and then gradually decays at high compression levels. Noteworthy is the presence
+of a trough in the pre fine-tuning stage performance in the small compression regime on figures
 \ref{fig:appendix__mnist-like__trade-off__ARD__raw},
 \ref{fig:appendix__mnist-like__trade-off__VD__raw},
 \ref{fig:appendix__cmp__mnist-like__trade-off__ARD__raw},
 and \ref{fig:appendix__cmp__mnist-like__trade-off__VD__raw}, which then slowly disappears
 as compression increases.
 
-The following scatter plots depict the samples from the compression-performance trade off
+The following scatter plots depict the samples from the compression-performance trade-off
 curve of simple networks studied in the experiments on the MNIST-like datasets. Transparent
 horizontal bands on each plot represent min-max performance spread of an uncompressed
 network on the test split. The points illustrate the final trade-off of the compressed
 networks after fine-tuning, while their tails show the performance gain or loss due to
 the fine-tuning.
 
-We recap the set up of each additional experiment on MNIST-like datasets:
+We recap the set-up of each additional experiment on MNIST-like datasets:
 \begin{itemize}
   \item staged training, with weight and optimizer state transfer
   \item $40$, $75$, and $40$ epochs for ``dense'', ``sparsify'', and ``fine-tune'' stagers, respectively
@@ -87,10 +86,10 @@ We recap the set up of each additional experiment on MNIST-like datasets:
   $
   \item the sparsification threshold $\tau$ is set to $-\tfrac12$
 \end{itemize}
-Each experiment was performed $5$ times to obtain a small sample of performance-compression
+Each experiment has been performed $5$ times to obtain a small sample of performance-compression
 values for each setting of $C$. By reevaluating each setting several times we can account
 for randomness in initialization of the uncompressed network at ``dense'', stochasticity of
-variational dropout layers, and randomness of batch sequences during SDG, and non-determinism
+variational dropout layers, randomness of batch sequences during SDG, and non-determinism
 of computations on GPUs.
 
 Each figure shows the compression-accuracy trade-off of a particular method and input features
@@ -100,10 +99,9 @@ datasets (described in the main text): \emph{top-left} EMNIST-Letters, \emph{top
 %
 Figures \ref{fig:appendix__mnist-like__trade-off__ARD__fft}, \ref{fig:appendix__mnist-like__trade-off__VD__fft},
 \ref{fig:appendix__mnist-like__trade-off__ARD__raw}, and \ref{fig:appendix__mnist-like__trade-off__VD__raw}
-compare $\real$ models against $\cplx$ with \emph{the same architecture}, i.e. incomparable
-according to \citet{monning_evaluation_2018}. We also report the trade-off comparison, when
-their argument for higher intrinsic capacity of $\cplx$-valued networks has been taken
-into account.
+present $\real$ and $\cplx$ models with \emph{the same architecture}. We also report the
+trade-off comparison, when the argument by \citet{monning_evaluation_2018} for higher intrinsic
+capacity of $\cplx$-valued networks has been taken into account.
 %
 We compare $\real$ networks against $\tfrac12 \cplx$ with half the number of parameters
 for raw input features on figures \ref{fig:appendix__cmp__mnist-like__trade-off__ARD__raw},
@@ -112,7 +110,7 @@ double the number of parameters against $\cplx$ for Fourier input features on fi
 \ref{fig:appendix__cmp__mnist-like__trade-off__ARD__fft} and
 \ref{fig:appendix__cmp__mnist-like__trade-off__VD__fft}.
 
-The following observations could be made from the conducted experiment:
+The following observations can be made from the conducted experiment:
 \begin{itemize}
   \item $\cplx$-valued networks do not have as much spare capacity as $2 \real$ due to
   constants imposed by multiplication in $\cplx$ numbers (\ref{fig:appendix__cmp__mnist-like__trade-off__ARD__raw},
@@ -320,19 +318,19 @@ The following observations could be made from the conducted experiment:
   \centering
   \begin{subfigure}[b]{0.5\textwidth}
     \centering
-    \includegraphics[width=\linewidth]{../figure__mnist-like__trade-off/legacy__VD__emnist_letters__fft__-0.5.pdf}
+    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/legacy__VD__emnist_letters__fft__-0.5.pdf}
   \end{subfigure}%
   \begin{subfigure}[b]{0.5\textwidth}
     \centering
-    \includegraphics[width=\linewidth]{../figure__mnist-like__trade-off/legacy__VD__kmnist__fft__-0.5.pdf}
+    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/legacy__VD__kmnist__fft__-0.5.pdf}
   \end{subfigure} \\%
   \begin{subfigure}[b]{0.5\textwidth}
     \centering
-    \includegraphics[width=\linewidth]{../figure__mnist-like__trade-off/legacy__VD__fashionmnist__fft__-0.5.pdf}
+    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/legacy__VD__fashionmnist__fft__-0.5.pdf}
   \end{subfigure}%
   \begin{subfigure}[b]{0.5\textwidth}
     \centering
-    \includegraphics[width=\linewidth]{../figure__mnist-like__trade-off/legacy__VD__mnist__fft__-0.5.pdf}
+    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/legacy__VD__mnist__fft__-0.5.pdf}
   \end{subfigure}
   \caption{%
     The trade-off of VD method for $\real$ and $\cplx$ models using Fourier features (main text).
@@ -344,19 +342,19 @@ The following observations could be made from the conducted experiment:
   \centering
   \begin{subfigure}[b]{0.5\textwidth}
     \centering
-    \includegraphics[width=\linewidth]{../figure__mnist-like__trade-off/legacy__VD__emnist_letters__raw__-0.5.pdf}
+    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/legacy__VD__emnist_letters__raw__-0.5.pdf}
   \end{subfigure}%
   \begin{subfigure}[b]{0.5\textwidth}
     \centering
-    \includegraphics[width=\linewidth]{../figure__mnist-like__trade-off/legacy__VD__kmnist__raw__-0.5.pdf}
+    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/legacy__VD__kmnist__raw__-0.5.pdf}
   \end{subfigure} \\%
   \begin{subfigure}[b]{0.5\textwidth}
     \centering
-    \includegraphics[width=\linewidth]{../figure__mnist-like__trade-off/legacy__VD__fashionmnist__raw__-0.5.pdf}
+    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/legacy__VD__fashionmnist__raw__-0.5.pdf}
   \end{subfigure}%
   \begin{subfigure}[b]{0.5\textwidth}
     \centering
-    \includegraphics[width=\linewidth]{../figure__mnist-like__trade-off/legacy__VD__mnist__raw__-0.5.pdf}
+    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/legacy__VD__mnist__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
     The trade-off of VD method for $\real$ and $\cplx$ models using raw features (main text).
@@ -373,8 +371,8 @@ The following observations could be made from the conducted experiment:
 
 In addition to the results reported in the main paper, we conduct additional experiment
 on CIFAR10 and VGG16 with a much more slowly annealed learning rate. Similar to MNIST-like
-experiments, we start with rate set to $10^{-3}$ and then reduce it by $10$ after the
-$10$-the epoch. In summary, for the CIFAR10 experiment we reuse the setup with the following
+experiments, we start with the rate set to $10^{-3}$ and then reduce it by $10$ after the
+$10$-the epoch. In summary, for the CIFAR10 experiments we reuse the set-up with the following
 changes:
 \begin{itemize}
   \item we allocate $20$, $40$, and $20$ epochs to each stage
