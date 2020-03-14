@@ -34,6 +34,7 @@ benign_emergencies = (StopIteration, type(None))
 
 
 def defaults(options):
+    """Fill in the omitted specifications."""
     options = copy.deepcopy(options)
 
     # add defaults: device, threshold, and objective terms
@@ -88,23 +89,87 @@ def defaults(options):
 
 
 def get_datasets(recipe):
-    """Get dataset instances from the recipe."""
+    """Get dataset instances from the recipe.
+
+    Parameters
+    ----------
+    recipe : dict of dict
+        The specifications of the core datasets.
+
+    Returns
+    -------
+    datasets : dict of datasets
+        A dictionary of dataset instances, compatible with torch's
+        DataLoader objects.
+    """
     # "datasets"
     return {dataset: get_instance(**par) for dataset, par in recipe.items()}
 
 
 def wrap_feed(feed, max_iter=-1, **devtype):
-    """Return a feed that combines the limiter and the mover."""
+    """Return a feed that combines the limiter and the mover.
+
+    Parameters
+    ----------
+    feed : DataLoader-like object
+        The data feed, the batches of which should be moved to the device.
+
+    max_iter : int, default=-1
+        The upper limit on the number of data batches provided by the feed.
+
+    **devtype : dict
+        The dictionary specifying the device and dtype conversion for pytorch.
+
+    Returns
+    -------
+    feed : DataLoader-like object
+        A wrapped feed.
+    """
     return FeedMover(FeedLimiter(feed, max_iter), **devtype)
 
 
 def get_feature_generator(feed, recipe):
-    """Create feature generator (last step before feeeding into fit)."""
+    """Create feature generator (last step before feeding into fit).
+
+    Parameters
+    ----------
+    feed : torch.optim
+        The data feed to create the specified feature transformation for.
+
+    recipe : dict
+        The specifications of the feature transformation.
+
+    Returns
+    -------
+    feed : object
+        A wrapped feed.
+    """
     return get_instance(feed, **recipe)
 
 
 def get_feeds(datasets, devtype, features, recipe):
-    """Get instances of data feeds (loader with feature geenrator)."""
+    """Get instances of data feeds (loader with feature generator).
+
+    Parameters
+    ----------
+    datasets : dict of Dataset objects
+        The source datasets over which to construct and package data loaders.
+
+    devtype : dict
+        The dictionary specifying the device and dtype conversion for pytorch.
+
+    features : dict
+        Teh dictionary, specifying the feature transformations.
+
+    recipe : dict of dict
+        The nested dictionary of data feed specifications.
+
+    Returns
+    -------
+    feeds : dict of object
+        The properly packaged DataLoaders.
+    """
+
     # <datasets>, <devtype>, "features", "feeds"
     recipe = param_apply_map(recipe, dataset=datasets.__getitem__)
 
@@ -123,7 +188,22 @@ def get_feeds(datasets, devtype, features, recipe):
 
 
 def get_scorers(feeds, recipe):
-    """Get scoring objects."""
+    """Get scoring objects.
+
+    Parameters
+    ----------
+    feeds : dict of DataLoader objects
+        The ready-for-use data feeds for scorers to use.
+
+    recipe : dict
+        The nested dictionary of scorer specifications.
+
+    Returns
+    -------
+    scorers : dict of object
+        The properly named instances of scoring objects.
+    """
+
     # <feeds>, "scorers"
     recipe = param_apply_map(recipe, feed=feeds.__getitem__)
     return {name: get_instance(**par) for name, par in recipe.items()}
@@ -132,8 +212,23 @@ def get_scorers(feeds, recipe):
 def compute_positive_weight(recipe):
     """Compute the +ve label weights to ensure balance given in the recipe.
 
-    This specific to multi-output binary classification in MusicNet.
+    Parameters
+    ----------
+    recipe : dict
+        The dictionary of parameters specifying class rebalance and the
+        dataset, used to gather the label statistics from.
+
+    Returns
+    -------
+    pos_weight : tensor
+        The weights of positive label in multi-output binary classification.
+
+    Details
+    -------
+    This specific to multi-output binary classification in MusicNet, but never
+    actually used.
     """
+
     if recipe is None:
         return None
 
@@ -156,7 +251,24 @@ def compute_positive_weight(recipe):
 
 
 def get_objective_terms(datasets, recipe):
-    """Gather the components of the objective function."""
+    """Gather the components of the objective function.
+
+    Parameters
+    ----------
+    datasets : dict of datasets
+        The datasets to refer, used to estimated the class weights for
+        imbalanced classification (seldom used).
+
+    recipe : dict
+        The nested dictionary of specifications of the loss and kl-divergence
+        and other terms in the composite objective.
+
+    Returns
+    -------
+    objectives : dict of object
+        The properly named instances of the terms in the objective function.
+    """
+
     # <datasets>, "objective_terms"
     recipe = param_apply_map(recipe, dataset=datasets.__getitem__)
 
@@ -169,7 +281,23 @@ def get_objective_terms(datasets, recipe):
 
 
 def get_model(recipe, **overrides):
-    """Construct the instance of a model from a two-part specification."""
+    """Construct the instance of a model from a two-part specification.
+
+    Parameters
+    ----------
+    recipe : dict
+        The base recipe for the model.
+
+    **overrides : dict
+        Overrides or extra parameters for the model's recipe.
+
+    Returns
+    -------
+    model : torch.nn.Module
+        The instance of the model, created from the provided specifications
+        and overrides.
+    """
+
     # "model", "stages__*__model"
     if isinstance(overrides, dict):
         recipe = {**recipe, **overrides}  # override parameters
@@ -178,7 +306,25 @@ def get_model(recipe, **overrides):
 
 
 def get_objective(objective_terms, recipe):
-    """Construct the objective function from the recipe and components."""
+    """Construct the objective function from the recipe and components.
+
+    Parameters
+    ----------
+    objective_terms : dict of object
+        The loss and other terms (named), that should be used in the composite
+        objective specified by the recipe.
+
+    recipe : dict, or str
+        The specifications of the objective. Can be either a dictionary, which
+        specifies the weights of each term in the sum, or a pythonic arithmetic
+        expression, that uses terms' names as variables.
+
+    Returns
+    -------
+    objective : object
+        An instance of the optimization objective.
+    """
+
     # <objective_terms>, "stages__*__objective"
     if isinstance(recipe, dict):
         return WeightedObjective(recipe, **objective_terms)
@@ -188,19 +334,64 @@ def get_objective(objective_terms, recipe):
 
 
 def get_optimizer(module, recipe):
-    """Get the optimizer for the module from the recipe."""
+    """Get the optimizer for the module from the recipe.
+
+    Parameters
+    ----------
+    module : torch.optim
+        The module, to parameters of which an optimizer should be attached to.
+
+    recipe : dict
+        The specifications of the optimizer.
+
+    Returns
+    -------
+    optim : torch.optim
+        An instance of an optimizer.
+    """
+
     # <module>, "stages__*__optimizer"
     return get_instance(module.parameters(), **recipe)
 
 
 def get_scheduler(optimizer, recipe):
-    """Get scheduler for the optimizer and recipe."""
+    """Get scheduler for the optimizer and recipe.
+
+    Parameters
+    ----------
+    optimizer : torch.optim
+        The optimizer to attach the learning rate scheduler to.
+
+    recipe : dict
+        The specifications of the scheduler.
+
+    Returns
+    -------
+    scorer : torch.optim.lr_scheduler
+        An instance of a scheduler.
+    """
+
     # <optimizer>, "stages__*__lr_scheduler"
     return get_instance(optimizer, **recipe)
 
 
 def get_early_stopper(scorers, recipe):
-    """Get scheduler for the optimizer and recipe."""
+    """Get scheduler for the optimizer and recipe.
+
+    Parameters
+    ----------
+    scorers : dict
+        A dictionary of holdout set scoring object instances.
+
+    recipe : dict
+        The specification of the early stopper.
+
+    Returns
+    -------
+    scorer : object
+        An instance of a ready-for-use scorer.
+    """
+
     # <scorers>, "stages__*__early"
     def None_or_get_class(klass):
         return klass if klass is None else get_class(klass)
@@ -211,7 +402,28 @@ def get_early_stopper(scorers, recipe):
 
 
 def state_dict_with_masks(model, **kwargs):
-    """Harvest and binarize masks, and cleanup the zeroed parameters."""
+    """Harvest and binarize masks, and cleanup the zeroed parameters.
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        The model to collect masks and sate dict from.
+
+    **sparsity_kwargs : dict
+        The keyword arguments passed to sparsification procedures to gather
+        the binary dropout masks.
+
+    Returns
+    -------
+    state_dict : dict
+        The dictionary of parameter values, buffers and masks for loading with
+        torch's api.
+
+    mask : dict
+        The same dict as `state_dict` but with the sparsity masks only (for
+        convenience).
+    """
+
     with torch.no_grad():
         masks = compute_ard_masks(model, **kwargs)
         state_dict, masks = binarize_masks(model.state_dict(), masks)
@@ -223,7 +435,27 @@ def state_dict_with_masks(model, **kwargs):
 def state_create(recipe, stage, devtype):
     """Create a new state, i.e. model, optimizer and name-id mapper (for state
     inheritance below), from the stage and model settings.
+
+    Parameters
+    ----------
+    recipe : dict
+        The base recipe for the model.
+
+    stage : dict
+        A dictionary specifying the optimizer and overrides for the model's
+        recipe.
+
+    devtype : dict
+        The dictionary specifying the device and dtype conversion for pytorch.
+
+    Returns
+    -------
+    state : State
+        A named tuple with an instance of the model, an optimizer associated
+        with its parameters and special name-id mapping used when transferring
+        internal state between optimizers of different models.
     """
+
     # subsequent `.load_state_dict()` automatically moves to device and casts
     #  `model` stage in a stage are allowed to be None
     model = get_model(recipe, **stage["model"]).to(**devtype)
@@ -240,7 +472,36 @@ def state_create(recipe, stage, devtype):
 def state_inherit(state, options, *, old=None, **sparsity_kwargs):
     """Inherit optimizer state and model parameters either form
     the previous (hot) state or from a (cold) storage.
+
+    Parameters
+    ----------
+    state : State
+        A named tuple keeping together the model, the optimizer associated with
+        it, and a layer name - parameter id correspondence, used to facilitate
+        transfer of state between models, that share a common core set of
+        parameters, e.g. when transferring weight's accumulated gradient stats
+        from ordinary linear models to Bayesian layers. This occasionally helps
+        warm start the SGD.
+
+    options : dict
+        The key `reset` specifies whether the model's parameters should be
+        transferred from the `old` state, `restart` -- if the optimizer's
+        internal should be copied, and `snapshot` -- the path to a snapshot
+        for cold start.
+
+    old : dict
+        Explicit keyword argument specifying the state to inherit parameters
+        form.
+
+    **sparsity_kwargs : dict
+        The keyword arguments passed to sparsification procedures.
+
+    Returns
+    -------
+    state : State
+        The updated model, optimizer and mapping.
     """
+
     # model state is inherited anyway, optimizer is conditional.
     optim_state, source_mapper, inheritable = {}, {}, False
     if options["snapshot"] is not None:
@@ -271,7 +532,7 @@ def state_inherit(state, options, *, old=None, **sparsity_kwargs):
         if options["reset"]:
             # Explicitly instructed to transfer masks only (if available).
             #  `reset=True` makes sure that every mask in the receiving
-            #  model is initialized. A forward pass thorugh a model with
+            #  model is initialized. A forward pass through a model with
             #  an uninitialized mask would raise a RuntimeError.
             deploy_masks(state.model, state_dict=masks, reset=True)
 
@@ -301,7 +562,33 @@ def state_inherit(state, options, *, old=None, **sparsity_kwargs):
 
 
 def run(options, folder, suffix, verbose=True, save_optim=False):
-    """The main procedure that choreographs staged training."""
+    """The main procedure that choreographs staged training.
+
+    Parameters
+    ----------
+    options : dict
+        The manifest of an experiment: a nested dictionary, specifying the
+        datasets, batch loaders, models, optimizers, schedulers, stages, and
+        coefficients in the objective.
+
+    folder : str
+        The path at which to save the experiment: a copy of the manifest in
+        `config.json` and snapshot of the model by the end of each training
+        stage.
+
+    suffix : str
+        An tag appended to the name of each snapshot.
+
+    verbose : bool, default=True
+        A flag indicating if a progress bar with running diagnostic information
+        is to be printed.
+
+    save_optim : bool, default=False
+        A flag specifying if the optimizer's internal state should be a part
+        of the recorded snapshot. Useful for cold start or continuation of
+        experiment's stages run earlier.
+    """
+
     # cudnn float32 ConvND does not seem to guarantee +ve sign of the result
     #  on inputs, that are +ve by construction.
     # torch.backends.cudnn.deterministic = True
