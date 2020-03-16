@@ -1000,8 +1000,6 @@ as real parts of the $\cplx$ output.
 The goal of this section to study the compression-performance trade-off of the proposed Bayesian
 sparsification methods for $\cplx$-valued networks. To this end we trained each network in
 three successive stages in every experiment: ``dense'' $\to$ ``sparsify'' $\to$ ``fine-tune''.
-Model parameters and the optimizer are copied between stages, except before the final stage
-optimizer's internal state is reset.
 
 At the \textit{``dense''} stage every network is fit ``as-is'', retaining its original
 non-Bayesian architecture and using only the likelihood term from \eqref{eq:elbo} without
@@ -1036,36 +1034,21 @@ weights in each layer based on the relevance scores $\alpha$ (sec.~\ref{sub:drop
 the $q_\theta$ factorizes into univariate distributions, a $\cplx$ or $\real$ parameter is
 considered non-zero if $\log \alpha \leq \tau$ for $
   \alpha = \tfrac{\sigma^2}{\lvert\mu\rvert^2}
-$, or zero otherwise. Figure~\ref{fig:hist__and__threshold__tradeoff} (top) displays the
-general shape of the distribution of $\log \alpha$ on the Fashion-MNIST dataset in
-sec.~\ref{sub:mnist_like_datasets}. There always appears to be a mode in the moderately
-negative range, a valley through zero between the peaks of the negative mode and the next
-positive one. The relative mass of each mode changes with $C$ and the higher the coefficient
-is, the more mass is shifted to the right.
-%
-The bottom graph on figure~\ref{fig:hist__and__threshold__tradeoff} is constructed
+$, or zero otherwise. Figure~\ref{fig:hist__and__threshold__tradeoff} is constructed
 for $C \in \{\tfrac1{20}, \frac1{200}\}$ before running the ``fine-tune'' stage. From
 \eqref{eq:elbo_with_coef}, the relative positions of the compression curves on this
 plot, and the results of experiments below it can be concluded that $C$ has much more
 substantial impact on the sparsity and performance, than the choice of $\tau$. Furthermore,
 for $\tau > 0$ the performance quickly saturates while compression creeps downwards.
 
-\begin{figure}[ht]
+\begin{figure}[!t]
   \centering
   \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=\linewidth,draft]{../assets/log-alpha__sum__fashion-mnist__20200131-205926.pdf}
-  \end{subfigure} \\%
-  % \hfill
-  \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
-    \centering
-    \includegraphics[width=\linewidth]{../assets/figure__musicnet__threshold.pdf}
+    \includegraphics[width=\columnwidth]{../assets/figure__musicnet__threshold.pdf}
   \end{subfigure}
   \caption{%
-    (\textit{top}) Smoothed density of $\log\alpha$ for some convolutional and dense layer
-    from a model in sec.~\ref{sub:mnist_like_datasets};
-    (\textit{bottom}) Test split performance and compression rate for a $\cplx$-valued
-    net on MusicNet.
+    Test split performance and compression rate for a $\cplx$-valued net on MusicNet.
   }
   \label{fig:hist__and__threshold__tradeoff}
 \end{figure}
@@ -1079,18 +1062,8 @@ when it runs in inference mode. Since $W$ is $\real$- or a proper $\cplx$-Gaussi
 random variable $
   \tfrac{k \lvert W - \mu \rvert^2}
         {\alpha \lvert \mu \rvert^2}
-$ is $\chi^2_k$ distributed with $k=1$ ($\real$) or $2$ ($\cplx$), whence
-\begin{equation} \label{eq:prob_relevant}
-  \Pr\bigl(
-    \lvert w - \mu \rvert \leq \delta \lvert \mu \rvert
-  \bigr)
-    % = \Pr\biggl(
-    %   \frac{k \lvert w - \mu \rvert^2}{\alpha \lvert \mu \rvert^2}
-    %     \leq \frac{\delta^2 k}{\alpha}
-    % \biggr)
-    = \chi^2_k\biggl(\frac{\delta^2 k}{\alpha}\biggr)
-  \,.
-\end{equation}
+$ is $\chi^2_k$ distributed with $k=1$ ($\real$) or $2$ ($\cplx$).
+%
 For a generous $\delta = 50\%$ tolerance all values of $\log \alpha$ below $-2.5$ yield
 at least $90\%$ chance of a non-zero $\real$/$\cplx$ parameter. We pick $\tau = -\tfrac12$
 to exclude noisy parameters and encourage higher sparsity, at the same time being aware
@@ -1106,20 +1079,17 @@ the threshold \citep{molchanov_variational_2017,kingma_variational_2015}.
 % perfromance metrics
 We use accuracy as the performance metric for multi-class image classification on MNIST-like
 and CIFAR10 datasets. Similarly to \citet{trabelsi_deep_2017} performance in experiments with
-MusicNet is measured with (pooled) average precision: predicted scores and target binary labels
-for each output are pooled, and average precision is computed based on the precision-recall
-curve as if the task was single-output. The evaluation is done after ``dense'' stage, before
-the beginning and upon termination of the ``fine-tune'' stage.
+MusicNet is measured with (pooled) average precision. The evaluation is done after ``dense''
+stage, before the beginning and upon termination of the ``fine-tune'' stage.
 
 % write a note on the incompressible parameters (bias, batch norm etc.)
 The compression rate is computed based on the number of floating point values needed to
-specify the model and equals $
+store the model and equals $
   \tfrac{n_\mathtt{par}}{n_\mathtt{par} - n_\mathtt{zer}}
-$, where $n_\mathtt{zer}$ is the number of explicit zeros after sparsification, $n_\mathtt{par}$
-is the total number of floats. Thus, each parameter is counted once in a $\real$-valued
-network, but twice in a $\cplx$-network, being a pair of real-imaginary floats. Each model
-has incompressible parameters, such as layers' biases, shift and scaling from $\real$-and
-$\cplx$-batch normalization layers, if present.
+$, where $n_\mathtt{zer}$ is the number of explicit zeros, $n_\mathtt{par}$ is the total
+number of floats. Thus each parameter is counted once in a $\real$-valued network, but twice
+in a $\cplx$-network. Each model has compression limit, set by layers' biases, shift
+and scaling from $\real$-and $\cplx$-batch normalization.
 
 % subsection metrics_and_compression (end)
 
@@ -1129,25 +1099,22 @@ $\cplx$-batch normalization layers, if present.
 
 We conduct a moderately sized experiment on MNIST and similar $28\times 28$ greyscale image
 datasets to study the compression-performance trade-off of the proposed $\cplx$-variational
-dropout on simple architectures.
+dropout.
 % dataset size
 We deliberately use a {fixed} random subset of $10k$ images from the train split of each
-dataset to fit the networks, and gauge the final performance on the usual test split.
-Limiting the size was done primarily to test the regularization strength of compression,
-and to make bulk experimentation faster.
+dataset to fit the networks and gauge the final performance on the usual test split.
+Limiting the size was done primarily to test the regularization strength of compression.
 
 % model architectures
 % discussion of TwoLayerDenseModel (TLDM) and SimpleConvModel (SCM)
-The $\real$/$\cplx$ networks, studied in this experiment, have been chosen for the purpose 
-of illustrating the compression and understanding the effects of experiment parameters.
-\textit{SimpleConvModel} (SCM) is a $2d$ ReLU convolutional network with average pooling
-($2\times 2$) after non-linearities with two convolutions (kernel $5\times 5$, stride $1$)
-with filters $n_1 \to n_2$ followed by dense layers $n_3 \to n_\mathtt{out}$. The second
-network, \textit{TwoLayerDenseModel} (TLDM), is a wide dense network $n_1 \to n_\mathtt{out}$.
-For SCM model $n_1, n_2, n_3$ are $20, 50, 500$, respectively, and for TLDM model $
-  n_1 = 4096
-$ regardless of their type ($\real$ or $\cplx$), although \citet{monning_evaluation_2018}
-argue that this renders models incomparable.
+The $\real$/$\cplx$ networks have been chosen for the purpose of illustrating the compression
+and understanding the effects of experiment parameters. \textit{SimpleConvModel} (SCM) is a $2d$
+ReLU convolutional network with average pooling ($2\times 2$) after non-linearities with
+two convolutions (kernel $5\times 5$, stride $1$) with filters $n_1 \to n_2$ followed by
+dense layers $n_3 \to n_\mathtt{out}$. The second network, \textit{TwoLayerDenseModel} (TLDM),
+is a wide dense network $n_1 \to n_\mathtt{out}$. For SCM model $n_1, n_2, n_3$ are $20, 50, 500$,
+respectively, and for TLDM model $n_1 = 4096$ regardless of their type ($\real$ or $\cplx$),
+although \citet{monning_evaluation_2018} argue that this renders models incomparable.
 
 % image features
 Since image data is not naturally $\cplx$-valued, we preprocess images by either embedding
@@ -1160,63 +1127,59 @@ model to synthesize the imaginary component from the real data.
 In this experiment stages last for $40$, $75$ and $40$ epochs, respectively, and the base
 learning rate of ${10}^{-3}$ is reduced after the $10$-th epoch to ${10}^{-4}$.
 %
-Plots~\ref{fig:mnist-like__trade-off__kmnist} and \ref{fig:mnist-like__trade-off__emnist}
-depict samples from the performance-compression curve on KMNIST and EMNIST-Letters datasets
-for the studied models and VD compression method (sec.~\ref{ssub:variational_dropout}).
-Besides that we tried \texttt{raw} or \texttt{fft} input features, varied $
+Plots~\ref{fig:mnist-like__trade-off} depict samples from the performance-compression curve
+on KMNIST and EMNIST-Letters datasets for the studied models and VD compression method
+(sec.~\ref{ssub:variational_dropout}). Besides that we try \texttt{raw} or \texttt{fft}
+input features, vary $
   C \in \{\tfrac3{2^{k+1}}\colon k=1..16\}
-$, and repeated the experiment $5$ times.
+$, and repeat the experiment $5$ times.
 
-We make a couple of observations based on these results. First, Fourier features appear to
-perform on par with raw colour channel data in the convolutional networks across most
+Shaded horizontal bands reflect the spread of the performance of the uncompressed network
+after ``dense'' stage. Each point represents a precision-compression value attained by the
+network after ``fine-tune'' stage. The end of each point's tail represents the performance
+gain or loss from running the ``fine-tune'' stage.
+%
+We make a couple of observations based on the results of these plots. First, \texttt{fft}
+features perform on par with raw colour channel data in the convolutional networks across most
 compression rates, but require high compression rate to make wide shallow dense network work
-as well. The upward trend in manifests itself in MNIST and Fashion MNIST experiments as well
+as well. The upward trend manifests itself in MNIST and Fashion MNIST experiments as well
 (see appendix~\ref{sub:other_mnist_like_datasets}). Finally, overall $\cplx$ variational
-dropout methods seems to compress network adequately well, without much loss in performance.
+dropout methods seem to compress networks adequately well without much loss in performance.
 
 % a couple of plots from MNIST and Fashion-MNIST
-\begin{figure}[!h]
+\begin{figure}[!t]
   \centering
   \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
     % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__fashionmnist__fft__-0.5.pdf}
-    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__kmnist__fft__-0.5.pdf}
+    \includegraphics[width=0.8\columnwidth]{../assets/figure__mnist-like__trade-off/legacy__VD__kmnist__fft__-0.5.pdf}
     % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/VD__kmnist__fft__-0.5.pdf}
   \end{subfigure} \\%
   % \hfill
   \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
     % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__fashionmnist__raw__-0.5.pdf}
-    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__kmnist__raw__-0.5.pdf}
+    \includegraphics[width=0.8\columnwidth]{../assets/figure__mnist-like__trade-off/legacy__VD__kmnist__raw__-0.5.pdf}
     % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/VD__kmnist__raw__-0.5.pdf}
-  \end{subfigure}
-  \caption{%
-    The compression-accuracy trade-off on KMNIST dataset.
-    (\textit{top}) \texttt{fft} features, (\textit{bottom}) \texttt{raw} features.
-  }
-  \label{fig:mnist-like__trade-off__kmnist}
-\end{figure}
-
-\begin{figure}[!h]
-  \centering
+  \end{subfigure} \\%
   \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
     % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__mnist__fft__-0.5.pdf}
-    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__emnist_letters__fft__-0.5.pdf}
+    \includegraphics[width=0.8\columnwidth]{../assets/figure__mnist-like__trade-off/legacy__VD__emnist_letters__fft__-0.5.pdf}
     % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/ARD__kmnist__fft__-0.5.pdf}
   \end{subfigure} \\%
   % \hfill
   \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
     % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__mnist__raw__-0.5.pdf}
-    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__emnist_letters__raw__-0.5.pdf}
+    \includegraphics[width=0.8\columnwidth]{../assets/figure__mnist-like__trade-off/legacy__VD__emnist_letters__raw__-0.5.pdf}
     % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/VD__emnist_letters__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
-    The compression-accuracy trade-off on the letters part of the Extended MNIST dataset.
+    The compression-accuracy trade-off on KMNIST and the letters of the Extended MNIST datasets.
     (\textit{top}) \texttt{fft} features, (\textit{bottom}) \texttt{raw} features.
   }
-  \label{fig:mnist-like__trade-off__emnist}
+  \label{fig:mnist-like__trade-off}
 \end{figure}
 
 % subsection mnist_like_datasets (end)
@@ -1228,17 +1191,19 @@ dropout methods seems to compress network adequately well, without much loss in 
 % mention the same experimental setup as in MNIST
 Experiments on CIFAR10 dataset are set up similarly to MNIST-like experiment, except
 that we study VGG16 model \citep{simonyan_very_2015} and its $\cplx$-counterpart and
-replicate each experiment only twice. Each network is trained stagewise for $20$, $40$,
+replicate each experiment only twice.
+%
+% describe the VGG16 model and its cplx-valued modification
+The $\cplx$-VGG16 model is architecturally identical to VGG16, except for all layers being
+replaced by their $\cplx$-valued versions. To maintain comparability, we halve the filter
+sizes of $\cplx$ model \citep{monning_evaluation_2018}.
+%
+Each network is trained stagewise for $20$, $40$,
 and $20$ epochs on the full training split of $50k$ colour $32\times32$ images. We use
 only raw colour features (\texttt{raw}). We apply random crop and horizontal flips as
 data augmentation and use a learning rate scheduler in SGD, which scales the base learning
 rate after $5$, $10$, and $20$-th epoch by $\tfrac1{10}$, $\tfrac1{20}$ and $\tfrac1{100}$,
 respectively.
-
-% describe the VGG16 model and its cplx-valued modification
-The $\cplx$-VGG16 model is architecturally identical to VGG16, except for all layers being
-replaced by their $\cplx$-valued versions. To maintain comparability, we halve the filter
-sizes of $\cplx$ model \citep{monning_evaluation_2018}.
 
 % draw some conclusions
 Figure~\ref{fig:figure__cifar10__trade-off} shows that although the prior used in ARD method
@@ -1249,30 +1214,16 @@ network with the same inner feature dimensions performed on close to $\real$-val
 is half the size of the former.
 
 % compare compressed cplx-vgg against real-vgg
-\begin{figure}[!h]
+\begin{figure}[!t]
   \centering
   \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=\linewidth]{../assets/figure__cifar__trade-off/legacy__augmentedcifar10__raw__-0.5.pdf}
+    \includegraphics[width=\columnwidth]{../assets/figure__cifar__trade-off/legacy__augmentedcifar10__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
     Compression-accuracy frontier for $\real$ and $\tfrac12 \cplx$ versions of VGG16 on CIFAR10.
   }
   \label{fig:figure__cifar10__trade-off}
-\end{figure}
-
-\begin{figure}[!h]
-  \centering
-  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
-    \centering
-    \includegraphics[width=\linewidth]{../assets/figure__musicnet__trade-off/paper__musicnetram__fft__-0.5.pdf}
-  \end{subfigure}
-  \caption{%
-    Performance-compression trade-off using \textbf{\color{blue} VD} and \textbf{\color{orange} ARD}.
-    The \textbf{\color{pink} version} of the network with kernel $3$ in the first convolution is
-    compressed with VD only.
-  }
-  \label{fig:musicnet__trade-off}
 \end{figure}
 
 % subsection cifar10_100 (end)
@@ -1283,53 +1234,59 @@ is half the size of the former.
 
 % describe musicnet as in Trabelsi et al. (2017) also get some hints from thickstun_learning_2017
 MusicNet \citep{thickstun_learning_2017} is an annotated audio dataset, consisting of $330$
-compositions from the public domain. Folowing \citet{trabelsi_deep_2017}, we use this
-dataset for automatic music transcription task and study the $1d$ VGG-like $\cplx$-convent
-proposed therein. Similarly to this study, we downsample the audio from 44.1kHz to 11kHz,
-retaining only $84$ out of $128$ labels, and hold-out the same validation and test splits.
-During each training epoch we sample $1000$ mini-batches of the remaining $321$ compositions,
-each mini-batch comprised of a random full window of $4096$ samples picked from each waveform
-and transformed from $\real$ to $\cplx$ with $1d$ FFT. Annotation labels are taken at the
-mid-point of the window.
+musical compositions. Folowing \citet{trabelsi_deep_2017}, we use it for automatic music
+transcription task and study the $1d$ VGG-like $\cplx$-convent proposed therein. Similarly to
+the study, we downsample the audio from 44.1kHz to 11kHz, retain only $84$ out of $128$ labels,
+and hold-out the same validation and test splits. During each training epoch we sample $1000$
+mini-batches of the remaining $321$ compositions, with each mini-batch comprised of a random
+full window of $4096$ samples picked from each waveform and transformed from $\real$ to
+$\cplx$ with $1d$ FFT. Annotation labels are taken at the mid-point of the window.
 
 Preliminary experiments with the model without sparsification have shown that early stopping
-almost always terminates the training process within the first $10-20$ epochs, and that the
-validation performance peakeing at about $10-15$ epochs, much sooner than $200$ epochs used by
-\citet{trabelsi_deep_2017}. Thus we adopt shorter lasting stages: $12$, $32$ and $50$ epochs,
-which essentially turns the ``dense'' stage into pretraining step. Early stopping, tracking
-the validation split performance, is used only during the ``fine-tune'' stage. To keep the
-learning rate schedule synchronised with such abbreviated training, we allow the base rate
-of $10^{-3}$ to be scaled after $5$, $10$, and $20$-th epoch by $\tfrac1{10}$, $\tfrac1{20}$
-and $\tfrac1{100}$, respectively. Other key deviations from the set-up used by \citet{trabelsi_deep_2017}
-include: shifting lower frequencies to the centre of the window to maintain locality after
-applying FFT (sec.~\ref{sub:mnist_like_datasets}), and clipping $\ell_2$ norm of parameters'
-gradients to $0.05$.
+almost always terminates the training process within the first $10-20$ epochs with the validation
+performance peaking at $10-15$ epochs, much sooner than $200$ epochs used by \citet{trabelsi_deep_2017}.
+Thus we adopt shorter lasting stages: $12$, $32$ and $50$ epochs, which essentially turn the
+``dense'' stage into pretraining. Early stopping is used only during the ``fine-tune'' stage.
+To keep the learning rate schedule consistent, we allow the base rate of $10^{-3}$ to be scaled
+after $5$, $10$, and $20$-th epoch by $\tfrac1{10}$, $\tfrac1{20}$ and $\tfrac1{100}$, respectively.
+Other key deviations from the set-up used by \citet{trabelsi_deep_2017} include: shifting lower
+frequencies to the centre of the window to maintain locality after applying the FFT
+(sec.~\ref{sub:mnist_like_datasets}), and clipping $\ell_2$ norm of the gradients to $0.05$.
 
-In each experiment we varied the method and the value $C$, while keeping $\tau$ at $-\tfrac12$.
-Each full experiment is replicated five times to take into account random effects from network
-initialization before ``dense'', randomness of the mini-batch sequence during SGD, and
-stochasticity of intermediate layers on forward pass at ``sparsify'' stage.
+\begin{figure}[!h]
+  \centering
+  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
+    \centering
+    \includegraphics[width=\columnwidth]{../assets/figure__musicnet__trade-off/paper__musicnetram__fft__-0.5.pdf}
+  \end{subfigure}
+  \caption{%
+    Performance-compression trade-off using \textbf{\color{blue} VD} and \textbf{\color{orange} ARD}.
+    The \textbf{\color{pink} version} of the network with kernel $3$ in the first convolution is
+    compressed with VD only.
+  }
+  \label{fig:musicnet__trade-off}
+\end{figure}
+
+In each experiment we vary the method and the value $C$, while keeping $\tau$ at $-\tfrac12$.
+Every experiment is replicated five times to take into account the random effects from
+initialization, batch sequence during SGD, and stochasticity of intermediate layers on
+forward pass at ``sparsify'' stage.
 
 Figure~\ref{fig:musicnet__trade-off} shows the resulting performance-compression frontier
 for the deep network of \citet{trabelsi_deep_2017} and its version, in which we purposefully
 halve the spatial size of the first $1d$ convolution kernel from $6$ to $3$ (denoted by
-suffix \textit{k}$3$). The motivation is to test if the performance handicap introduced be
-the forced compression of the most upstream layer can be alleviated through non-uniform
-compression, induced by variational dropout. We test only VD (sec.~\ref{ssub:variational_dropout})
-method in this sub-experiment, since prior results have not demonstrated significant difference
-in performance-compression trade-off between VD and ARD (sec.~\ref{ssub:empirical_bayes}).
+suffix \textit{k}$3$). The motivation is to test if the handicap introduced by the forced
+compression of the most upstream layer can be alleviated through non-uniform compression,
+induced by variational dropout. We test only VD (sec.~\ref{ssub:variational_dropout}) this
+sub-experiment, since prior results have not demonstrated significant superiority of one method
+over another (sec.~\ref{ssub:empirical_bayes}).
 
-Shaded horizontal bands represent the min-max spread of the performance of the uncompressed
-network upon termination of ``dense'' stage. Each point represents a precision-compression
-value attained by a network after ``fine-tune'' stage. The end of the tail of each point
-represents the performance gain or loss from the ``fine-tune'' stage itself.
-%
-For compression levels lower than $50$, the final stage overfits the network, since
-it sill remains overparameterized. For rates higher than $\approx 100$ the ``fine-tune''
-stage serves its purpose, essentially, due regularization effects if high sparsity. There
-is evidence in favour of achievability of the SOTA average precision of \citet{trabelsi_deep_2017}
-within the $50$-$100$ compression region with $\cplx$-valued variational dropout with ARD
-prior (sec.~\ref{ssub:empirical_bayes}).
+For compression levels lower than $50$, the final stage overfits the network, since it still
+remains overparameterized. For the rates higher than $\approx 100$ the ``fine-tune'' stage
+serves its purpose, essentially, due regularizing effects of high sparsity. There is evidence
+in favour of achievability of the SOTA average precision of \citet{trabelsi_deep_2017} within
+the $50$-$100$ compression region with $\cplx$-valued variational dropout with ARD prior
+(sec.~\ref{ssub:empirical_bayes}).
 
 % subsection musicnet (end)
 
@@ -1340,15 +1297,14 @@ prior (sec.~\ref{ssub:empirical_bayes}).
 \label{sec:conclusion}
 
 Despite having higher arithmetic complexity, complex-valued models provide built-in
-joint amplitude-phase transformations and regularization \citep{hirose_complex-valued_2009}
-and enjoy superior performance on naturally $\cplx$-valued datasets \citep{tarver_design_2019},
-that occur in ultra high-frequency radio communications and audio signal processing. In this
-study we address the issue of excessive the arithmetic complexity of complex-valued networks
-by extending the existing Bayesian compression techniques by \citet{kingma_variational_2015},
+amplitude-phase transformations and regularization \citep{hirose_complex-valued_2009}
+and enjoy superior performance on naturally $\cplx$-valued datasets \citep{tarver_design_2019}.
+In this study we address the issue of excessive arithmetic complexity of complex-valued
+networks by extending the existing Bayesian compression techniques by \citet{kingma_variational_2015},
 \citet{molchanov_variational_2017} and \citet{kharitonov_variational_2018} to $\cplx$-valued
-model parameters. To this end we have conducted a large scale numerical study of such networks
-to assess the performance-compression rate trade-off and have achieved performance, comparable
-to SOTA on the MusicNet dataset.
+parameters. To this end we have conducted a large numerical study of such networks to assess
+the performance-compression rate trade-off and have achieved performance comparable to
+the state-of-the-art in $\cplx$-valued networks on the MusicNet dataset.
 
 Much like $\real$-valued variational dropout, the proposed $\cplx$-valued extension can be
 straightforwardly enhanced to provide structured sparsity. The results of this study have
