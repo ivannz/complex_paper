@@ -1145,8 +1145,8 @@ We make a couple of observations based on the results of these plots. First, \te
 features perform on par with raw colour channel data in the convolutional networks across most
 compression rates, but require high compression rate to make wide shallow dense network work
 as well. The upward trend manifests itself in MNIST and Fashion MNIST experiments as well
-(see appendix~\ref{sub:other_mnist_like_datasets}). Finally, overall $\cplx$ variational
-dropout methods seem to compress networks adequately well without much loss in performance.
+(see appendix~\ref{sub:mnist_like_experiments}). Finally, overall $\cplx$ variational dropout
+methods seem to compress networks adequately well without much loss in performance.
 
 % a couple of plots from MNIST and Fashion-MNIST
 \begin{figure}[!t]
@@ -1697,200 +1697,6 @@ fit the best approximation \eqref{eq:improper-kl-div-real-approx}, and compare t
 
 % subsection real-chisq-grad (end)
 
-\subsection{Backpropagation through $\cplx$-networks} % (fold)
-\label{sub:wirtinger_calculus}
-
-% essential intro into Wirtinger calculus (CR)
-% https://math.stackexchange.com/a/444493
-Wirtinger ($\cplx\real$) calculus relies on the natural identification of $\cplx$ with $
-  \real \times \real
-$, and regards $
-  f\colon \cplx \to \cplx
-$ as an equivalent in algebraic sense function $F\colon \real^2 \to \cplx$ defined $
-  f(z) = f(u + jv) = F(u, v)
-$. Within this framework the differential of $f$ at $z = u + jv \in \cplx$ is
-$$
-df(z)
-  = \frac{\partial f}{\partial z} dz
-    + \frac{\partial f}{\partial \conj{z}} d\conj{z}
-   % = \frac12\bigl(
-   %    \frac{\partial}{\partial u}
-   %    - j \frac{\partial}{\partial v}
-   % \bigr) F (du - j dv)
-   % + \frac12\bigl(
-   %    \frac{\partial}{\partial u}
-   %    + j \frac{\partial}{\partial v}
-   % \bigr) F (du - j dv)
-   % = \frac12 \bigl(
-   %    \frac{\partial F}{\partial u} du - j \frac{\partial F}{\partial v} du
-   %    + j \frac{\partial F}{\partial u} dv + \frac{\partial F}{\partial v} dv
-   % \bigr)
-   % + \frac12 \bigl(
-   %    \frac{\partial F}{\partial u} du + j \frac{\partial F}{\partial v} du
-   %    - j \frac{\partial F}{\partial u} dv + \frac{\partial F}{\partial v} dv
-   % \bigr)
-   = \frac{\partial F}{\partial u} du
-     + \frac{\partial F}{\partial v} dv
-   = dF(u, v)
-  \,, $$
-with formally defined derivatives $
-  \tfrac{\partial}{\partial z}
-    = \tfrac12 \bigl(
-      \tfrac{\partial}{\partial u}
-      - j \tfrac{\partial}{\partial v}
-    \bigr)
-$ and $
-  \tfrac{\partial}{\partial \conj{z}}
-    = \tfrac12 \bigl(
-      \tfrac{\partial}{\partial u}
-      + j \tfrac{\partial}{\partial v}
-    \bigr)
-$, and differentials $dz = du + j dv$ and $d\conj{z} = du - j dv$. This implies that the
-complex argument and its conjugate are treated as independent variables. Cauchy-Riemann
-conditions $
-  -j \tfrac{\partial F}{\partial v} = \tfrac{\partial F}{\partial u}
-$ can be expressed as $
-  \tfrac{\partial f}{\partial \conj{z}} = 0
-$ in this notation. Thus $\cplx\real$ calculus subsumes the usual $\cplx$-calculus on
-holomorphic functions, when $f(z)$, regarded as $f(z, \conj{z})$, is constant with respect
-to $\conj{z}$. The usual rules of calculus, like chain and product rules, follow directly
-from the definition of the operators, e.g.
-$$
-  \frac{\partial (f\circ g)}{\partial z}
-    = \frac{\partial f(g(z))}{\partial g} \frac{\partial g(z)}{\partial z}
-    + \frac{\partial f(g(z))}{\partial \conj{g}} \frac{\partial \conj{g(z)}}{\partial z}
-    % = \nabla G \nabla F
-  \,. $$
-% Show that $dh(z) = df(g(z)) dg(z)$.
-% $h(z) = f(g(z)) = F(G_r(u, v), G_i(u, v)) = H(u, v)$
-% $$
-% dH
-%   = \tfrac{\partial F}{\partial x} \tfrac{\partial G_r}{\partial u} du
-%   + \tfrac{\partial F}{\partial x} \tfrac{\partial G_r}{\partial v} dv
-%   + \tfrac{\partial F}{\partial y} \tfrac{\partial G_i}{\partial u} du
-%   + \tfrac{\partial F}{\partial y} \tfrac{\partial G_i}{\partial v} dv
-%   = \tfrac{\partial F}{\partial r} d\Re g(z)
-%   + \tfrac{\partial F}{\partial i} d\Im g(z)
-%   = df(\Re g(z) + j\Im g(z)) d g(z)
-%   = df(g(z)) d g(z)
-%   \,. $$
-
-In machine learning tasks the target objective is typically empirical risk, which has to
-be real-valued to be minimized. Nevertheless, the expression of the $\cplx\real$ gradient
-is compatible with what is expected, when $f$ is treated like a $\real^2$ function. For a
-real-valued $f\colon \cplx \to \real$ we have $\conj{f} = f$, which implies $
-  \tfrac{\partial f}{\partial \conj{z}}
-    = \tfrac{\partial \conj{f}}{\partial \conj{z}}
-    = \conj{\tfrac{\partial f}{\partial z}}
-$, whence
-$$
-df
-  = \tfrac{\partial f}{\partial z} dz
-    + \tfrac{\partial f}{\partial \conj{z}} d\conj{z}
-  % = \conj{\tfrac{\partial \conj{f}}{\partial \conj{z}}} dz
-  % + \conj{\conj{\tfrac{\partial f}{\partial \conj{z}}} dz}
-  = 2 \Re \Bigl(
-    \conj{\tfrac{\partial f}{\partial \conj{z}}} dz
-  \Bigr)
-  = 2 \Re \bigl(
-    \tfrac{\partial f}{\partial z} dz
-  \bigr)
-  \,. $$
-Thus, the gradient of $f$ at $z$ is given by $
-  \nabla_z f(z)
-    = \tfrac{\partial F}{\partial u}
-      + j \tfrac{\partial F}{\partial v}
-$.
-
-Natural identification of $\cplx$ with $\real\times \real$, storing the real and imaginary
-parts in interleaved format, emulation of $\cplx$-algebra using $\real$-valued arithmetic,
-and Wirtinger calculus make it possible to reuse $\real$ back-propagation and existing
-auto-differentiation frameworks \citep{trabelsi_deep_2017}.
-
-% subsection wirtinger_calculus (end)
-
-\subsection{$\cplx$-Linear operator representation} % (fold)
-\label{sub:c-linear_operator_representation}
-
-% proof that such operators exist and are unique (well this is an obvious statement)
-Consider $L \colon \cplx^m \to \cplx^n$ -- linear in $\cplx$. Then $
-  L(u + jv) = L u + j L v
-$ for any $u, v \in \real^m$, which implies that the effect of $L$ as $\cplx$-linear
-operator is determined by its restriction onto $\real^n$. Let $
-  F = L\vert_{\real^m}
-  \colon \real^m \to \cplx^n
-$ and observe that $F_r = \Re \circ F$ and $F_i = \Im \circ F$ are $\real$-linear operators
-such that $F = F_r + j F_i$ (pointwise). Indeed,
-$$
-  F_r(a + \lambda b)
-  % = \Re F(a + \lambda b)
-  = \Re L(a + \lambda b)
-  % = \Re \bigl( L a + \lambda L b \bigr)
-  = \Re L a + \lambda \Re L b
-  % = \Re F a + \lambda \Re F b
-  = F_r a + \lambda F_r b
-  \,. $$
-Therefore for any $\cplx$-linear operator $L$ there are $\real$-linear operators $U, V$
-such that
-$$
-L z 
-  = (U + j V) (\Re z + j \Im z)
-  % = (U + j V) \Re z + j (U + j V) \Im z
-  % = U \Re z + j V \Re z + j \bigl(U \Im z + j V \Im z \bigr)
-  = U \Re z - V \Im z + j \bigl( V \Re z + U \Im z \bigr)
-  % = (U + j V) z
-  \,. $$
-Uniqueness of these operators follows, if this decomposition is applied to any $z$ with
-$\Im z = 0$.
-
-% subsection c-linear_operator_representation (end)
-
-\subsection{Other MNIST-like datasets} % (fold)
-\label{sub:other_mnist_like_datasets}
-
-We provide the figures of the MNIST-like experiments, omitted from the main paper
-due to size limitations.
-
-\begin{figure}[!h]
-  \centering
-  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
-    \centering
-    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/legacy__VD__fashionmnist__fft__-0.5.pdf}
-  \end{subfigure} \\%
-  % \hfill
-  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
-    \centering
-    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/legacy__VD__fashionmnist__raw__-0.5.pdf}
-  \end{subfigure}
-  \caption{%
-    The compression-accuracy trade-off on the letters part of the Fashion MNIST dataset.
-    (\textit{top}) \texttt{fft} features, (\textit{bottom}) \texttt{raw} features.
-  }
-  \label{fig:mnist-like__trade-off__fashionmnist}
-\end{figure}
-
-\begin{figure}[!h]
-  \centering
-  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
-    \centering
-    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/legacy__VD__mnist__fft__-0.5.pdf}
-  \end{subfigure} \\%
-  % \hfill
-  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
-    \centering
-    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/legacy__VD__mnist__raw__-0.5.pdf}
-  \end{subfigure}
-  \caption{%
-    The compression-accuracy trade-off on the letters part of the MNIST dataset.
-    (\textit{top}) \texttt{fft} features, (\textit{bottom}) \texttt{raw} features.
-  }
-  \label{fig:mnist-like__trade-off__mnist}
-\end{figure}
-
-% subsection other_mnist_like_datasets (end)
-
-\clearpage
-
 \subsection{MNIST-like experiments} % (fold)
 \label{sub:mnist_like_experiments}
 
@@ -2253,6 +2059,154 @@ variant, which straightforwardly replaces $\real$ layers with their $\cplx$ coun
 \end{figure}
 
 % subsection cifar_experiments (end)
+
+\subsection{Backpropagation through $\cplx$-networks} % (fold)
+\label{sub:wirtinger_calculus}
+
+% essential intro into Wirtinger calculus (CR)
+% https://math.stackexchange.com/a/444493
+Wirtinger ($\cplx\real$) calculus relies on the natural identification of $\cplx$ with $
+  \real \times \real
+$, and regards $
+  f\colon \cplx \to \cplx
+$ as an equivalent in algebraic sense function $F\colon \real^2 \to \cplx$ defined $
+  f(z) = f(u + jv) = F(u, v)
+$. Within this framework the differential of $f$ at $z = u + jv \in \cplx$ is
+$$
+df(z)
+  = \frac{\partial f}{\partial z} dz
+    + \frac{\partial f}{\partial \conj{z}} d\conj{z}
+   % = \frac12\bigl(
+   %    \frac{\partial}{\partial u}
+   %    - j \frac{\partial}{\partial v}
+   % \bigr) F (du - j dv)
+   % + \frac12\bigl(
+   %    \frac{\partial}{\partial u}
+   %    + j \frac{\partial}{\partial v}
+   % \bigr) F (du - j dv)
+   % = \frac12 \bigl(
+   %    \frac{\partial F}{\partial u} du - j \frac{\partial F}{\partial v} du
+   %    + j \frac{\partial F}{\partial u} dv + \frac{\partial F}{\partial v} dv
+   % \bigr)
+   % + \frac12 \bigl(
+   %    \frac{\partial F}{\partial u} du + j \frac{\partial F}{\partial v} du
+   %    - j \frac{\partial F}{\partial u} dv + \frac{\partial F}{\partial v} dv
+   % \bigr)
+   = \frac{\partial F}{\partial u} du
+     + \frac{\partial F}{\partial v} dv
+   = dF(u, v)
+  \,, $$
+with formally defined derivatives $
+  \tfrac{\partial}{\partial z}
+    = \tfrac12 \bigl(
+      \tfrac{\partial}{\partial u}
+      - j \tfrac{\partial}{\partial v}
+    \bigr)
+$ and $
+  \tfrac{\partial}{\partial \conj{z}}
+    = \tfrac12 \bigl(
+      \tfrac{\partial}{\partial u}
+      + j \tfrac{\partial}{\partial v}
+    \bigr)
+$, and differentials $dz = du + j dv$ and $d\conj{z} = du - j dv$. This implies that the
+complex argument and its conjugate are treated as independent variables. Cauchy-Riemann
+conditions $
+  -j \tfrac{\partial F}{\partial v} = \tfrac{\partial F}{\partial u}
+$ can be expressed as $
+  \tfrac{\partial f}{\partial \conj{z}} = 0
+$ in this notation. Thus $\cplx\real$ calculus subsumes the usual $\cplx$-calculus on
+holomorphic functions, when $f(z)$, regarded as $f(z, \conj{z})$, is constant with respect
+to $\conj{z}$. The usual rules of calculus, like chain and product rules, follow directly
+from the definition of the operators, e.g.
+$$
+  \frac{\partial (f\circ g)}{\partial z}
+    = \frac{\partial f(g(z))}{\partial g} \frac{\partial g(z)}{\partial z}
+    + \frac{\partial f(g(z))}{\partial \conj{g}} \frac{\partial \conj{g(z)}}{\partial z}
+    % = \nabla G \nabla F
+  \,. $$
+% Show that $dh(z) = df(g(z)) dg(z)$.
+% $h(z) = f(g(z)) = F(G_r(u, v), G_i(u, v)) = H(u, v)$
+% $$
+% dH
+%   = \tfrac{\partial F}{\partial x} \tfrac{\partial G_r}{\partial u} du
+%   + \tfrac{\partial F}{\partial x} \tfrac{\partial G_r}{\partial v} dv
+%   + \tfrac{\partial F}{\partial y} \tfrac{\partial G_i}{\partial u} du
+%   + \tfrac{\partial F}{\partial y} \tfrac{\partial G_i}{\partial v} dv
+%   = \tfrac{\partial F}{\partial r} d\Re g(z)
+%   + \tfrac{\partial F}{\partial i} d\Im g(z)
+%   = df(\Re g(z) + j\Im g(z)) d g(z)
+%   = df(g(z)) d g(z)
+%   \,. $$
+
+In machine learning tasks the target objective is typically empirical risk, which has to
+be real-valued to be minimized. Nevertheless, the expression of the $\cplx\real$ gradient
+is compatible with what is expected, when $f$ is treated like a $\real^2$ function. For a
+real-valued $f\colon \cplx \to \real$ we have $\conj{f} = f$, which implies $
+  \tfrac{\partial f}{\partial \conj{z}}
+    = \tfrac{\partial \conj{f}}{\partial \conj{z}}
+    = \conj{\tfrac{\partial f}{\partial z}}
+$, whence
+$$
+df
+  = \tfrac{\partial f}{\partial z} dz
+    + \tfrac{\partial f}{\partial \conj{z}} d\conj{z}
+  % = \conj{\tfrac{\partial \conj{f}}{\partial \conj{z}}} dz
+  % + \conj{\conj{\tfrac{\partial f}{\partial \conj{z}}} dz}
+  = 2 \Re \Bigl(
+    \conj{\tfrac{\partial f}{\partial \conj{z}}} dz
+  \Bigr)
+  = 2 \Re \bigl(
+    \tfrac{\partial f}{\partial z} dz
+  \bigr)
+  \,. $$
+Thus, the gradient of $f$ at $z$ is given by $
+  \nabla_z f(z)
+    = \tfrac{\partial F}{\partial u}
+      + j \tfrac{\partial F}{\partial v}
+$.
+
+Natural identification of $\cplx$ with $\real\times \real$, storing the real and imaginary
+parts in interleaved format, emulation of $\cplx$-algebra using $\real$-valued arithmetic,
+and Wirtinger calculus make it possible to reuse $\real$ back-propagation and existing
+auto-differentiation frameworks \citep{trabelsi_deep_2017}.
+
+% subsection wirtinger_calculus (end)
+
+\subsection{$\cplx$-Linear operator representation} % (fold)
+\label{sub:c-linear_operator_representation}
+
+% proof that such operators exist and are unique (well this is an obvious statement)
+Consider $L \colon \cplx^m \to \cplx^n$ -- linear in $\cplx$. Then $
+  L(u + jv) = L u + j L v
+$ for any $u, v \in \real^m$, which implies that the effect of $L$ as $\cplx$-linear
+operator is determined by its restriction onto $\real^n$. Let $
+  F = L\vert_{\real^m}
+  \colon \real^m \to \cplx^n
+$ and observe that $F_r = \Re \circ F$ and $F_i = \Im \circ F$ are $\real$-linear operators
+such that $F = F_r + j F_i$ (pointwise). Indeed,
+$$
+  F_r(a + \lambda b)
+  % = \Re F(a + \lambda b)
+  = \Re L(a + \lambda b)
+  % = \Re \bigl( L a + \lambda L b \bigr)
+  = \Re L a + \lambda \Re L b
+  % = \Re F a + \lambda \Re F b
+  = F_r a + \lambda F_r b
+  \,. $$
+Therefore for any $\cplx$-linear operator $L$ there are $\real$-linear operators $U, V$
+such that
+$$
+L z 
+  = (U + j V) (\Re z + j \Im z)
+  % = (U + j V) \Re z + j (U + j V) \Im z
+  % = U \Re z + j V \Re z + j \bigl(U \Im z + j V \Im z \bigr)
+  = U \Re z - V \Im z + j \bigl( V \Re z + U \Im z \bigr)
+  % = (U + j V) z
+  \,. $$
+Uniqueness of these operators follows, if this decomposition is applied to any $z$ with
+$\Im z = 0$.
+
+% subsection c-linear_operator_representation (end)
 
 % section appendix (end)
 
