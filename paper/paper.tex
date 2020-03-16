@@ -1064,7 +1064,7 @@ random variable $
         {\alpha \lvert \mu \rvert^2}
 $ is $\chi^2_k$ distributed with $k=1$ ($\real$) or $2$ ($\cplx$).
 %
-For a generous $\delta = 50\%$ tolerance all values of $\log \alpha$ below $-2.5$ yield
+For a generous tolerance $\delta = 50\%$ all values of $\log \alpha$ below $-2.5$ yield
 at least $90\%$ chance of a non-zero $\real$/$\cplx$ parameter. We pick $\tau = -\tfrac12$
 to exclude noisy parameters and encourage higher sparsity, at the same time being aware
 that $q_\theta$ is merely an approximation. In comparison, $\tau = 3$ is commonly used as
@@ -1195,8 +1195,8 @@ replicate each experiment only twice.
 %
 % describe the VGG16 model and its cplx-valued modification
 The $\cplx$-VGG16 model is architecturally identical to VGG16, except for all layers being
-replaced by their $\cplx$-valued versions. To maintain comparability, we halve the filter
-sizes of $\cplx$ model \citep{monning_evaluation_2018}.
+replaced by their $\cplx$-valued versions. We halve the sizes of intermediate layers in
+$\cplx$ model to assess comparability \citep{monning_evaluation_2018}.
 %
 Each network is trained stagewise for $20$, $40$,
 and $20$ epochs on the full training split of $50k$ colour $32\times32$ images. We use
@@ -1210,8 +1210,8 @@ Figure~\ref{fig:figure__cifar10__trade-off} shows that although the prior used i
 offers slightly less compression, it makes up for it by equally slightly better accuracy.
 Furthermore, the results imply that that the halved $\cplx$ network visibly underperforms
 in comparison with its $\real$ counterpart, although in MNIST-like experiment $\cplx$-valued
-network with the same inner feature dimensions performed on close to $\real$-valued, which
-is half the size of the former.
+network with the same inner feature dimensions demonstrates trade-off very similar to
+$\real$-network, which has half the number of real parameters than the former.
 
 % compare compressed cplx-vgg against real-vgg
 \begin{figure}[!t]
@@ -1234,7 +1234,7 @@ is half the size of the former.
 
 % describe musicnet as in Trabelsi et al. (2017) also get some hints from thickstun_learning_2017
 MusicNet \citep{thickstun_learning_2017} is an annotated audio dataset, consisting of $330$
-musical compositions. Folowing \citet{trabelsi_deep_2017}, we use it for automatic music
+musical compositions. Folowing \citet{trabelsi_deep_2017}, we use it in automatic music
 transcription task and study the $1d$ VGG-like $\cplx$-convent proposed therein. Similarly to
 the study, we downsample the audio from 44.1kHz to 11kHz, retain only $84$ out of $128$ labels,
 and hold-out the same validation and test splits. During each training epoch we sample $1000$
