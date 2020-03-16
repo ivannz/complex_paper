@@ -878,7 +878,7 @@ Through \eqref{eq:expect-improper-term-cplx} and \eqref{eq:log-moment-for-chi-2}
       \tag{\ref{eq:c-vd-kl-div-raw}'} \,.
 \end{equation}
 We set $\beta = 2$ to make the divergence term depend only on $\alpha$ and add $\gamma$
-so that the right-hand side is nonegative \citep[eq.(84)]{lapidoth_capacity_2003}.
+so that the right-hand side is nonnegative \citep[eq.(84)]{lapidoth_capacity_2003}.
 %
 Since $\mathop{Ei}(x)$ has simple analytic derivative and \eqref{eq:elbo} depends additively
 on \eqref{eq:c-vd-kl-div}, it is possible to back-propagate through the divergence without
@@ -1236,7 +1236,7 @@ $\real$-network, which has half the number of real parameters than the former.
 
 % describe musicnet as in Trabelsi et al. (2017) also get some hints from thickstun_learning_2017
 MusicNet \citep{thickstun_learning_2017} is an annotated audio dataset, consisting of $330$
-musical compositions. Folowing \citet{trabelsi_deep_2017}, we use it in automatic music
+musical compositions. Following \citet{trabelsi_deep_2017}, we use it in automatic music
 transcription task and study the $1d$ VGG-like $\cplx$-convent proposed therein. Similarly to
 the study, we downsample the audio from 44.1kHz to 11kHz, retain only $84$ out of $128$ labels,
 and hold-out the same validation and test splits. During each training epoch we sample $1000$
@@ -1471,7 +1471,7 @@ $, needed in \eqref{eq:improper-kl-div-real}, equals
     %     }
     %     \bigl(\tfrac{x}2\bigr)^{n + \tfrac{m}2 - 1}
     % \biggr) \log{(x)} dx
-    % = [\text{ absolute summability and Fubini, or any other conv. thm for integrals of non-negative integrals}]
+    % = [\text{ absolute summability and Fubini, or any other conv. thm for integrals of nonnegative integrals}]
     % = e^{- \tfrac\lambda2} \sum_{n \geq 0}
     %     \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
     %     \tfrac1{\Gamma(n + \tfrac{m}2)}
