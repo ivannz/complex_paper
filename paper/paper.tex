@@ -10,8 +10,10 @@
 \usepackage{amssymb}
 
 \usepackage{xcolor}
-\usepackage{graphicx}
+\usepackage{graphicx, url}
 \usepackage{grffile}
+
+\graphicspath{{../assets/}}
 
 \usepackage{subcaption}
 
@@ -1045,7 +1047,7 @@ for $\tau > 0$ the performance quickly saturates while compression creeps downwa
   \centering
   \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=\columnwidth]{../assets/figure__musicnet__threshold.pdf}
+    \includegraphics[width=\columnwidth]{figure__musicnet__threshold.pdf}
   \end{subfigure}
   \caption{%
     Test split performance and compression rate for a $\cplx$-valued net on MusicNet.
@@ -1151,29 +1153,29 @@ dropout methods seem to compress networks adequately well without much loss in p
   \centering
   \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
-    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__fashionmnist__fft__-0.5.pdf}
-    \includegraphics[width=0.8\columnwidth]{../assets/figure__mnist-like__trade-off/legacy__VD__kmnist__fft__-0.5.pdf}
-    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/VD__kmnist__fft__-0.5.pdf}
+    % \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/legacy__VD__fashionmnist__fft__-0.5.pdf}
+    \includegraphics[width=0.8\columnwidth]{figure__mnist-like__trade-off/legacy__VD__kmnist__fft__-0.5.pdf}
+    % \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/VD__kmnist__fft__-0.5.pdf}
   \end{subfigure} \\%
   % \hfill
   \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
-    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__fashionmnist__raw__-0.5.pdf}
-    \includegraphics[width=0.8\columnwidth]{../assets/figure__mnist-like__trade-off/legacy__VD__kmnist__raw__-0.5.pdf}
-    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/VD__kmnist__raw__-0.5.pdf}
+    % \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/legacy__VD__fashionmnist__raw__-0.5.pdf}
+    \includegraphics[width=0.8\columnwidth]{figure__mnist-like__trade-off/legacy__VD__kmnist__raw__-0.5.pdf}
+    % \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/VD__kmnist__raw__-0.5.pdf}
   \end{subfigure} \\%
   \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
-    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__mnist__fft__-0.5.pdf}
-    \includegraphics[width=0.8\columnwidth]{../assets/figure__mnist-like__trade-off/legacy__VD__emnist_letters__fft__-0.5.pdf}
-    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/ARD__kmnist__fft__-0.5.pdf}
+    % \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/legacy__VD__mnist__fft__-0.5.pdf}
+    \includegraphics[width=0.8\columnwidth]{figure__mnist-like__trade-off/legacy__VD__emnist_letters__fft__-0.5.pdf}
+    % \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/ARD__kmnist__fft__-0.5.pdf}
   \end{subfigure} \\%
   % \hfill
   \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
-    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__mnist__raw__-0.5.pdf}
-    \includegraphics[width=0.8\columnwidth]{../assets/figure__mnist-like__trade-off/legacy__VD__emnist_letters__raw__-0.5.pdf}
-    % \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/VD__emnist_letters__raw__-0.5.pdf}
+    % \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/legacy__VD__mnist__raw__-0.5.pdf}
+    \includegraphics[width=0.8\columnwidth]{figure__mnist-like__trade-off/legacy__VD__emnist_letters__raw__-0.5.pdf}
+    % \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/VD__emnist_letters__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
     The compression-accuracy trade-off on KMNIST and the letters of the Extended MNIST datasets.
@@ -1218,7 +1220,7 @@ $\real$-network, which has half the number of real parameters than the former.
   \centering
   \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=\columnwidth]{../assets/figure__cifar__trade-off/legacy__augmentedcifar10__raw__-0.5.pdf}
+    \includegraphics[width=\columnwidth]{figure__cifar__trade-off/legacy__augmentedcifar10__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
     Compression-accuracy frontier for $\real$ and $\tfrac12 \cplx$ versions of VGG16 on CIFAR10.
@@ -1257,7 +1259,7 @@ frequencies to the centre of the window to maintain locality after applying the 
   \centering
   \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=\columnwidth]{../assets/figure__musicnet__trade-off/paper__musicnetram__fft__-0.5.pdf}
+    \includegraphics[width=\columnwidth]{figure__musicnet__trade-off/paper__musicnetram__fft__-0.5.pdf}
   \end{subfigure}
   \caption{%
     Performance-compression trade-off using \textbf{\color{blue} VD} and \textbf{\color{orange} ARD}.
@@ -1686,7 +1688,7 @@ fit the best approximation \eqref{eq:improper-kl-div-real-approx}, and compare t
 
 \begin{figure}[!h]
   \centering
-  \includegraphics[width=\linewidth]{../assets/grad_log.pdf}
+  \includegraphics[width=\columnwidth]{grad_log.pdf}
   \caption{$\tfrac{d f(\alpha)}{d \log{\alpha}}$ of the fit proposed by
   \citet{molchanov_variational_2017}, MC estimate of \eqref{eq:improper-kl-div-real},
   and the exact derivative using \eqref{eq:real-kl-div-deriv-log}.}
@@ -1853,12 +1855,12 @@ due to size limitations.
   \centering
   \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__fashionmnist__fft__-0.5.pdf}
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/legacy__VD__fashionmnist__fft__-0.5.pdf}
   \end{subfigure} \\%
   % \hfill
   \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__fashionmnist__raw__-0.5.pdf}
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/legacy__VD__fashionmnist__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
     The compression-accuracy trade-off on the letters part of the Fashion MNIST dataset.
@@ -1871,12 +1873,12 @@ due to size limitations.
   \centering
   \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__mnist__fft__-0.5.pdf}
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/legacy__VD__mnist__fft__-0.5.pdf}
   \end{subfigure} \\%
   % \hfill
   \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=\linewidth]{../assets/figure__mnist-like__trade-off/legacy__VD__mnist__raw__-0.5.pdf}
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/legacy__VD__mnist__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
     The compression-accuracy trade-off on the letters part of the MNIST dataset.
