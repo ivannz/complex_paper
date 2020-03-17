@@ -70,10 +70,10 @@ for practical data-driven problem solving. With continual miniaturization ever m
 applications can be found in embedded systems. Common embedded applications include
 on-device image recognition and signal processing. Despite recent advances in generalization
 and optimization theory specific to deep networks, deploying in actual embedded hardware
-remains a challenge due to storage, real-time throughput, and arithmetic (computational)
-complexity restrictions \citep{he_amc:_2018}. Therefore, compression methods for achieving
-high model sparsity and numerical efficiency without losing much in performance are
-especially relevant.
+remains a challenge due to storage, real-time throughput, and arithmetic complexity
+restrictions \citep{he_amc:_2018}. Therefore, compression methods for achieving high
+model sparsity and numerical efficiency without losing much in performance are especially
+relevant.
 % Solving the storage and artihmetic constraints encourages development of model compression
 % and sparsification methods, that focus on favourable trade-off between performance and size.
 
@@ -83,7 +83,7 @@ frequency signal analysis, has been the key driver behind the adoption of $\cplx
 \citet{hirose_complex-valued_2009} argues that the key merit of $\cplx$-valued neural
 networks is simultaneous phase rotation and amplitude adjustment, intrinsic to multiplication
 in $\cplx$ field. Despite inherently higher arithmetic complexity, which stems from up to four
-floating point operations per single $\cplx$ multiplication \citep{monning_evaluation_2018}
+floating point operations per single $\cplx$ multiplication
 $\cplx$-arithmetic reduces ineffective degrees of freedom in comparison with an analogous
 double-dimensional $\real$-valued network. \citet{hirose_complex-valued_2009} lists numerous
 applications related to acoustic and radio signal processing and demonstrates superiority of
@@ -115,47 +115,23 @@ pruning \citep{zuo_compression_2019}, which reactivates zeroed parameters based 
 can be adapted directly to $\cplx$-valued models. Other methods require additional considerations.
 % the more explicitly zero parameters there is, the less computations is needed.
 
-% on dropout
-Dropout \citep{hinton_improving_2012} prevents overfitting by injecting multiplicative
-binary noise into layer's weights, which breaks up co-adaptations that could occur
-during training. \citet{wang_fast_2013} argue that the overall effect of binary dropout
-on the intermediate outputs via the Central Limit Theorem can be approximated by a Gaussian
-with weight-input dependent mean and variance. \citet{srivastava_dropout_2014} propose
-using independent $\mathcal{N}(1,1)$ noise, arguing that higher entropy of a Gaussian has
-better regularizing effect. In multitask learning \citet{cheung_superposition_2019}
-have shown the possibility of storing task-specific parameters in non-destructive superposition
-within a single network. Their argument implies that if the single task setting is viewed
-as replicated multitask learning, then by sampling uncorrelated weight masks dropout acts
-as a superposition method, which better utilizes the learning capacity of the network.
-% many identical copies of the same task; \cite[Appendix A.1]{cheung_superposition_2019}
-% (fast dropout gauss-approx) wang-manning.tex
-% (gauss dropout) srivastava-et-al.tex
-
 % segue into bayesian inference
-Bayesian inference is a very rich field with a large body of research and techniques that
-enable practical quantification of predictive, parameter, or model uncertainty and its 
-propagation into solutions of the problems of interest.
-%
-Dropout resembles averaging models with shared parameters: each model is weighted equally
-since masks are randomly sampled, unlike Bayesian model averaging, which weighs according to
-the posterior distribution. \citet{kingma_variational_2015} specifically consider dropout
-as a Bayesian Inference technique: a principled framework of reasoning about uncertainty,
-which updates prior beliefs in accordance with the likelihood of empirical observations
-into posterior belief. Bayesian methods with suitable modelling and prior assumptions, such
-as Variational Dropout, can be used towards model sparsification
-\citep{kingma_variational_2015,molchanov_variational_2017,kharitonov_variational_2018}.
+Bayesian Inference is a principled framework of reasoning about uncertainty, which updates
+prior beliefs in accordance with the likelihood of empirical observations into posterior
+belief. Under suitable modelling and distributional assumptions, Bayesian methods can be
+used towards model sparsification, e.g. Variational Dropout \citep{kingma_variational_2015,molchanov_variational_2017}.
 
 % (sparsity tech large-scale models) gale-elsen-hooker.tex
-\citet{gale_state_2019} compare variational dropout \citep{kingma_variational_2015},
-magnitude pruning, and $\ell_0$ regularization \citep{louizos_learning_2017} on large-scale
-models. The latter is a probabilistic regularization method, which penalizes the expected
-number of non-zero entries in $[0, 1]$-valued stochastic parameter masks with learnable
-hard-concrete distribution with an atom at $0$ \citep{maddison_concrete_2016,jang_categorical_2017}.
-Their results suggest that although variational dropout may achieve good accuracy-sparsity balance
-and outperform pruning and $\ell_0$ on the studied architectures, pruning is preferable for
-its simplicity and speed. They also observe that, despite dropout showing more variable
-performance than magnitude pruning, it induces non-uniform sparsity throughout the model,
-which has been shown by \citet{he_amc:_2018} to be essential for superior compression.
+\citet{gale_state_2019} compare Variational Dropout, magnitude pruning, and $\ell_0$
+regularization \citep{louizos_learning_2017} on large-scale models. The latter is a
+probabilistic regularization method, which penalizes the expected number of non-zero
+entries in $[0, 1]$-valued stochastic parameter masks with learnable hard-concrete
+distribution with atoms at $0$ and $1$ \citep{maddison_concrete_2016,jang_categorical_2017}.
+Their results suggest that Variational Dropout may achieve good accuracy-sparsity balance
+and outperform pruning and $\ell_0$ in deep architectures, although pruning is prefered for
+simplicity, stability and speed. They also observe that dropout induces non-uniform sparsity
+throughout the model, which \citet{he_amc:_2018} has shown to be essential for superior
+compression.
 % Magnitude pruning induces user-specified sparsity distributions.
 %
 % L0 and dropout work in the low-to-mid sparsity range, variational dropout consistently
@@ -166,20 +142,18 @@ which has been shown by \citet{he_amc:_2018} to be essential for superior compre
 
 % our contribution
 Inspired by variational and stochastic sparsification techniques we extend Bayesian dropout
-for $\cplx$-valued networks. We assess the performance-compression trade-off of the proposed
+to $\cplx$-valued networks. We assess the performance-compression trade-off of the proposed
 Bayesian technique by conducting a large-scale numerical study of $\cplx$-valued networks
 on two tasks: image recognition on MNIST-like and CIFAR10 datasets and music transcription
-on MusicNet \citep{thickstun_learning_2017}. We reproduce the state-of-the-art result by
-\citet{trabelsi_deep_2017} for $\cplx$-valued networks on the latter with $\approx 5\%$
-of remaining non-zero parameters.
+on MusicNet \citep{thickstun_learning_2017}.
 
 The paper is structured as follows. In sec.~\ref{sec:bayesian_dropout} we review Bayesian
 dropout techniques, and in sec.~\ref{sec:c_valued_networks} we provide a brief summary of
 the inner working of complex-valued networks as functions of complex argument. The main
 contribution of this study is presented in sec.~\ref{sec:dropout_for_c_valued_layers},
 where we consider different variational approximations and priors, outline the tricks
-and derive expressions for the divergence term. In sec.~\ref{sec:experiments} we evaluate
-the sparsification rate, compare the resulting performance of various $\cplx$-networks
+and derive the penalty terms in the evidence lower bound. In sec.~\ref{sec:experiments}
+we evaluate the sparsification rate, compare the resulting performance of various $\cplx$-networks
 proposed in prior work, and discuss the outcomes.
 
 % section introduction (end)
@@ -202,11 +176,11 @@ $ with $
 $, provides useful information about yet unobserved data and model parameters, e.g
 classification uncertainty, predictive statistics, and parameter relevance.
 
-The posterior distribution itself is intractable, save for the relatively simple cases, and
-therefore exact inference is traded for tractability and scalability offered by Variational
-Inference. Instead of deriving $p(\omega \mid D)$ using the Bayes rule, this approach recasts
-posterior inference into variational optimization problem: finding $q$ that is close to
-$p(\omega \mid D)$ in terms of a proximity score $\rho$
+Save for the relatively simple cases, the posterior distribution is intractable, and
+therefore exactness Bayesian Inference is traded for tractability and scalability of
+Variational Bayesian Inference. Instead of deriving the posterior $p(\omega \mid D)$,
+this approach postulates an optimization problem for finding an approximation $q$,
+which is close to $p(\omega \mid D)$ in terms of a proximity score $\rho$
 \begin{equation}  \label{eq:variational-progam}
   q_*
     \in \arg \min_{\theta} \rho\bigl(
@@ -216,18 +190,18 @@ $p(\omega \mid D)$ in terms of a proximity score $\rho$
 \end{equation}
 over a tractable parametric family of distributions on the parameter space $
   \mathcal{Q} = \{Q_\theta(d\omega) \colon \theta \in \Theta\}
-$, $\theta$ -- generic variational parameter. The class $\mathcal{Q}$ is picked so that
-its members have tractable densities $
+$, $\theta$ -- generic variational parameter. The variational approximation class
+$\mathcal{Q}$ is chosen so that its members have tractable densities $
   q_\theta(\omega) d\omega
 $, can be sampled from and have either tractable $\log$-derivatives $
   \omega \mapsto \nabla_\theta \log q_\theta(\omega)
-$ \citep{williams_simple_1992} or can be represented as differentiable transformations
-of non-parametric noise \citep{kingma_auto-encoding_2014,figurnov_implicit_2019}.
-% (reparameterization trick, pathwise gradieent) $q_{\theta}(d\omega)$ is a push-forward
+$ or can be represented as differentiable transformations of non-parametric noise
+\citep{williams_simple_1992,kingma_auto-encoding_2014,figurnov_implicit_2019}.
+% (reparameterization trick, pathwise gradient) $q_{\theta}(d\omega)$ is a push-forward
 % of $p(d\varepsilon)$ by a differentiable map $g(\varepsilon; \theta)$.
 % % http://stillbreeze.github.io/REINFORCE-vs-Reparameterization-trick/#fn:1
 %
-The natural choice for $\rho$ is Kullback-Leibler divergence of density $q$ from $p$,
+The most common choice for $\rho$ is Kullback-Leibler divergence of density $q$ from $p$,
 \begin{equation}  \label{eq:kl-div-def}
   KL(q \| p)
     % = \int \frac{dQ}{dP} \log{\frac{dQ}{dP}} P(d\omega)
@@ -262,8 +236,8 @@ the main reason being that it satisfies the following identity for well-behaved 
     - KL(q \| \pi)
     \,.
 \end{multline}
-This identity yields an equivalent problem for \eqref{eq:variational-progam}:
-maximizing the \textit{evidence lower bound} (ELBO)
+This leads to an equivalent problem for \eqref{eq:variational-progam} of maximizing
+the \textit{evidence lower bound} (ELBO)
 \begin{equation}  \label{eq:elbo_general}
   \mathcal{L}(\theta; \phi, \lambda)
     = - KL(q_{\theta} \| \pi_{\lambda})
@@ -276,24 +250,24 @@ maximizing the \textit{evidence lower bound} (ELBO)
   %   + \mathbb{H}(q_{\theta})
   \,,
 \end{equation}
-where the prior and likelihood are allowed to depend on explicit parameters. The most
-commonly used algorithm to optimize \eqref{eq:elbo_general} is EM-algorithm. Other
-variational objectives are possible, provided $p(\omega \mid D)$ is probed only through
-$\log p(D \mid \omega)$ and $\log \pi(\omega)$ \citep{ranganath_operator_2018}.
+where $\lambda$, $\theta$ and $\phi$ are optimization parameters of the prior $\pi$,
+approximation $q$ and the likelihood $p(D\mid \omega)$, respectively. Other objectives
+are possible, besides \eqref{eq:elbo_general}, provided $p(\omega \mid D)$ is evaluated
+only through $\log p(D \mid \omega)$ and $\log \pi(\omega)$, \citep{ranganath_operator_2018}.
 
 \textit{Stochastic Gradient Variational Bayes} (SGVB), proposed by \citet{kingma_auto-encoding_2014},
-is a differentiable unbiased Monte-Carlo estimator of \eqref{eq:elbo_general}, which
-makes it possible to employ stochastic gradient-based optimization methods to solve
-\eqref{eq:variational-progam}. If $
+replaces the Variational objective \eqref{eq:elbo_general} by its unbiased differentiable
+Monte-Carlo estimator, which makes it possible to employ stochastic gradient optimization
+methods to solve \eqref{eq:variational-progam}. If $
   \omega \sim q_{\theta}
 $ is equivalent in distribution to $
   \omega = g(\varepsilon; \theta)
-$ for some non-parametric random variable $
-    \varepsilon \sim p_\varepsilon
-$ and differentiable $
+$ for some differentiable $
   g(\varepsilon; \theta)
-$, then the SGVB is
-\begin{equation}  \label{eq:sgvb}
+$ and non-parametric random variable $
+    \varepsilon \sim p_\varepsilon
+$, then the SGVB objective is
+\begin{equation}  \label{eq:sgvb_objective}
   \widetilde{\mathcal{L}}(\theta; \phi, \lambda)
     = - KL(q_{\theta} \| \pi_{\lambda})
       % + \frac{N}{\lvert B \rvert} \sum_{i\in B}
@@ -311,37 +285,61 @@ $, then the SGVB is
 \end{equation}
 where $
   (\varepsilon_{l})_{l=1}^L
-$ is an iid sample from $p_\varepsilon$. Intractable KL-divergence terms can be replaced
-by differentiable unbiased sampling estimators \citep{kingma_auto-encoding_2014}.
+$ is an iid sample from $p_\varepsilon$, the KL-divergence term replaced by unbiased
+differentiable finite sample estimator if it is intractable.
 %
-For the purposes of this study, we assume that the observed data is independent, and
-use minibatch version of \eqref{eq:sgvb} with $L=1$:
+For the purposes of this study, we assume that the likelihood satisfies $
+  \log p_\phi(D\mid \omega)
+    = \sum_i \log p_\phi(z_i \mid \omega)
+$, i.e. the observed data $
+  D = (z_i)_{i=1}^N
+$ is conditionally independent, and consider \eqref{eq:sgvb_objective} with $L=1$
+and random mini-batches from $D$:
 \begin{equation}  \label{eq:elbo}
   \widetilde{\mathcal{L}}(\theta; \phi, \lambda)
     = - KL(q_{\theta} \| \pi_{\lambda})
-      + \frac{N}{M} \sum_{i=1}^M
-        \log p_{\phi}(z_i \mid g(\varepsilon_i; \theta))
+      + \frac{N}{M} \sum_{k=1}^M
+        \log p_{\phi}(z_{i_k} \mid g(\varepsilon_k; \theta))
     \,,
 \end{equation}
-for a random subsample $(z_i)_{i=1}^M$ from $D$ and iid $\varepsilon_i \sim p_\varepsilon$.
+for a random subsample $(z_{i_k})_{k=1}^M$ and iid $\varepsilon_k \sim p_\varepsilon$.
 %
 % (DSVI) titsias-lazaro.tex \todo{DSVI} \citep{titsias_doubly_2014}
 
-\subsection{Dropout} % (fold)
-\label{sub:dropout}
+\subsection{Variational Dropout} % (fold)
+\label{sub:variational_dropout}
 
-With a special family of posterior approximation, variational inference can be used as
-a regularization method and as a model sparsification technique. \citet{kingma_variational_2015}
-consider Dropout \citep{hinton_improving_2012}, DropConnect \citep{wan_regularization_2013},
-and Gaussian dropout \citep{srivastava_dropout_2014,wang_fast_2013} through the lens
-of Bayesian inference methods and propose \textit{Variational Dropout}. They argue that
+With a special family of posterior approximation, Variational Inference can be used as
+a regularization method and as a model sparsification technique.
+
+% on dropout
+Dropout \citep{hinton_improving_2012} prevents overfitting by injecting multiplicative
+binary noise into layer's weights, which breaks up co-adaptations that could occur
+during training. \citet{wang_fast_2013} argue that the overall effect of binary dropout
+on the intermediate outputs via the Central Limit Theorem can be approximated by a Gaussian
+with weight-input dependent mean and variance. \citet{srivastava_dropout_2014} propose
+using independent $\mathcal{N}(1,1)$ noise, arguing that higher entropy of a Gaussian has
+better regularizing effect. In a recent study concerning multitask learning
+\citet{cheung_superposition_2019} have shown the possibility of storing task-specific
+parameters in non-destructive superposition within a single network. In particular, their
+argument implies that if the single task setting is viewed as multitask learning with
+replicated task, then by sampling uncorrelated binary masks Dropout acts as a superposition
+method, utilizing the learning capacity of the network better.
+% many identical copies of the same task; \cite[Appendix A.1]{cheung_superposition_2019}
+% (fast dropout gauss-approx) wang-manning.tex
+% (gauss dropout) srivastava-et-al.tex
+
+Dropout can be viewed as a Bayesian model averaging method, where models share parameters
+and are weighted equally. Thus, \citet{kingma_variational_2015} consider Dropout, DropConnect
+\citep{wan_regularization_2013}, and Gaussian dropout \citep{wang_fast_2013} through the
+lens of Bayesian Inference methods and propose \textit{Variational Dropout}. They argue that
 the multiplicative noise introduced by these methods induces a distribution equivalent to
 a fully factorized variational posterior of the form $
   q_\theta(\omega) = \prod_j q_{\theta}(\omega_j)
 $, where $q_{\theta}(\omega_j)$ is $\omega_j = \mu_j \xi_j$ with $
   \xi_j \sim p_\theta(\xi_j)
 $ iid from some $p_\theta(\xi)$.
-%
+
 % Binary dropout with rate $p \in (0, 1)$ uses $
 %   p_\xi
 %     = \mathcal{B}\bigl(
@@ -374,64 +372,66 @@ analytically intractable terms:
 regression over $\alpha \in (0, 1)$. \citet{molchanov_variational_2017} refine the
 approximation by using a nonlinear regression based on sigmoid and soft-plus.
 % see p.6 sec 3.4 of kingma_variational_2015
-We independently verify their approximation against Monte-Carlo estimates for $\alpha$
-varying over a fine logarithmic grid and the exact expression for the derivative of
-\eqref{eq:improper-kl-div-real}, which we derive in appendix~\ref{sub:real-chisq-grad}.
+In appendix~\ref{sub:real-chisq-grad} we verify the value and the derivative of their
+approximation against the Monte-Carlo estimate of \eqref{eq:improper-kl-div-real} for $\alpha$
+varying over a fine logarithmic grid and the gradient of \eqref{eq:improper-kl-div-real},
+for which we obtain an exact expression.
 % (!) good for SGVB: gradient-based methods require unbiased gradient estimates
 %
 % (in) it is in poor taste to brag about this begin the first time anyone has derived a
 % derivative of an intractable function.
-
-Being the ratio of the squared mean to the effective variance, $\alpha_j$ regulates the
-relevance of the parameter $\omega_j$ it is associated to. Thus, \citet{molchanov_variational_2017}
-focus on the model sparsification capabilities of Variational Dropout, optimizing $\alpha$
-for each individual parameter. Flexibility in specification of $q_\theta$ enables structured
-dropout with shared $\alpha$ across groups of parameters $\omega$. Another Bayesian dropout
-method, called \textit{Automatic Relevance Determination}, has been developed in \citep{kharitonov_variational_2018}.
-The key difference is that the log-uniform factor $\pi(\omega_{ij})$ is replaced by a proper
-ARD Gaussian prior $
+The key role in the factorization is played by $\alpha_j$, which reflects the relevance
+of the parameter $\omega_j$ it is associated to, by being the ratio of its squared mean
+to its variance. Thus, \citet{molchanov_variational_2017} focus on the model sparsification
+capabilities of Variational Dropout, optimizing $\alpha$ for each individual parameter.
+\citet{kharitonov_variational_2018} address theoretical issues with improper priors and
+propose an alternative Bayesian Dropout method based on \textit{Automatic Relevance
+Determination} procedure. In essence, the log-uniform factor $\pi(\omega_{ij})$ is replaced by
+a proper ARD Gaussian prior $
   \mathcal{N}(0, \tau^{-1}_{ij})
 $ with learnable precision $\tau_{ij} > 0$. This method, known as \textit{Empirical Bayes},
-fits a prior distribution while performing variational inference. Maximizing \eqref{eq:elbo}
+fits a prior distribution while performing Variational Inference. Maximizing \eqref{eq:elbo}
 over $\tau$, holding other parameters fixed, yields $
   \tau^* = {(\mu^2 + \sigma^2)}^{-1}
 $, whence
 \begin{equation}  \label{eq:ard-kl-div-real}
   KL(q_\theta \| \pi)
-    = \log{\bigl(1 + \tfrac1{\alpha} \bigr)}
+    = \tfrac12 \log{\bigl(1 + \tfrac1{\alpha} \bigr)}
     \,.
 \end{equation}
+Flexibility in specification of $q_\theta$ enables developing structured dropout with
+shared $\alpha$ across groups of parameters $\omega$. 
 
 Another contribution of \citep{kingma_variational_2015} is the analysis of the effects of the
 \textit{local reparameterization trick} on the variance of the gradient of \eqref{eq:elbo}.
-This trick, proposed in \citep{wang_fast_2013} to speed up Gaussian dropout, utilizes the
-closure of Gaussians under affine transformations, thereby translating uncertainty from the
-global parameter noise to local noise in intermediate outputs within the network.
-%
-The stochastic output of a linear layer $
-  y = W^\top x + b
+Proposed by \citet{wang_fast_2013} to speed up Gaussian dropout, this trick translates
+uncertainty from parameters of the model to intermediate outputs within the network:
+the stochasticity of $
+  W \sim \prod_{ij} \mathcal{N}(\mu_{ij}, \alpha_{ij} \mu_{ij}^2)
+$ in a linear layer $
+  y = b + W^\top x
 $ with $
   W \in \mathbb{R}^{n\times m}
-$ and independent $
-  W_{ij} \sim \mathcal{N}(\mu_{ij}, \alpha_{ij} \mu_{ij}^2)
-$ is equivalent in distribution to
+$ is pushed to its output
 \begin{equation}  \label{eq:r-gauss-trick}
     y \sim \prod_i \mathcal{N}\Bigl(
-          \sum_j \mu_{ij} x_j + b_i,
+          b_i + \sum_j \mu_{ij} x_j,
           \sum_j \alpha_{ij} \mu_{ij}^2 x_j^2
       \Bigr)
     \,.
 \end{equation}
 %
 \citet{kingma_variational_2015} show, that for the case of fully factorized Gaussian
-posterior approximations, the trick decorrelates ELBO estimates within the minibatch,
-making the gradient estimator $\nabla_\theta \tilde{\mathcal{L}}$ more statistically
-efficient. \citet{molchanov_variational_2017} propose an improvement by introducing
-\textit{additive noise parameterization}. They argue for rejecting the $(\mu, \alpha)$
-parameterization in favour of the equivalent $(\mu, \sigma^2)$, since the latter renders $
+posterior approximations, using \eqref{eq:r-gauss-trick} decorrelates the estimators
+\eqref{eq:elbo} within the mini-batch and makes the gradient estimator $
+  \nabla_\theta \tilde{\mathcal{L}}
+$ more statistically efficient. Specifically for the problem of selecting relevant parameters
+\citet{molchanov_variational_2017} further improve the efficiency of the estimator of the $
   \nabla_\mu \tilde{\mathcal{L}}
-$ independent from the local output noise, injected by the trick \eqref{eq:r-gauss-trick},
-and further stabilizes gradients in SGVB \eqref{eq:elbo}. The relevance $\alpha$ is
+$ by introducing \textit{additive noise parameterization}. They revert the $(\mu, \alpha)$
+parameterization back to the equivalent $(\mu, \sigma^2)$, since it stabilizes gradients
+of SGVB \eqref{eq:elbo}, by rendering the gradient with respect to $\mu$ independent from
+the local output noise, injected by \eqref{eq:r-gauss-trick}. The relevance $\alpha$ is
 calculated using the ratio $
   \tfrac{\sigma^2}{\mu^2}
 $ when needed in the divergence term.
@@ -444,14 +444,26 @@ $ when needed in the divergence term.
 \section{$\cplx$-valued networks} % (fold)
 \label{sec:c_valued_networks}
 
-In this section we briefly review $\cplx$-valued networks, and their distinction from the
-ordinary $\real$-valued networks.
+Complex networks are, in general, non-holomorphic, i.e. not $\cplx$-differentiable, which is
+exacerbated by the loss being real-valued. Indeed a $\cplx$-differentiable real-valued function is
+necessarily trivial by Cauchy-Riemann conditions. This issue is dealt with by employing Wirtinger,
+or $\cplx\real$ calculus, which generalizes holomorphic calculus to non-holomorphic functions
+of $\cplx$-argument \citep{adali_complex-valued_2011,boeddeker_computation_2019}. It satisfies
+the product and chain rules, respects complex conjugation and linearity, but most importantly the
+$\cplx\real$-differential of a function on $\cplx$ coincides with its classical differential as
+a function on $\real^2$. Essentially, it allows straightforward retrofiting of $\cplx$-valued
+networks into existing $\real$ deep learning auto-differentiation frameworks. It was considered
+as a basis for $\cplx$ version of back-propagation by \citet{benvenuto_complex_1992}, (see
+appendix~\ref{sub:wirtinger_calculus}).
+% \todo{read on holomorphic nets}
 
-\citet{trabelsi_deep_2017} outline the building blocks for deep $\cplx$-valued networks
-and describe suitable representation and operations including convolutional and dense layers,
-$\cplx$-valued activations, complex batch-normalization and suitable weight initialization.
-Their approach transforms a complex-valued network into an intricately connected $\real$-valued
-computational graph that respects $\cplx$-arithmetic.
+More recently general development of $\cplx$-valued networks has been continued by
+\citet{trabelsi_deep_2017}, who outline the essential building blocks for deep $\cplx$-valued
+networks and describe suitable representation and operations, including convolutional and
+dense layers, $\cplx$-valued activations, complex batch-normalization and weight initialization.
+Their approach coupled with $\cplx\real$ calculus for backprop transforms a $\cplx$-valued
+network into an intricately connected $\real$-valued computational graph, constructured
+to respects $\cplx$-arithmetic.
 %
 In particular, natural identification of $\cplx$ and $\real^2$ implies that linear layers $
   L \colon \cplx^m \to \cplx^n
@@ -477,19 +489,6 @@ $ or planar (real-imaginary) $
   z \mapsto \sigma(\Re z) + j \sigma(\Im z)
 $ for some $\real$-valued non-linearity $\sigma$, possibly with learnable parameters
 \citep{trabelsi_deep_2017,wolter_complex_2018}.
-
-Complex networks are, in general, non-holomorphic, i.e. not $\cplx$-differentiable, which is
-exacerbated by the loss being real-valued. Indeed a $\cplx$-differentiable real-valued function is
-necessarily trivial by Cauchy-Riemann conditions. This issue is dealt with by employing Wirtinger,
-or $\cplx\real$ calculus, which generalizes holomorphic calculus to non-holomorphic functions
-of $\cplx$-argument \citep{adali_complex-valued_2011,boeddeker_computation_2019}. It satisfies
-the product and chain rules, respects complex conjugation and linearity, but most importantly the
-$\cplx\real$-differential of a function on $\cplx$ coincides with its classical differential as
-a function on $\real^2$. Essentially, it allows straightforward retrofiting of $\cplx$-valued
-networks into existing $\real$ deep learning auto-differentiation frameworks. It was considered
-as a basis for $\cplx$ version of back-propagation by \citet{benvenuto_complex_1992} and
-\citet{trabelsi_deep_2017}, (see appendix~\ref{sub:wirtinger_calculus} for details).
-% \todo{read on holomorphic nets}
 
 % section c_valued_networks (end)
 
@@ -1032,7 +1031,7 @@ overfitting.
 
 % on compresssion
 Between \textit{``sparsify''} and \textit{``fine-tune''} stages we compute masks of non-zero
-weights in each layer based on the relevance scores $\alpha$ (sec.~\ref{sub:dropout}). Since
+weights in each layer based on the relevance scores $\alpha$ (sec.~\ref{sub:variational_dropout}). Since
 the $q_\theta$ factorizes into univariate distributions, a $\cplx$ or $\real$ parameter is
 considered non-zero if $\log \alpha \leq \tau$ for $
   \alpha = \tfrac{\sigma^2}{\lvert\mu\rvert^2}
