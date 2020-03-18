@@ -1029,7 +1029,7 @@ for $\tau > 0$ the performance quickly saturates while compression creeps downwa
 
 \begin{figure}[!t]
   \centering
-  \begin{subfigure}[b]{0.95\textwidth}  % imcl2019-style swears at this
+  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
     \centering
     \includegraphics[width=\columnwidth]{figure__musicnet__threshold.pdf}
   \end{subfigure}
@@ -1135,27 +1135,27 @@ methods seem to compress networks adequately well without much loss in performan
 % a couple of plots from MNIST and Fashion-MNIST
 \begin{figure}[!t]
   \centering
-  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
+  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
     \centering
     % \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/legacy__VD__fashionmnist__fft__-0.5.pdf}
     \includegraphics[width=0.8\columnwidth]{figure__mnist-like__trade-off/legacy__VD__kmnist__fft__-0.5.pdf}
     % \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/VD__kmnist__fft__-0.5.pdf}
   \end{subfigure} \\%
   % \hfill
-  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
+  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
     \centering
     % \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/legacy__VD__fashionmnist__raw__-0.5.pdf}
     \includegraphics[width=0.8\columnwidth]{figure__mnist-like__trade-off/legacy__VD__kmnist__raw__-0.5.pdf}
     % \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/VD__kmnist__raw__-0.5.pdf}
   \end{subfigure} \\%
-  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
+  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
     \centering
     % \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/legacy__VD__mnist__fft__-0.5.pdf}
     \includegraphics[width=0.8\columnwidth]{figure__mnist-like__trade-off/legacy__VD__emnist_letters__fft__-0.5.pdf}
     % \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/ARD__kmnist__fft__-0.5.pdf}
   \end{subfigure} \\%
   % \hfill
-  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
+  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
     \centering
     % \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/legacy__VD__mnist__raw__-0.5.pdf}
     \includegraphics[width=0.8\columnwidth]{figure__mnist-like__trade-off/legacy__VD__emnist_letters__raw__-0.5.pdf}
@@ -1202,7 +1202,7 @@ $\real$-network, which has half the number of real parameters than the former.
 % compare compressed cplx-vgg against real-vgg
 \begin{figure}[!t]
   \centering
-  \begin{subfigure}[b]{0.9\textwidth}  % imcl2019-style swears at this
+  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
     \centering
     \includegraphics[width=\columnwidth]{figure__cifar__trade-off/legacy__augmentedcifar10__raw__-0.5.pdf}
   \end{subfigure}
@@ -1239,9 +1239,9 @@ Other key deviations from the set-up used by \citet{trabelsi_deep_2017} include:
 frequencies to the centre of the window to maintain locality after applying the FFT
 (sec.~\ref{sub:mnist_like_datasets}), and clipping $\ell_2$ norm of the gradients to $0.05$.
 
-\begin{figure}[!h]
+\begin{figure}[!t]
   \centering
-  \begin{subfigure}[b]{1.\textwidth}  % imcl2019-style swears at this
+  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
     \centering
     \includegraphics[width=\columnwidth]{figure__musicnet__trade-off/paper__musicnetram__fft__-0.5.pdf}
   \end{subfigure}
@@ -1300,13 +1300,16 @@ floating-point multiplications.
 
 % section conclusion (end)
 
-\clearpage
+% \clearpage
 
 \bibliographystyle{abbrvnat}
 \bibliography{references}
 % \nocite{*}
 
-\clearpage
+% \clearpage
+
+\appendix
+\onecolumn
 
 \section{Appendix} % (fold)
 \label{sec:appendix}
