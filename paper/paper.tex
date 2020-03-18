@@ -1,4 +1,4 @@
-\documentclass[a4paper,10pt]{article}
+\documentclass[a4paper,10pt,onecolumn]{article}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -268,7 +268,7 @@ $ and non-parametric random variable $
     \varepsilon \sim p_\varepsilon
 $, then the SGVB objective is
 \begin{equation}  \label{eq:sgvb_objective}
-  \widetilde{\mathcal{L}}(\theta; \phi, \lambda)
+  \widetilde{\mathcal{L}} %(\theta; \phi, \lambda)
     = - KL(q_{\theta} \| \pi_{\lambda})
       % + \frac{N}{\lvert B \rvert} \sum_{i\in B}
         % \log p(z_i \mid \omega_i)b
@@ -296,7 +296,7 @@ $, i.e. the observed data $
 $ is conditionally independent, and consider \eqref{eq:sgvb_objective} with $L=1$
 and random mini-batches from $D$:
 \begin{equation}  \label{eq:elbo}
-  \widetilde{\mathcal{L}}(\theta; \phi, \lambda)
+  \widetilde{\mathcal{L}} %(\theta; \phi, \lambda)
     = - KL(q_{\theta} \| \pi_{\lambda})
       + \frac{N}{M} \sum_{k=1}^M
         \log p_{\phi}(z_{i_k} \mid g(\varepsilon_k; \theta))
@@ -465,7 +465,8 @@ Their approach coupled with $\cplx\real$ calculus for backprop transforms a $\cp
 network into an intricately connected $\real$-valued computational graph, constructured
 to respects $\cplx$-arithmetic.
 %
-In particular, natural identification of $\cplx$ and $\real^2$ implies that linear layers $
+In particular, natural identification of $\cplx$ and $\real^2$ implies that dense linear
+layers $
   L \colon \cplx^m \to \cplx^n
 $ act upon their inputs as follows:
 \begin{equation}  \label{eq:cplx-lin-op}
@@ -499,15 +500,11 @@ $ for some $\real$-valued non-linearity $\sigma$, possibly with learnable parame
 In this section we review the complex Gaussian distribution and discuss its properties. Then
 we introduce factorized dropout posterior for complex-valued parameters and the relevant
 version of the local reparameterization trick. Then we move on to choosing suitable priors
-and then onward to deriving explicit expressions for the divergence penalties in \eqref{eq:elbo}
-in terms of special functions.
+and then to deriving explicit expressions for the divergence penalties in \eqref{eq:elbo}
+in terms of \verify{special} functions.
 
 \subsection{Complex Gaussians and Local Reparameterization} % (fold)
 \label{sub:c_gauss_and_local_rep}
-
-%notation
-In the following $M^{\top}$ is the matrix transpose, $\conj{M}$ is elementwise complex
-conjugation, and $M^{\hop} = (\conj{M})^\top$ denotes Hermitian conjugate.
 
 A vector $z\in \cplx^m$ has complex Gaussian distribution, $
   q(z) = \mathcal{N}^{\cplx}_m(\mu, \Gamma, C)
@@ -534,31 +531,20 @@ $\Gamma$ and $C$, respectively, if
 \end{equation}
 provided $\Gamma \succeq 0$, $\Gamma^{\hop} = \Gamma$, $C^\top = C$, and $
   \conj{\Gamma} \succeq C^{\hop} \Gamma^{-1} C
-$. Matrices $\Gamma$ and $C$ are $
+$.
+% notation
+Here, $M^{\top}$ is the matrix transpose, $\conj{M}$ is elementwise complex
+conjugation, and $M^{\hop} = (\conj{M})^\top$ denotes Hermitian conjugate.
+%
+Matrices $\Gamma$ and $C$ are given by $
   \mathbb{E} (z - \mu)(z - \mu)^{\hop}
 $ and $
   \mathbb{E} (z - \mu)(z - \mu)^{\top}
-$, respectively.
+$, respectively, and $z$ is a \textit{proper} $\cplx$-Gaussian vector if $z$ and
+$\conj{z}$ are uncorrelated, i.e. $C = 0$.
 %
-% $\cplx$-Gaussians are closed under affine transformations: if $y = A z + b$
-% for $A \in \cplx^{n \times m}$ and $b \in \cplx^{n}$, then $
-%   y \sim \mathcal{N}_n^{\cplx}\bigl(
-%       A\mu + b, A \Gamma A^{\hop}, A C A^\top
-%     \bigr)
-% $.
-%
-$\cplx$-Gaussian random variables are closed under affine transformations: for $
-  A \in \cplx^{n \times m}
-$ and $b \in \cplx^{n}$
-\begin{equation}  \label{eq:cn-affine}
-  A z + b \sim \mathcal{N}_n^{\cplx}\bigl(
-      A\mu + b, A \Gamma A^{\hop}, A C A^\top
-    \bigr)
-  \,.
-\end{equation}
-%
-The entropy of a $\cplx$-Gaussian in terms of $\Gamma$ and $C$ is
-\begin{align}  \label{eq:c-gauss-entropy-derivation}
+The entropy of $z$ terms of $\Gamma$ and $C$ is
+\begin{align}
   \mathbb{H}(q)
     & = - \mathbb{E}_{z \sim q} \log{q(z)}
     \notag \\
@@ -627,24 +613,24 @@ The entropy of a $\cplx$-Gaussian in terms of $\Gamma$ and $C$ is
     %   \end{pmatrix}
     % \biggr)}
     % \notag \\
+  % \label{eq:c-gauss-entropy-derivation}
     &
     = \tfrac12 \log \det{(\pi e \Gamma)}
       \det{(\pi e (\conj{\Gamma} - \conj{C} \Gamma^{-1} C))}
-    \,.
-\end{align}
-A $\cplx$-Gaussian vector $z$ is \textit{proper} if $z$ and $\conj{z}$ are uncorrelated, i.e.
-$C = 0$. From \eqref{eq:c-gauss-entropy-derivation} its entropy is
-\begin{equation}  \label{eq:cn-proper-entropy}
-  % determinant commutes with complex conjugation, since it is multilinear
-  \mathbb{H}(q)
+    \notag \\
+  \label{eq:cn-proper-entropy}
+    &
+    % determinant commutes with complex conjugation, since it is multilinear
     % = \tfrac12 \log \det{(\pi e \Gamma)} \det{(\pi e (\conj{\Gamma} - \conj{C} \Gamma^{-1} C))}
-    = \tfrac12 \log \det{(\pi e \Gamma)} \det{(\pi e \conj{\Gamma})}
+    % = \tfrac12 \log \det{(\pi e \Gamma)} \det{(\pi e \conj{\Gamma})}
     % = \tfrac12 \log \det{(\pi e \Gamma)} \conj{\det{(\pi e \Gamma)}}
     % = \tfrac12 \log \bigl\lvert \det{(\pi e \Gamma)} \bigr\rvert^2
+    \Bigl[
     = \log \bigl\lvert \det{(\pi e \Gamma)} \bigr\rvert
+    \quad \text{for } C = 0
+    \Bigr]
     \,.
-    \tag{\ref{eq:c-gauss-entropy-derivation}'}
-\end{equation}
+\end{align}
 %
 % The roles of $\Gamma$ and $C$ are more evident in univariate case: here $
 %   \Gamma = \sigma^2 \geq 0
@@ -668,24 +654,30 @@ $C = 0$. From \eqref{eq:c-gauss-entropy-derivation} its entropy is
 %       \end{pmatrix}
 %   \,. $$
 
-The local reparameterization trick provides both faster computations, and better statistical
-efficiency of the SGVB gradient estimator \citep{wang_fast_2013,kingma_variational_2015}.
-Suppose that weights $W \in \cplx^{n\times m}$ of a linear layer are drawn from a mean
-field $\cplx$-Gaussian approximation
+The $\cplx$-variant of the local reparameterization trick utilizes the fact that Gaussian
+vectors are closed under affine transformations:
+% $\cplx$-Gaussians are closed under affine transformations
+\begin{equation}  \label{eq:cn-affine}
+  b + A z \sim \mathcal{N}_n^{\cplx}\bigl(
+      b + A\mu, A \Gamma A^{\hop}, A C A^\top
+    \bigr)
+  \,,
+\end{equation}
+for $A \in \cplx^{n \times m}$ and $b \in \cplx^{n}$. Therefore, if $W \in \cplx^{n\times m}$
+is drawn from a fully factorized approximation
 \begin{equation}  \label{eq:c-gauss-vi-general}
-  W_{ij}
-    \sim \mathcal{N}^{\cplx} \bigl(
+  W \sim q(W)
+    = \prod_{ij} \mathcal{N}^{\cplx} \bigl(
       \mu_{ij}, \Sigma_{ij}, C_{ij}
     \bigr)
   \,,
 \end{equation}
-where mean, \textit{variance} and \textit{relation} are given by matrices $
-  \mu, \Sigma, C \in \cplx^{n\times m}
-$ with $\Sigma_{ij} \in \real$, and $
+with $
+  \mu, C \in \cplx^{n\times m}
+$, $\Sigma \in \real^{n\times m}$, and $
   \lvert C_{ij} \rvert^2 \leq \Sigma_{ij}
-$. The property \eqref{eq:cn-affine} and independence of elements of $W$ imply that for any
-$x \in \cplx^m$ and $b \in \cplx^n$ the components of $y = W x + b$ are independent with
-distributions
+$, then for $x \in \cplx^m$ and $b \in \cplx^n$ the vector $y = b + W x$ has independent
+components with
 \begin{equation}  \label{eq:cplx-gauss-trick}
   y_i
     \sim \mathcal{N}^{\cplx}
@@ -697,18 +689,18 @@ distributions
       \Bigr)
     \,.
 \end{equation}
-The trick requires three matrix operations: $\mu x + b$, $\Sigma \lvert x \rvert^2$ and
-$C x^2$ with the modulus and power applied elementwise.
-
-The trick and dropout can be applied to any layer, the output of which depends linearly on
-its parameters, e.g. convolutional layers, affine, and bilinear transformations $
+The trick requires three operations, i.e. $b + \mu x$, $\Sigma \lvert x \rvert^2$ and
+$C x^2$ with the complex modulus and square applied elementwise, and can be applied to
+any layer, the output of which depends linearly on its parameters, such as convolutional,
+affine, and bilinear transformations ($
   (x, z) \mapsto x^\top W^{(j)} z + b_j
-$. Similar to $\real$ case, variational dropout for $\cplx$ convolutions draws independent
-realizations of $W$ for each spatial patch in the input. The rationale is simpler computations
-and variance reduction. The latter effect stems from decorrelated gradient estimates from
-overlapping patches \citep{kingma_variational_2015}, which allows \eqref{eq:cplx-gauss-trick}
-to use $\cplx$ convolutions of elementwise complex squares $x^2$ and amplitudes $\lvert x \rvert^2$
-with the relation and variance kernels.
+$). Similar to $\real$ case, Variational Dropout for $\cplx$ convolutions draws independent
+realizations of $W$ for each spatial patch in the input \citep{molchanov_variational_2017}.
+This provides faster computations and better statistical efficiency of the SGVB gradient
+estimator stemming from decorrelated gradient estimates from overlapping patches
+\citep{kingma_variational_2015}, allowing \eqref{eq:cplx-gauss-trick} to leverage $\cplx$
+convolutions of the relation and variance kernels with elementwise complex squares $x^2$
+and amplitudes $\lvert x \rvert^2$.
 % Weight sharing is essentially pushed to shared variational parameters $\theta$ in the approximation $q_\theta$.
 % A convolution is a matrix product of $W$, unrolled into a toeplitz matrix, and im-to-col
 % flattened intput $x$
@@ -718,30 +710,16 @@ with the relation and variance kernels.
 \subsection{The choice of priors and Kullback-Leibler divergence} % (fold)
 \label{sub:priors_and_kullback_leibler_divergence}
 
-For $\cplx$-variational dropout we propose using mean-field proper $\cplx$-Gaussian approximate
-posterior and MAP estimates of bias terms, i.e. parameters $W \in \cplx^{n\times m}$ of a dense
-linear layer follow
-% We use MAP estimates of bias terms, i.e. assume an independent fully factorized Dirac approximation.
-\begin{equation}  \label{eq:c-gauss-vi}
-  % (we omit the subscript $m=1$ for brevity)
-  W \sim q(W)
-    % = \prod_{ij} q(W_{ij})
-    = \prod_{ij} \mathcal{N}^{\cplx}(
-      W_{ij} \mid
-        \mu_{ij},
-        \alpha_{ij} \lvert \mu_{ij} \rvert^2,
-        % \sigma^2_{ij},
-        0
-    )
-  \,,
-\end{equation}
-and we use similar factorized approximation for convolutions and other, effectively, linear
-layers. For this approximation the relation coefficients \eqref{eq:cplx-gauss-trick} are
-zero.
-
-We consider two priors for Bayesian dropout: \verify{log-uniform} and $\cplx$-Gaussian empirical
-Bayes \citep{kingma_variational_2015,molchanov_variational_2017,kharitonov_variational_2018}.
-For a fully factorized approximation $q(\omega)$ and factorized prior belief $\pi(\omega)$,
+For $\cplx$-Bayesian Dropout we propose to use fully factorized proper $\cplx$-Gaussian
+approximation \eqref{eq:c-gauss-vi-general} for weights and point estimates of biases in
+dense linear, convolutional and other, effectively, affine layers, i.e. we let $
+  \Sigma_{ij} = \alpha_{ij} \lvert \mu_{ij} \rvert^2
+$ and fix $C_{ij} = 0$. Under this approximation the relation coefficients in \eqref{eq:cplx-gauss-trick}
+are zero.
+%
+For a fully factorized approximation $q(\omega)$ and factorized prior belief $
+  \pi(\omega) = \prod_{ij} \pi(\omega_{ij})
+$,
 the divergence term in ELBO \eqref{eq:elbo} is
 \begin{equation}  \label{eq:elbo-general-kl-div}
   KL(q \| \pi)
@@ -754,12 +732,13 @@ the divergence term in ELBO \eqref{eq:elbo} is
         + \mathbb{E}_{q(\omega_{ij})} \log{\pi(\omega_{ij})}
     \,.
 \end{equation}
-We omit subscripts ${ij}$ for brevity in the next sections.
+We consider two fully factorized priors: an improper prior for Variational Dropout and
+$\cplx$-Gaussian ARD prior. We omit subscripts ${ij}$ for brevity in the next sections.
 
-\subsubsection{Variational dropout} % (fold)
-\label{ssub:variational_dropout}
+\subsubsection{VD prior} % (fold)
+\label{ssub:vd_prior}
 
-From \eqref{eq:cn-proper-entropy} the KL-divergence for \verify{log-uniform prior} $
+From \eqref{eq:cn-proper-entropy} the KL-divergence for an improper prior $
   \pi(\omega) \propto {\lvert \omega \rvert}^{-\beta}
 $ with $\beta \geq 1$ is
 \begin{equation}  \label{eq:c-vd-kl-div-raw}
@@ -772,7 +751,9 @@ $ with $\beta \geq 1$ is
     %   + \tfrac{\beta}2 \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
     % =
       - \log{\sigma^2}
-      + \tfrac{\beta}2 \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
+      + \tfrac{\beta}2 \Bigl(
+        \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
+      \Bigr)
     \,.
 \end{equation}
 Property \eqref{eq:cn-affine} implies that $
@@ -780,30 +761,32 @@ Property \eqref{eq:cn-affine} implies that $
   \sim \mu \cdot \mathcal{N}^{\cplx}(1, \alpha, 0)
 $ for $\mu \neq 0$ and $
   \sigma^2 = \alpha \lvert \mu \rvert^2
-$, whence
+$, whence the expectation in brackets is given by
 \begin{equation}  \label{eq:expect-improper-term-cplx}
-  \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
-    % = \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 1, \alpha, 0)}
-    %   \log \lvert \mu \xi \rvert^2
-    % = \log \lvert \mu \rvert^2
-    %   + \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 1, \alpha, 0)}
-    %       \log \lvert \xi \rvert^2
-    = \log \alpha \lvert \mu \rvert^2
+  % \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
+  %   % = \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 1, \alpha, 0)}
+  %   %   \log \lvert \mu \xi \rvert^2
+  %   % = \log \lvert \mu \rvert^2
+  %   %   + \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 1, \alpha, 0)}
+  %   %       \log \lvert \xi \rvert^2
+  %   =
+    \log \alpha \lvert \mu \rvert^2
       + \mathbb{E}_{\xi \sim \mathcal{N}^{\cplx}(\xi \vert 0, 1, 0)}
           \log{\bigl\lvert \tfrac1{\sqrt{\alpha}} + \xi \bigr\rvert^2}
     \,.
 \end{equation}
-Let $
-  (z_i)_{i=1}^m \sim \mathcal{N}^{\cplx}(0, 1, 0)
-$ iid and $\theta \in \cplx^m$. Then $
+If $
+  (z_i)_{i=1}^m
+    \sim \mathcal{N}^{\cplx}(0, 1, 0)
+$ iid and $\theta \in \cplx^m$, then $
   \sum_i \lvert \theta_i + z_i \rvert^2
     \sim \chi^2_{2m}(s^2)
 $ with $
   s^2 = \sum_i \lvert \theta_i \rvert^2
 $, i.e. a non-central $\chi^2_{2m}$ with parameter $s^2$. Its log-moments for general
-integer $m \geq1$ are given in \cite[p.~2466]{lapidoth_capacity_2003}. In particular,
+integer $m \geq1$ have been derived by \citet[p.~2466]{lapidoth_capacity_2003}.
 % in fact Appendix X, Lemma 10.1
-for $m=1$ and $\theta\in \cplx$ we have
+In particular, for $m=1$ and $\theta\in \cplx$ we have
 \begin{equation}  \label{eq:log-moment-for-chi-2}
   \mathbb{E}_{z \sim \mathcal{N}^{\cplx}(0, 1, 0)}
     \log \lvert \theta + z \rvert^2
@@ -812,10 +795,7 @@ for $m=1$ and $\theta\in \cplx$ we have
 \end{equation}
 where $
   \mathop{Ei}(x) = \int^x_{-\infty} t^{-1} e^t dt
-$ for $x < 0$ is the Exponential Integral. Note that
-$
-  \tfrac{d}{dx} \mathop{Ei}(x) = \tfrac{e^x}{x}
-$, $
+$ for $x < 0$ is the Exponential Integral, which satisfies $
   \mathop{Ei}(x) \leq \log{(-x)}
 $, $
   % as x to 0 from below
@@ -849,7 +829,13 @@ $ for $x \leq -1$.
 %   \,. $$
 % 6. $Ei(x) \leq \log{(-x)} - \gamma$ on $x < 0$ and $-e^x \leq Ei(x) \leq 0$ on $x < -1$.
 %
-Through \eqref{eq:expect-improper-term-cplx} and \eqref{eq:log-moment-for-chi-2} we get
+Although $\mathop{Ei}$ is an intractable integral, requiring numerical approximations to
+compute, its derivative is exact: $
+  \tfrac{d}{dx} \mathop{Ei}(x) = \tfrac{e^x}{x}
+$ at $x < 0$.
+
+From \eqref{eq:expect-improper-term-cplx} and \eqref{eq:log-moment-for-chi-2}, the terms of
+the divergence that depend on the parameters are given by
 \begin{equation}  \label{eq:c-vd-kl-div}
   KL(q\| \pi)
     \propto
@@ -874,24 +860,25 @@ Through \eqref{eq:expect-improper-term-cplx} and \eqref{eq:log-moment-for-chi-2}
       \tfrac{\beta-2}2 \log{\lvert \mu \rvert^2}
       + \log{\tfrac1{\alpha}}
       - \tfrac{\beta}2 \mathop{Ei}(- \tfrac1{\alpha})
-      \tag{\ref{eq:c-vd-kl-div-raw}'} \,.
+      \,.
+      \tag{\ref{eq:c-vd-kl-div-raw}'}
 \end{equation}
 We set $\beta = 2$ to make the divergence term depend only on $\alpha$ and add $\gamma$
 so that the right-hand side is nonnegative \citep[eq.(84)]{lapidoth_capacity_2003}.
 %
 Since $\mathop{Ei}(x)$ has simple analytic derivative and \eqref{eq:elbo} depends additively
 on \eqref{eq:c-vd-kl-div}, it is possible to back-propagate through the divergence without
-forward evaluation.
+forward evaluation, which speeds up gradient updates.
 % Gradient-based optimiziation of \eqref{eq:elbo} usually does not use the value of the objective. 
 % In stochastic gradient methods are concerned more with the gradient, induced by the objective
 % function, rather than its value.
 
 % subsubsection variational_dropout (end)
 
-\subsubsection{Empirical Bayes} % (fold)
-\label{ssub:empirical_bayes}
+\subsubsection{ARD prior} % (fold)
+\label{ssub:ard_prior}
 
-Let's consider fully factorized proper $\cplx$-Gaussian prior $
+We consider the fully factorized proper $\cplx$-Gaussian ARD prior with $
   \pi_\tau(\omega)
     \propto \mathcal{N}^{\cplx}\bigl(
       \omega \vert 0, \tau^{-1}, 0
@@ -917,6 +904,13 @@ $. The per element divergence term in \eqref{eq:elbo-general-kl-div} is
 %   + \tfrac12 \log \frac{\det{\Sigma_2}}{\det{\Sigma_1}}
 %   + \tfrac12 \tr{\bigl( \Sigma_2^{-1} \Sigma_1 \bigr)}
 %   + \tfrac12 (\mu_1 - \mu_2)^\top \Sigma_2^{-1} (\mu_1 - \mu_2)
+%   =
+%   - \log\lvert\det{\pi e \Gamma}\rvert
+%   + \log\lvert\det{\pi \tau^{-1} I} \rvert
+%   + \tau \Re \tr{\Gamma} + \tau \mu^\hop \mu
+%   =
+%   - n - \log \lvert\det{\tau \Gamma}\rvert
+%   + \tau \Re \tr{\Gamma} + \tau \mu^\hop \mu
 %   \,. $$
 %
 In Empirical Bayes the prior adapts to the observed data, i.e. \eqref{eq:elbo} is optimized
@@ -932,44 +926,34 @@ $ is found by minimizing \eqref{eq:emp-bayes-kl-div}, which gives
     = \log{\bigl(1 + \tfrac{\lvert \mu \rvert^2}{\sigma^2}\bigr)}
     = \log{\bigl(1 + \tfrac1\alpha \bigr)}
     \,.
+    \tag{\ref{eq:emp-bayes-kl-div}'}
 \end{equation}
 
 % subsubsection empirical_bayes (end)
 
-\subsubsection{Bayesian $\cplx$-dropout via $\real$-scaling} % (fold)
+\subsubsection{$\cplx$-Bayesian Dropout via $\real$-scaling} % (fold)
 \label{ssub:real_scaling_dropout}
 
 Consider the following parameterization of $W$: $
-  W = \mu \odot \xi
-$ where $
+  W_{ij} = \mu_{ij} \xi_{ij}
+$, $\xi_{ij} \in \real$ with $
   \xi_{ij} \sim \mathcal{N}(1, \alpha_{ij})
 $, yet $\mu \in \cplx^{n \times m}$. This case corresponds to inference regarding
-relevance coefficients $\xi$ rather than the parameters themselves after. Each weight
-under this parameterization is an independent degenerate $\cplx$-Gaussian distribution
-\begin{equation}  \label{eq:real-scal-gauss-vi}
-  W_{ij}
-    \sim \mathcal{N}^{\cplx} \bigl(
-      \mu_{ij},
-      \, \alpha_{ij} \lvert \mu_{ij} \rvert^2,
-      \, \alpha_{ij} \mu_{ij}^2
-    \bigr)
-  \,,
-\end{equation}
-which implies by \eqref{eq:cplx-gauss-trick} the following:
-\begin{equation}  \label{eq:real-scal-gauss-trick}
-  y_i
-    \sim \mathcal{N}^{\cplx}\bigl(
-      % e_i^\top \mu x + b,
-      b_i + \sum_{j=1}^m \mu_{ij} x_j,
-      \, \sum_j \alpha_{ij} \lvert x_{ij} \mu_{ij}\rvert^2,
-      \, \sum_j \alpha_{ij} (x_{ij} \mu_{ij})^2
-    \bigr)
-    \,.
-\end{equation}
+relevance multipliers $\xi$ rather than the parameters themselves. Under this parameterization
+the weight distribution is fully factorized degenerate $\cplx$-Gaussian approximation
+\eqref{eq:c-gauss-vi-general} with $
+  \Sigma_{ij} = \alpha_{ij} \lvert \mu_{ij} \rvert^2
+$ and $
+  C_{ij} = \alpha_{ij} \mu_{ij}^2
+$. Unlike proper $\cplx$-Gaussian approximation, the complex relation parameter in
+\eqref{eq:cplx-gauss-trick} is nonzero in this case and equals $
+  \sum_j \alpha_{ij} (x_{ij} \mu_{ij})^2
+$.
+%
 The KL-divergence term for this approximation coincides with \eqref{eq:improper-kl-div-real},
-which is approximated by \citet{molchanov_variational_2017}. The major drawback of this method
-is that the additive noise reparameterization in \eqref{eq:real-scal-gauss-trick}, which
-disentangles the gradient with respect to $\mu$ from the local noise, cannot be applied.
+however the major drawback of this approximation is that the additive noise reparameterization,
+which disentangles the gradient with respect to $\mu$ from the local output noise, cannot be
+applied.
 
 % subsubsection real_scaling_dropout (end)
 
@@ -1007,7 +991,7 @@ non-Bayesian architecture and using only the likelihood term from \eqref{eq:elbo
 variational dropout.
 %
 During the \textit{``sparsify''} stage we make every layer Bayesian and apply $\cplx$-variational
-dropout sec.~\ref{ssub:variational_dropout} (or sec.~\ref{ssub:empirical_bayes}) or its $\real$
+dropout sec.~\ref{ssub:vd_prior} (or sec.~\ref{ssub:ard_prior}) or its $\real$
 counterpart. To be able to study the attainable sparsity levels we inject a coefficient $
   C \in (0, 1]
 $ at the KL divergence term in \eqref{eq:elbo}:
@@ -1015,7 +999,8 @@ $ at the KL divergence term in \eqref{eq:elbo}:
     - \frac{C}N KL(q_{\theta} \| \pi_{\lambda})
     + \frac1{M} \sum_{i=1}^M
         \log p_{\phi}(z_i \mid g(\varepsilon_i; \theta))
-    \,. \tag{\ref{eq:elbo}'}
+    \,.
+    \tag{\ref{eq:elbo}'}
 \end{equation}
 Higher $C$ yields increasingly more sparse layers upon termination of this stage.
 
@@ -1130,7 +1115,7 @@ learning rate of ${10}^{-3}$ is reduced after the $10$-th epoch to ${10}^{-4}$.
 %
 Plots~\ref{fig:mnist-like__trade-off} depict samples from the performance-compression curve
 on KMNIST and EMNIST-Letters datasets for the studied models and VD compression method
-(sec.~\ref{ssub:variational_dropout}). Besides that we try \texttt{raw} or \texttt{fft}
+(sec.~\ref{ssub:vd_prior}). Besides that we try \texttt{raw} or \texttt{fft}
 input features, vary $
   C \in \{\tfrac3{2^{k+1}}\colon k=1..16\}
 $, and repeat the experiment $5$ times.
@@ -1278,16 +1263,16 @@ for the deep network of \citet{trabelsi_deep_2017} and its version, in which we 
 halve the spatial size of the first $1d$ convolution kernel from $6$ to $3$ (denoted by
 suffix \textit{k}$3$). The motivation is to test if the handicap introduced by the forced
 compression of the most upstream layer can be alleviated through non-uniform compression,
-induced by variational dropout. We test only VD (sec.~\ref{ssub:variational_dropout}) this
+induced by variational dropout. We test only VD (sec.~\ref{ssub:vd_prior}) this
 sub-experiment, since prior results have not demonstrated significant superiority of one method
-over another (sec.~\ref{ssub:empirical_bayes}).
+over another (sec.~\ref{ssub:ard_prior}).
 
 For compression levels lower than $50$, the final stage overfits the network, since it still
 remains overparameterized. For the rates higher than $\approx 100$ the ``fine-tune'' stage
 serves its purpose, essentially, due regularizing effects of high sparsity. There is evidence
 in favour of achievability of the SOTA average precision of \citet{trabelsi_deep_2017} within
 the $50$-$100$ compression region with $\cplx$-valued variational dropout with ARD prior
-(sec.~\ref{ssub:empirical_bayes}).
+(sec.~\ref{ssub:ard_prior}).
 
 % subsection musicnet (end)
 
