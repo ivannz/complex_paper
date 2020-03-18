@@ -353,16 +353,15 @@ $ iid from some $p_\theta(\xi)$.
 %
 Variational Dropout assumes fully factorized Gaussian approximate posterior $
   q_\theta(\omega)
-    = \prod_j \mathcal{N}(\mu_j, \alpha_j \mu_j^2)
+    = \prod_j \mathcal{N}(\omega_j \vert\, \mu_j, \alpha_j \mu_j^2)
 $ and factorized log-uniform prior $\pi(\omega)$ with $
   \pi(\omega_j) \propto \lvert \omega_j \rvert^{-1}
-$. The divergence term in \eqref{eq:elbo} unravels into a sum of the following
-analytically intractable terms:
+$. The divergence term in \eqref{eq:elbo} unravels into the following sum:
 \begin{equation}  \label{eq:improper-kl-div-real}
   KL(q_\theta \| \pi)
     \propto
-      \frac12 \mathbb{E}_{\varepsilon \sim \mathcal{N}(0, 1)}
-        \log{\Bigl\lvert \tfrac1{\sqrt{\alpha}} + \varepsilon \Bigr\rvert^2}
+      \frac12 \sum_j \mathbb{E}_{\varepsilon \sim \mathcal{N}(0, 1)}
+        \log{\Bigl\lvert \tfrac1{\sqrt{\alpha_j}} + \varepsilon \Bigr\rvert^2}
       % \frac12 \mathbb{E}_{\varepsilon \sim \mathcal{N}(0, 1)}
       %   \log{\bigl\lvert 1 + \sqrt{\alpha} \varepsilon \bigr\rvert^2}
       % - \frac12 \log{\alpha}
@@ -372,49 +371,50 @@ analytically intractable terms:
 regression over $\alpha \in (0, 1)$. \citet{molchanov_variational_2017} refine the
 approximation by using a nonlinear regression based on sigmoid and soft-plus.
 % see p.6 sec 3.4 of kingma_variational_2015
-In appendix~\ref{sub:real-chisq-grad} we verify the value and the derivative of their
+In appendix~\ref{sec:real-chisq-grad} we verify the value and the derivative of their
 approximation against the Monte-Carlo estimate of \eqref{eq:improper-kl-div-real} for $\alpha$
 varying over a fine logarithmic grid and the gradient of \eqref{eq:improper-kl-div-real},
 for which we obtain an exact expression.
 % (!) good for SGVB: gradient-based methods require unbiased gradient estimates
-%
-% (in) it is in poor taste to brag about this begin the first time anyone has derived a
+% (in) it is in poor taste to brag about this beign the first time anyone has derived a
 % derivative of an intractable function.
+
 The key role in the factorization is played by $\alpha_j$, which reflects the relevance
 of the parameter $\omega_j$ it is associated to, by being the ratio of its squared mean
 to its variance. Thus, \citet{molchanov_variational_2017} focus on the model sparsification
-capabilities of Variational Dropout, optimizing $\alpha$ for each individual parameter.
-\citet{kharitonov_variational_2018} address theoretical issues with improper priors and
-propose an alternative Bayesian Dropout method based on \textit{Automatic Relevance
-Determination} procedure. In essence, the log-uniform factor $\pi(\omega_{ij})$ is replaced by
-a proper ARD Gaussian prior $
-  \mathcal{N}(0, \tau^{-1}_{ij})
-$ with learnable precision $\tau_{ij} > 0$. This method, known as \textit{Empirical Bayes},
-fits a prior distribution while performing Variational Inference. Maximizing \eqref{eq:elbo}
-over $\tau$, holding other parameters fixed, yields $
-  \tau^* = {(\mu^2 + \sigma^2)}^{-1}
+capabilities of Variational Dropout, optimizing $\alpha_j$ for each individual parameter,
+or across groups of parameters for structured sparsity. \citet{kharitonov_variational_2018}
+address theoretical issues with improper priors and propose a method based on \textit{
+Automatic Relevance Determination} procedure, which falls under \textit{Empirical Bayes}
+approach that fits a prior distribution while performing Variational Inference. In this
+method the log-uniform factor $\pi(\omega_j)$ is replaced by a proper Gaussian ARD
+prior $
+  \mathcal{N}(\omega_j \vert\, 0, \tau^{-1}_j)
+$ with learnable precision $\tau_j > 0$, \citep{neal_bayesian_1996}. Maximizing
+\eqref{eq:elbo} over $\tau$, holding other parameters fixed, yields $
+  \tau^*_j = {(\mu_j^2 + \sigma^2_j)}^{-1}
 $, whence
 \begin{equation}  \label{eq:ard-kl-div-real}
   KL(q_\theta \| \pi)
-    = \tfrac12 \log{\bigl(1 + \tfrac1{\alpha} \bigr)}
+    = \frac12 \sum_j \log{\bigl(1 + \tfrac1{\alpha_j} \bigr)}
     \,.
 \end{equation}
-Flexibility in specification of $q_\theta$ enables developing structured dropout with
-shared $\alpha$ across groups of parameters $\omega$. 
 
 Another contribution of \citep{kingma_variational_2015} is the analysis of the effects of the
 \textit{local reparameterization trick} on the variance of the gradient of \eqref{eq:elbo}.
 Proposed by \citet{wang_fast_2013} to speed up Gaussian dropout, this trick translates
 uncertainty from parameters of the model to intermediate outputs within the network:
 the stochasticity of $
-  W \sim \prod_{ij} \mathcal{N}(\mu_{ij}, \alpha_{ij} \mu_{ij}^2)
-$ in a linear layer $
-  y = b + W^\top x
-$ with $
   W \in \mathbb{R}^{n\times m}
-$ is pushed to its output
+$ with $
+  q(W) = \prod_{ij}
+    \mathcal{N}(w_{ij}\vert\, \mu_{ij}, \alpha_{ij} \mu_{ij}^2)
+$ in a linear layer is pushed to its output $
+  y = b + W^\top x
+$,
 \begin{equation}  \label{eq:r-gauss-trick}
-    y \sim \prod_i \mathcal{N}\Bigl(
+    q(y) = \prod_i \mathcal{N}\Bigl(
+          y_i \big\vert\,
           b_i + \sum_j \mu_{ij} x_j,
           \sum_j \alpha_{ij} \mu_{ij}^2 x_j^2
       \Bigr)
@@ -668,7 +668,7 @@ is drawn from a fully factorized approximation
 \begin{equation}  \label{eq:c-gauss-vi-general}
   W \sim q(W)
     = \prod_{ij} \mathcal{N}^{\cplx} \bigl(
-      \mu_{ij}, \Sigma_{ij}, C_{ij}
+      w_{ij} \vert\, \mu_{ij}, \Sigma_{ij}, C_{ij}
     \bigr)
   \,,
 \end{equation}
@@ -1129,7 +1129,7 @@ We make a couple of observations based on the results of these plots. First, \te
 features perform on par with raw colour channel data in the convolutional networks across most
 compression rates, but require high compression rate to make wide shallow dense network work
 as well. The upward trend manifests itself in MNIST and Fashion MNIST experiments as well
-(see appendix~\ref{sub:mnist_like_experiments}). Finally, overall $\cplx$ variational dropout
+(see appendix~\ref{sec:mnist_like_experiments}). Finally, overall $\cplx$ variational dropout
 methods seem to compress networks adequately well without much loss in performance.
 
 % a couple of plots from MNIST and Fashion-MNIST
@@ -1311,11 +1311,8 @@ floating-point multiplications.
 \appendix
 \onecolumn
 
-\section{Appendix} % (fold)
-\label{sec:appendix}
-
-\subsection{Complex-valued local reparameterization} % (fold)
-\label{sub:complex_valued_local_reparameterization}
+\section{Complex-valued local reparameterization} % (fold)
+\label{sec:complex_valued_local_reparameterization}
 
 %notation
 By $e_i$ we denote the $i$-th real unit vector of dimensionality \textit{conforming} to the
@@ -1376,10 +1373,10 @@ are independent whence \eqref{eq:cn-affine} implies
 \end{equation}
 Hence \eqref{eq:cplx-gauss-trick} follows.
 
-% subsection complex_valued_local_reparameterization (end)
+% section complex_valued_local_reparameterization (end)
 
-\subsection{Gradient of the KL-divergence in $\real$ case} % (fold)
-\label{sub:real-chisq-grad}  % gradient_of_the_kl_divergence_in_R_case
+\section{Gradient of the KL-divergence in $\real$ case} % (fold)
+\label{sec:real-chisq-grad}  % gradient_of_the_kl_divergence_in_R_case
 
 In this section we derive the exact gradient of \eqref{eq:improper-kl-div-real}. Even
 though, ultimately, the divergence involves a hypergeometric function, and its gradient
@@ -1682,10 +1679,10 @@ fit the best approximation \eqref{eq:improper-kl-div-real-approx}, and compare t
   \label{fig:molchanov-derivative-replica}
 \end{figure}
 
-% subsection real-chisq-grad (end)
+% section real-chisq-grad (end)
 
-\subsection{MNIST-like experiments} % (fold)
-\label{sub:mnist_like_experiments}
+\section{MNIST-like experiments} % (fold)
+\label{sec:mnist_like_experiments}
 
 To supplement the results, reported in the main text (figures \ref{fig:paper__mnist-like__trade-off__VD__fft}
 and \ref{fig:paper__mnist-like__trade-off__VD__raw}), we conduct additional experiments
@@ -2006,12 +2003,12 @@ The following observations can be made from the conducted experiment:
   \label{fig:paper__mnist-like__trade-off__VD__raw}
 \end{figure}
 
-% subsection mnist_like_experiments (end)
+% section mnist_like_experiments (end)
 
 \clearpage
 
-\subsection{CIFAR10 experiments} % (fold)
-\label{sub:cifar_experiments}
+\section{CIFAR10 experiments} % (fold)
+\label{sec:cifar_experiments}
 
 In addition to the results reported in the main paper, we conduct additional experiment
 on CIFAR10 and VGG16 with a much more slowly annealed learning rate. Similar to MNIST-like
@@ -2045,9 +2042,9 @@ variant, which straightforwardly replaces $\real$ layers with their $\cplx$ coun
   \label{fig:appendix__cifar__trade-off__VGG16__raw}
 \end{figure}
 
-% subsection cifar_experiments (end)
+% section cifar_experiments (end)
 
-\subsection{Backpropagation through $\cplx$-networks} % (fold)
+\section{Backpropagation through $\cplx$-networks} % (fold)
 \label{sub:wirtinger_calculus}
 
 % essential intro into Wirtinger calculus (CR)
@@ -2157,10 +2154,10 @@ parts in interleaved format, emulation of $\cplx$-algebra using $\real$-valued a
 and Wirtinger calculus make it possible to reuse $\real$ back-propagation and existing
 auto-differentiation frameworks \citep{trabelsi_deep_2017}.
 
-% subsection wirtinger_calculus (end)
+% section wirtinger_calculus (end)
 
-\subsection{$\cplx$-Linear operator representation} % (fold)
-\label{sub:c-linear_operator_representation}
+\section{$\cplx$-Linear operator representation} % (fold)
+\label{sec:c-linear_operator_representation}
 
 % proof that such operators exist and are unique (well this is an obvious statement)
 Consider $L \colon \cplx^m \to \cplx^n$ -- linear in $\cplx$. Then $
@@ -2193,7 +2190,7 @@ L z
 Uniqueness of these operators follows, if this decomposition is applied to any $z$ with
 $\Im z = 0$.
 
-% subsection c-linear_operator_representation (end)
+% section c-linear_operator_representation (end)
 
 % section appendix (end)
 
