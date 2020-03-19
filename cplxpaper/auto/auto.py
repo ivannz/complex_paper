@@ -644,6 +644,7 @@ def run(options, folder, suffix, verbose=True, save_optim=False):
         sched = get_scheduler(optim, settings["lr_scheduler"])
 
         feed = feeds[settings["feed"]]
+        n_epochs = settings["n_epochs"]
 
         formula = settings["objective"]
         objective = get_objective(objective_terms, formula).to(**devtype)
@@ -657,7 +658,7 @@ def run(options, folder, suffix, verbose=True, save_optim=False):
         model.train()
         model, emergency, history = fit(
             model, objective, feed, optim, sched=sched, early=early,
-            n_epochs=settings["n_epochs"], grad_clip=settings["grad_clip"],
+            n_epochs=n_epochs, grad_clip=settings["grad_clip"],
             verbose=verbose)
 
         is_benign_emergency = isinstance(emergency, benign_emergencies)
@@ -665,7 +666,7 @@ def run(options, folder, suffix, verbose=True, save_optim=False):
         # Evaluate the performance on the reserved feeds, e.g. 'test*'.
         model.eval()
         performance = {}
-        if is_benign_emergency:
+        if is_benign_emergency and n_epochs > 0:
             # Ignore warnings: no need to `.filter()` when `record=True`
             with warnings.catch_warnings(record=True):
                 performance = {name: scorer(model)
