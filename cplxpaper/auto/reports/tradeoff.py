@@ -43,19 +43,24 @@ def load_experiment(folder):
     the model that existed just before the `fine-tune` stage from `sparsify`
     and the sparsity `threshold`, specified in the experiment.
     """
-    options = load_manifest(folder)
+    options, models = load_manifest(folder), {}
 
-    # load 'dense'
-    models = {"dense": load_model(load_stage_snapshot("dense", folder))}
+    # load 'dense' (ignore if unavailable)
+    try:
+        snapshot = load_stage_snapshot("dense", folder, mismatch="raise")
+        models["dense"] = load_model(snapshot)
+
+    except RuntimeError:
+        pass
 
     # "post-fine-tune"
-    snapshot = load_stage_snapshot("fine-tune", folder)
+    snapshot = load_stage_snapshot("fine-tune", folder, mismatch="raise")
     models["post-fine-tune"] = load_model(snapshot)
 
     # "pre-fine-tune": load model from `fine-tune` and deploy the masks
     #  and weights onto it from `sparsify` using the prescribed threshold.
     state_dict, masks = auto.state_dict_with_masks(
-        load_model(load_stage_snapshot("sparsify", folder)),
+        load_model(load_stage_snapshot("sparsify", folder, mismatch="raise")),
         hard=True, threshold=options["threshold"])
 
     models["pre-fine-tune"] = load_model(snapshot)
