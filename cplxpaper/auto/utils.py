@@ -81,11 +81,9 @@ def verify_experiment(folder):
     return all(stages.values())
 
 
-def load_stage_snapshot(stage, folder, mismatch="ignore"):
-    """Load the snapshot of the given phase from the experiment."""
-    if mismatch not in ("ignore", "raise"):
-        raise ValueError(f"`mismatch` must be either 'ignore' or 'raise'.")
-
+def get_stage_snapshot(stage, folder):
+    """Get the filename of the snapshot of the given phase from the experiment.
+    """
     # synchronized with naming format at ./auto.py#L393
     pat = re.compile(r"^(\d+)-(\S+)\s+.*?(\d{8}-\d{6})\.gz$")
 
@@ -98,16 +96,29 @@ def load_stage_snapshot(stage, folder, mismatch="ignore"):
                      key=lambda m: time.strptime(m.group(3), "%Y%m%d-%H%M%S"))
     for m in matches:
         if m.group(2) == stage:
-            # load and validate stage ID
-            snapshot = load_snapshot(os.path.join(folder, m.string))
+            return os.path.join(folder, m.string)
 
-            # the snapshot is expected to comply with ./auto.py#L392-411
-            if snapshot["stage"][0] == stage:
-                return snapshot
-
-    if mismatch == "ignore":
-        return {}
     raise RuntimeError(f"'{stage}' not found.")
+
+
+def load_stage_snapshot(stage, folder, mismatch="ignore"):
+    """Load the snapshot of the given phase from the experiment."""
+    if mismatch not in ("ignore", "raise"):
+        raise ValueError(f"`mismatch` must be either 'ignore' or 'raise'.")
+
+    try:
+        # load and validate stage ID
+        snapshot = load_snapshot(get_stage_snapshot(stage, folder))
+
+        # the snapshot is expected to comply with ./auto.py#L392-411
+        if snapshot["stage"][0] == stage:
+            return snapshot
+
+    except RuntimeError:
+        if mismatch != "ignore":
+            raise
+
+    return {}
 
 
 def param_defaults(param, **defaults):
