@@ -147,10 +147,10 @@ Bayesian technique by conducting a large-scale numerical study of $\cplx$-valued
 on two tasks: image recognition on MNIST-like and CIFAR10 datasets and music transcription
 on MusicNet \citep{thickstun_learning_2017}.
 
-The paper is structured as follows. In sec.~\ref{sec:bayesian_dropout} we review Bayesian
+The paper is structured as follows. In sec.~\ref{sec:variational_dropout} we review Bayesian
 dropout techniques, and in sec.~\ref{sec:c_valued_networks} we provide a brief summary of
 the inner working of complex-valued networks as functions of complex argument. The main
-contribution of this study is presented in sec.~\ref{sec:dropout_for_c_valued_layers},
+contribution of this study is presented in sec.~\ref{sec:c_variational_dropout},
 where we consider different variational approximations and priors, outline the tricks
 and derive the penalty terms in the evidence lower bound. In sec.~\ref{sec:experiments}
 we evaluate the sparsification rate, compare the resulting performance of various $\cplx$-networks
@@ -159,8 +159,8 @@ proposed in prior work, and discuss the outcomes.
 % section introduction (end)
 
 
-\section{Bayesian Dropout} % (fold)
-\label{sec:bayesian_dropout}
+\section{Variational Dropout} % (fold)
+\label{sec:variational_dropout}
 
 In general, the core of Bayesian Inference can be summarized as follows: given a prior
 distribution $\pi(m)$ on models (hypotheses) $\mathcal{M}$, utilize the empirical evidence
@@ -306,9 +306,6 @@ for a random subsample $(z_{i_k})_{k=1}^M$ and iid $\varepsilon_k \sim p_\vareps
 %
 % (DSVI) titsias-lazaro.tex \todo{DSVI} \citep{titsias_doubly_2014}
 
-\subsection{Variational Dropout} % (fold)
-\label{sub:variational_dropout}
-
 With a special family of posterior approximation, Variational Inference can be used as
 a regularization method and as a model sparsification technique.
 
@@ -436,8 +433,6 @@ calculated using the ratio $
   \tfrac{\sigma^2}{\mu^2}
 $ when needed in the divergence term.
 
-% subsection dropout (end)
-
 % section bayesian_dropout (end)
 
 
@@ -494,16 +489,15 @@ $ for some $\real$-valued non-linearity $\sigma$, possibly with learnable parame
 % section c_valued_networks (end)
 
 
-\section{Dropout for $\cplx$-valued layers} % (fold)
-\label{sec:dropout_for_c_valued_layers}
+\section{$\cplx$-Variational Dropout} % (fold)
+\label{sec:c_variational_dropout}
 
-In this section we review the complex Gaussian distribution and discuss its properties. Then
-we introduce factorized dropout posterior for complex-valued parameters and the relevant
-version of the local reparameterization trick. Then we move on to choosing suitable priors
-and then to deriving explicit expressions for the divergence penalties in \eqref{eq:elbo}
-in terms of \verify{special} functions.
+We propose to use fully factorized complex Gaussian posterior approximation and $\cplx$
+variant of the local reparameterization trick to extend Bayesian Dropout techniques to
+$\cplx$-valued networks. In this section we describe the approximation and derive the
+divergence penalties in \eqref{eq:elbo}.
 
-\subsection{Complex Gaussians and Local Reparameterization} % (fold)
+\subsection{$\cplx$-Gaussian Distribution} % (fold)
 \label{sub:c_gauss_and_local_rep}
 
 A vector $z\in \cplx^m$ has complex Gaussian distribution, $
@@ -697,30 +691,28 @@ affine, and bilinear transformations ($
 $). Similar to $\real$ case, Variational Dropout for $\cplx$ convolutions draws independent
 realizations of $W$ for each spatial patch in the input \citep{molchanov_variational_2017}.
 This provides faster computations and better statistical efficiency of the SGVB gradient
-estimator stemming from decorrelated gradient estimates from overlapping patches
-\citep{kingma_variational_2015}, allowing \eqref{eq:cplx-gauss-trick} to leverage $\cplx$
-convolutions of the relation and variance kernels with elementwise complex squares $x^2$
-and amplitudes $\lvert x \rvert^2$.
+estimator by eliminating correlation from overlapping patches \citep{kingma_variational_2015}
+and allowing \eqref{eq:cplx-gauss-trick} to leverage $\cplx$ convolutions of the relation
+and variance kernels with elementwise complex squares $x^2$ and amplitudes $\lvert x \rvert^2$.
 % Weight sharing is essentially pushed to shared variational parameters $\theta$ in the approximation $q_\theta$.
 % A convolution is a matrix product of $W$, unrolled into a toeplitz matrix, and im-to-col
 % flattened intput $x$
 
-% subsection c_gauss_and_local_rep (end)
-
-\subsection{The choice of priors and Kullback-Leibler divergence} % (fold)
-\label{sub:priors_and_kullback_leibler_divergence}
-
 For $\cplx$-Bayesian Dropout we propose to use fully factorized proper $\cplx$-Gaussian
 approximation \eqref{eq:c-gauss-vi-general} for weights and point estimates of biases in
-dense linear, convolutional and other, effectively, affine layers, i.e. we let $
+dense linear, convolutional and other, effectively, affine layers, i.e. $
   \Sigma_{ij} = \alpha_{ij} \lvert \mu_{ij} \rvert^2
-$ and fix $C_{ij} = 0$. Under this approximation the relation coefficients in \eqref{eq:cplx-gauss-trick}
-are zero.
-%
+$ and $C_{ij} = 0$. This forces the relation coefficients in \eqref{eq:cplx-gauss-trick}
+to be zero.
+
+% subsection c_gauss_and_local_rep (end)
+
+\subsection{The priors} % (fold)
+\label{sub:the_priors}
+
 For a fully factorized approximation $q(\omega)$ and factorized prior belief $
   \pi(\omega) = \prod_{ij} \pi(\omega_{ij})
-$,
-the divergence term in ELBO \eqref{eq:elbo} is
+$, the divergence term in ELBO \eqref{eq:elbo} is
 \begin{equation}  \label{eq:elbo-general-kl-div}
   KL(q \| \pi)
     % = \mathbb{E}_{\oemga \sim q(\oemga)} \log \tfrac{q(\oemga)}{\pi(\oemga)}
@@ -959,7 +951,7 @@ applied.
 
 % subsection priors_and_kullback_leibler_divergence (end)
 
-% section dropout_for_c_valued_layers (end)
+% section c_variational_dropout (end)
 
 
 \section{Experiments} % (fold)
@@ -996,7 +988,7 @@ needed to store the model and equals $
 $, where $n_\mathtt{zer}$ is the number of explicit zeros, $n_\mathtt{par}$ is the total
 number of floats. In particular, each parameter is counted once in a $\real$-valued network,
 but twice in a $\cplx$-network. Each model has a compression limit, determined by its
-layers' biases, shift and scaling from $\real$-and $\cplx$-batch normalization.
+layers' biases, shift and scaling from $\real$- and $\cplx$-valued batch normalization.
 
 \subsection{Stagewise training} % (fold)
 \label{sub:fitting_and_sparsification}
@@ -1025,7 +1017,7 @@ layers sparser upon termination of this stage.
 
 % on compresssion
 Between \textit{``sparsify''} and \textit{``fine-tune''} stages we compute masks of non-zero
-weights in each layer based on the relevance scores $\alpha$ (sec.~\ref{sub:variational_dropout}).
+weights in each layer based on the relevance scores $\alpha$ (sec.~\ref{sec:variational_dropout}).
 Since the $q_\theta$ factorizes into univariate distributions, a $\cplx$ or $\real$ parameter
 is considered non-zero if $\log \alpha \leq \tau$ for $
   \alpha = \tfrac{\sigma^2}{\lvert\mu\rvert^2}
