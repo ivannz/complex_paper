@@ -958,28 +958,35 @@ applied.
 \label{sec:experiments}
 
 We study the compression-performance trade-off of the proposed Bayesian sparsification
-methods for $\cplx$-valued networks presented above on the datasets, that have been
-studied in prior research on complex-valued networks.
+method for $\cplx$-valued networks presented above on image classification and music
+annotation tasks.
+%
+Following \citet{wolter_complex_2018} and \citet{trabelsi_deep_2017}, the class logit scores
+are taken as real part of the complex-valued output of a network.
+%
+% image features
+Since image data is not naturally $\cplx$-valued, we preprocess it by either embedding
+$\real$-data into $\cplx$ assuming $\Im z = 0$ (\texttt{raw}), or applying the two-dimensional
+Fourier Transform (\texttt{fft}), shifting lower frequencies to the centre of the image.
+We do not investigate the option to train an auxiliary model to synthesize the imaginary
+component from the real data, proposed by \citet{trabelsi_deep_2017}.
 
 % setup and common experiment settings
 For each dataset we conduct a set of experiments in which we try out all combinations of
 model kinds ($\real$ or $\cplx$), sparsification methods (VD or ARD) and input features.
-Where reasonable, we also study the effects of halving ($\cplx$) or doubling ($\real$)
+Where reasonable, we also study the effects of halving ($\tfrac12\cplx$) and doubling ($2\real$)
 of the size of intermediate layers in each network \citep{monning_evaluation_2018}.
-%
-Each network within every experiment passes through three successive stages of training:
-pre-training, sparsification, and fine-tuning (sec.~\ref{sub:fitting_and_sparsification}).
 %
 Each experiment is replicated \textit{five} times to take into account random initialization,
 random order of the mini-batch during SGD, stochastic outputs of the intermediate layers,
 and non-determinism of single-precision computations on GPUs.
 
+Each network within every experiment passes through three successive stages of training:
+pre-training, sparsification, and fine-tuning (sec.~\ref{sub:fitting_and_sparsification}).
+%
 Unless specified otherwise, every experiment uses global gradient clipping within an
-$\ell_2$-norm ball of radius $0.5$, employs SGD with ADAM optimizer with the base learning
-rate of $10^{-3}$. We note that since our experiments are on classification tasks,
-$\cplx$-valued networks ultimately have to output a real-valued logit score. Following
-\citet{wolter_complex_2018} and \citet{trabelsi_deep_2017}, the class scores are taken
-as real parts of the $\cplx$ output.
+$\ell_2$-norm ball of radius $0.5$ and uses ADAM optimizer with the base learning rate
+of $10^{-3}$.
 
 % write a note on the incompressible parameters (bias, batch norm etc.)
 The compression rate is computed based on the number of IEEE754 floating point values
@@ -1108,12 +1115,6 @@ is a wide dense network $n_1 \to n_\mathtt{out}$. For SCM model $n_1, n_2, n_3$ 
 respectively, and for TLDM model $n_1 = 4096$ regardless of their type ($\real$ or $\cplx$),
 although \citet{monning_evaluation_2018} argue that this renders models incomparable.
 
-% image features
-Since image data is not naturally $\cplx$-valued, we preprocess images by either embedding
-$\real$-data into $\cplx$ assuming $\Re z = 0$ (\texttt{raw}), or applying the two-dimensional
-Fourier Transform (\texttt{fft}), shifting lower frequencies to the centre of the image. We
-do not investigate the option, proposed by \citet{trabelsi_deep_2017}, to train an auxiliary
-model to synthesize the imaginary component from the real data.
 
 % first experiment: 40-75-40 with fast scheduler
 In this experiment stages last for $40$, $75$ and $40$ epochs, respectively, and the base
