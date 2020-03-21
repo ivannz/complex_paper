@@ -1,4 +1,4 @@
-\documentclass[a4paper,10pt,onecolumn]{article}
+\documentclass[a4paper,10pt,twocolumn]{article}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -413,12 +413,12 @@ $ in a linear layer is pushed to its output $
   y = b + W^\top x
 $,
 \begin{equation}  \label{eq:r-gauss-trick}
-    q(y) = \prod_i \mathcal{N}\Bigl(
-          y_i \big\vert\,
-          b_i + \sum_j \mu_{ij} x_j,
-          \sum_j \alpha_{ij} \mu_{ij}^2 x_j^2
-      \Bigr)
-    \,.
+  q(y) = \prod_i \mathcal{N}\Bigl(
+        y_i \big\vert\,
+        b_i + \sum_j \mu_{ij} x_j,
+        \sum_j \alpha_{ij} \mu_{ij}^2 x_j^2
+    \Bigr)
+  \,.
 \end{equation}
 %
 \citet{kingma_variational_2015} show, that for the case of fully factorized Gaussian
@@ -965,62 +965,108 @@ applied.
 \section{Experiments} % (fold)
 \label{sec:experiments}
 
-In this section we study the complex variational dropout techniques discussed above
-on the tasks and datasets, that have been studied in prior research on complex-valued networks.
+We study the compression-performance trade-off of the proposed Bayesian sparsification
+methods for $\cplx$-valued networks presented above on the datasets, that have been
+studied in prior research on complex-valued networks.
 
-% common experiment settings
-Every experiment is replicated several times to take random effects into account, e.g.
-random network initialization prior to training, randomly ordered batches during SGD.
+% setup and common experiment settings
+For each dataset we conduct a set of experiments in which we try out all combinations of
+model kinds ($\real$ or $\cplx$), sparsification methods (VD or ARD) and input features.
+Where reasonable, we also study the effects of halving ($\cplx$) or doubling ($\real$)
+of the size of intermediate layers in each network \citep{monning_evaluation_2018}.
+%
+Each network within every experiment passes through three successive stages of training:
+pre-training, sparsification, and fine-tuning (sec.~\ref{sub:fitting_and_sparsification}).
+%
+Each experiment is replicated \textit{five} times to take into account random initialization,
+random order of the mini-batch during SGD, stochastic outputs of the intermediate layers,
+and non-determinism of single-precision computations on GPUs.
+
 Unless specified otherwise, every experiment uses global gradient clipping within an
-$\ell_2$-norm ball of radius $0.5$, runs SGD with ADAM optimizer with the base learning
+$\ell_2$-norm ball of radius $0.5$, employs SGD with ADAM optimizer with the base learning
 rate of $10^{-3}$. We note that since our experiments are on classification tasks,
 $\cplx$-valued networks ultimately have to output a real-valued logit score. Following
 \citet{wolter_complex_2018} and \citet{trabelsi_deep_2017}, the class scores are taken
 as real parts of the $\cplx$ output.
 
+% write a note on the incompressible parameters (bias, batch norm etc.)
+The compression rate is computed based on the number of IEEE754 floating point values
+needed to store the model and equals $
+  \tfrac{n_\mathtt{par}}{n_\mathtt{par} - n_\mathtt{zer}}
+$, where $n_\mathtt{zer}$ is the number of explicit zeros, $n_\mathtt{par}$ is the total
+number of floats. In particular, each parameter is counted once in a $\real$-valued network,
+but twice in a $\cplx$-network. Each model has a compression limit, determined by its
+layers' biases, shift and scaling from $\real$-and $\cplx$-batch normalization.
 
-\subsection{Stagewise fitting and sparsification} % (fold)
+\subsection{Stagewise training} % (fold)
 \label{sub:fitting_and_sparsification}
 
-The goal of this section to study the compression-performance trade-off of the proposed Bayesian
-sparsification methods for $\cplx$-valued networks. To this end we trained each network in
-three successive stages in every experiment: ``dense'' $\to$ ``sparsify'' $\to$ ``fine-tune''.
+% The training consists of three successive stages: ``dense'' $\to$ ``sparsify'' $\to$ ``fine-tune''.
 
 At the \textit{``dense''} stage every network is fit ``as-is'', retaining its original
-non-Bayesian architecture and using only the likelihood term from \eqref{eq:elbo} without
+non-Bayesian architecture, and using only the likelihood term from \eqref{eq:elbo} without
 variational dropout.
-%
-During the \textit{``sparsify''} stage we make every layer Bayesian and apply $\cplx$-variational
-dropout sec.~\ref{ssub:vd_prior} (or sec.~\ref{ssub:ard_prior}) or its $\real$
-counterpart. To be able to study the attainable sparsity levels we inject a coefficient $
-  C \in (0, 1]
-$ at the KL divergence term in \eqref{eq:elbo}:
-\begin{equation}  \label{eq:elbo_with_coef}
-    - \frac{C}N KL(q_{\theta} \| \pi_{\lambda})
-    + \frac1{M} \sum_{i=1}^M
-        \log p_{\phi}(z_i \mid g(\varepsilon_i; \theta))
-    \,.
-    \tag{\ref{eq:elbo}'}
-\end{equation}
-Higher $C$ yields increasingly more sparse layers upon termination of this stage.
 
-The \textit{``fine-tune''} stage begins with computing the sparsity masks from the fitted
-approximation $q_\theta(W)$ and proceeds to train the non-zero parameters similarly to
-the ``dense'' stage, i.e. with non-Bayesian layers and fixed sparsity masks. 
+During the \textit{``sparsify''} stage we make every layer Bayesian and apply $\cplx$-variational
+dropout sec.~\ref{ssub:vd_prior} (or sec.~\ref{ssub:ard_prior}) or its $\real$ counterpart.
+We inject a coefficient $
+  C \in (0, 1]
+$ at the KL divergence term in \eqref{eq:elbo} to study the attainable sparsity levels:
+\begin{equation}  \label{eq:elbo_with_coef}
+  - \frac{C}N KL(q_{\theta} \| \pi_{\lambda})
+  + \frac1{M} \sum_{k=1}^M
+      \log p_{\phi}(z_{i_k} \mid g(\varepsilon_k; \theta))
+  \,.
+  \tag{\ref{eq:elbo}'}
+\end{equation}
+By varying $C$ we adjust the importance of the sparsifying prior in learning $q_\theta(W)$,
+meaning that higher value yields more irrelevant parameters during in inference and makes
+layers sparser upon termination of this stage.
+
+% on compresssion
+Between \textit{``sparsify''} and \textit{``fine-tune''} stages we compute masks of non-zero
+weights in each layer based on the relevance scores $\alpha$ (sec.~\ref{sub:variational_dropout}).
+Since the $q_\theta$ factorizes into univariate distributions, a $\cplx$ or $\real$ parameter
+is considered non-zero if $\log \alpha \leq \tau$ for $
+  \alpha = \tfrac{\sigma^2}{\lvert\mu\rvert^2}
+$, or zero otherwise.
+
+The \textit{``fine-tune''} stage reverts the network back to non-Bayesian layers, applies
+sparsity masks to its parameters and proceeds with training the kept parameters as during
+the ``dense'' stage. Unless specified otherwise the network is initialized to the mode
+of the learnt $q_\theta(W)$.
+
+% on chosing the threshold
+The threshold $\tau$ is picked so, that the remaining non-zero parameters are within
+$\delta$ relative tolerance of their mode with high probability under the approximate
+posterior. Since $q_\theta$ is fully factorized $\real$- or a proper $\cplx$-Gaussian,
+the random variable $
+  \tfrac{k \lvert w - \mu \rvert^2}
+        {\alpha \lvert \mu \rvert^2}
+$ is $\chi^2_k$ distributed with $k=1$ ($\real$) or $2$ ($\cplx$).
 %
-The benefit of the ``fine-tune'' stage appears to be strongly influenced by the compression
+For a generous tolerance $\delta = 50\%$ all values of $\log \alpha$ below $-2.5$ yield
+at least $90\%$ chance of a non-zero $\real$/$\cplx$ parameter. We pick $\tau = -\tfrac12$
+to retain parameters sufficiently concentrated around their mode, and encourage higher
+sparsity, at the same time being aware that $q_\theta$ is merely an approximation.
+In comparison, $\tau = 3$ is commonly used as the threshold
+\citep{molchanov_variational_2017,kingma_variational_2015}.
+
+% subsection fitting_and_sparsification (end)
+
+
+\subsection{Metrics and compression} % (fold)
+\label{sub:metrics_and_compression}
+
+% conlcusions
+The impact of the ``fine-tune'' stage appears to be strongly influenced by the compression
 rate. We can observe in this and, more prominently, in MusicNet experiment (sec.~\ref{sub:musicnet})
 that higher compression rate render the model more regularized, leaving less capacity for
 overfitting.
 % more ``holes'' Bayesian dropout ``poked'' makes the ``fine-tune'' serve as extended training.
 
-% on compresssion
-Between \textit{``sparsify''} and \textit{``fine-tune''} stages we compute masks of non-zero
-weights in each layer based on the relevance scores $\alpha$ (sec.~\ref{sub:variational_dropout}). Since
-the $q_\theta$ factorizes into univariate distributions, a $\cplx$ or $\real$ parameter is
-considered non-zero if $\log \alpha \leq \tau$ for $
-  \alpha = \tfrac{\sigma^2}{\lvert\mu\rvert^2}
-$, or zero otherwise. Figure~\ref{fig:hist__and__threshold__tradeoff} is constructed
+% effects of extra training epochs and the impact of tau
+Figure~\ref{fig:hist__and__threshold__tradeoff} is constructed
 for $C \in \{\tfrac1{20}, \frac1{200}\}$ before running the ``fine-tune'' stage. From
 \eqref{eq:elbo_with_coef}, the relative positions of the compression curves on this
 plot, and the results of experiments below it can be concluded that $C$ has much more
@@ -1039,43 +1085,11 @@ for $\tau > 0$ the performance quickly saturates while compression creeps downwa
   \label{fig:hist__and__threshold__tradeoff}
 \end{figure}
 
-% on chosing the threshold
-The threshold $\tau$ is picked so, that the remaining \textit{``non-zero''} parameters
-are within $\delta$ relative tolerance of their mean with high probability under the
-approximate posterior $q_\theta(W)$. This ensures that stochastic parameters are sufficiently
-concentrated around $\mu$, which are used as stand-in values for network weights $W$,
-when it runs in inference mode. Since $W$ is $\real$- or a proper $\cplx$-Gaussian, the
-random variable $
-  \tfrac{k \lvert W - \mu \rvert^2}
-        {\alpha \lvert \mu \rvert^2}
-$ is $\chi^2_k$ distributed with $k=1$ ($\real$) or $2$ ($\cplx$).
-%
-For a generous tolerance $\delta = 50\%$ all values of $\log \alpha$ below $-2.5$ yield
-at least $90\%$ chance of a non-zero $\real$/$\cplx$ parameter. We pick $\tau = -\tfrac12$
-to exclude noisy parameters and encourage higher sparsity, at the same time being aware
-that $q_\theta$ is merely an approximation. In comparison, $\tau = 3$ is commonly used as
-the threshold \citep{molchanov_variational_2017,kingma_variational_2015}.
-
-% subsection fitting_and_sparsification (end)
-
-
-\subsection{Metrics and compression} % (fold)
-\label{sub:metrics_and_compression}
-
 % perfromance metrics
 We use accuracy as the performance metric for multi-class image classification on MNIST-like
 and CIFAR10 datasets. Similarly to \citet{trabelsi_deep_2017} performance in experiments with
 MusicNet is measured with (pooled) average precision. The evaluation is done after ``dense''
 stage, before the beginning and upon termination of the ``fine-tune'' stage.
-
-% write a note on the incompressible parameters (bias, batch norm etc.)
-The compression rate is computed based on the number of floating point values needed to
-store the model and equals $
-  \tfrac{n_\mathtt{par}}{n_\mathtt{par} - n_\mathtt{zer}}
-$, where $n_\mathtt{zer}$ is the number of explicit zeros, $n_\mathtt{par}$ is the total
-number of floats. Thus each parameter is counted once in a $\real$-valued network, but twice
-in a $\cplx$-network. Each model has compression limit, set by layers' biases, shift
-and scaling from $\real$-and $\cplx$-batch normalization.
 
 % subsection metrics_and_compression (end)
 
@@ -1254,9 +1268,6 @@ frequencies to the centre of the window to maintain locality after applying the 
 \end{figure}
 
 In each experiment we vary the method and the value $C$, while keeping $\tau$ at $-\tfrac12$.
-Every experiment is replicated five times to take into account the random effects from
-initialization, batch sequence during SGD, and stochasticity of intermediate layers on
-forward pass at ``sparsify'' stage.
 
 Figure~\ref{fig:musicnet__trade-off} shows the resulting performance-compression frontier
 for the deep network of \citet{trabelsi_deep_2017} and its version, in which we purposefully
@@ -1670,7 +1681,7 @@ to \eqref{eq:real-kl-div-deriv-log}. We compute a similar Monte-Carlo estimate f
 $\cplx$ variational dropout KL divergence term in \eqref{eq:c-vd-kl-div} with $\beta = 2$,
 fit the best approximation \eqref{eq:improper-kl-div-real-approx}, and compare the derivatives.
 
-\begin{figure}[!h]
+\begin{figure}[!t]
   \centering
   \includegraphics[width=\columnwidth]{grad_log.pdf}
   \caption{$\tfrac{d f(\alpha)}{d \log{\alpha}}$ of the fit proposed by
@@ -1728,10 +1739,7 @@ We recap the set-up of each additional experiment on MNIST-like datasets:
   \item the sparsification threshold $\tau$ is set to $-\tfrac12$
 \end{itemize}
 Each experiment has been performed $5$ times to obtain a small sample of performance-compression
-values for each setting of $C$. By reevaluating each setting several times we can account
-for randomness in initialization of the uncompressed network at ``dense'', stochasticity of
-variational dropout layers, randomness of batch sequences during SDG, and non-determinism
-of computations on GPUs.
+values for each setting of $C$.
 
 Each figure shows the compression-accuracy trade-off of a particular method and input features
 for \textit{SimpleConvModel} and \textit{TwoLayerDenseModel} models for all four of the studied
