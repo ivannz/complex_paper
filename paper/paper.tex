@@ -1097,7 +1097,7 @@ input features, and repeat each experiment $5$ times to get a sample of compress
 pairs.
 
 % a couple of plots from MNIST and Fashion-MNIST
-\begin{figure}[!ht]
+\begin{figure}[!t]
   \centering
   \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
     \centering
@@ -1115,7 +1115,7 @@ pairs.
   \label{fig:mnist-like__trade-off__fft}
 \end{figure}
 
-\begin{figure}[!ht]
+\begin{figure}[!t]
   \centering
   \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
     \centering
@@ -1176,45 +1176,46 @@ features as the latter.
 \subsection{CIFAR10} % (fold)
 \label{sub:cifar10}
 
-We use accuracy as the performance metric for multi-class image classification on CIFAR10 datasets. 
+We conduct an experiment on the CIFAR10 classification dataset \citep{krizhevsky_learning_2009}
+comprising $32\times 32$ color images of $10$ classes to study the compression-performance
+trade-off of a moderately large deep network.
+% same experimental setup as in MNIST, describe the VGG16 model and its cplx-valued modification
+The experiment is set up similarly to MNIST-like experiment, except that we train $\real$
+VGG16 network \citep{simonyan_very_2015} and its $\cplx$ variant, in which we have replaced
+$\real$-valued layers with their $\cplx$-valued counterparts. $\real$ and $\cplx$ VGG16 have
+the same feature sizes in intermediate layers.
 
-% mention the same experimental setup as in MNIST
-Experiments on CIFAR10 dataset are set up similarly to MNIST-like experiment, except
-that we study VGG16 model \citep{simonyan_very_2015} and its $\cplx$-counterpart and
-replicate each experiment only twice.
+% differences with mnist
+Unlike experiment in sec.~\ref{sub:mnist_like_datasets}, we consider the raw features only,
+use full training split, and allocate $20$, $40$, and $20$ epochs to each stage. During training
+the mini-batch of $128$ samples is randomly augmented by randomly flipping horizontally and
+cropping. Random cropping is done by zero-padding each side by four pixels and extracting a
+random $32\times 32$ patch from the $40\times 40$ intermediate image.
 %
-% describe the VGG16 model and its cplx-valued modification
-The $\cplx$-VGG16 model is architecturally identical to VGG16, except for all layers being
-replaced by their $\cplx$-valued versions. We halve the sizes of intermediate layers in
-$\cplx$ model to assess comparability \citep{monning_evaluation_2018}.
-%
-Each network is trained stagewise for $20$, $40$,
-and $20$ epochs on the full training split of $50k$ colour $32\times32$ images. We use
-only raw colour features (\texttt{raw}). We apply random crop and horizontal flips as
-data augmentation and use a learning rate scheduler in SGD, which scales the base learning
-rate after $5$, $10$, and $20$-th epoch by $\tfrac1{10}$, $\tfrac1{20}$ and $\tfrac1{100}$,
-respectively.
-
-% draw some conclusions
-Figure~\ref{fig:figure__cifar10__trade-off} shows that although the prior used in ARD method
-offers slightly less compression, it makes up for it by equally slightly better accuracy.
-Furthermore, the results imply that that the halved $\cplx$ network visibly underperforms
-in comparison with its $\real$ counterpart, although in MNIST-like experiment $\cplx$-valued
-network with the same inner feature dimensions demonstrates trade-off very similar to
-$\real$-network, which has half the number of real parameters than the former.
+We vary $C$ in \eqref{eq:elbo_with_coef} over $
+  \{\tfrac32 2^{-\tfrac{k}2} \colon k=7, \cdots, 15\}
+$, compare VD and ARD methods, and measure accuracy on CIFAR10 test split.
 
 % compare compressed cplx-vgg against real-vgg
 \begin{figure}[!t]
   \centering
   \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
-    \centering
-    \includegraphics[width=\columnwidth]{figure__cifar__trade-off/legacy__augmentedcifar10__raw__-0.5.pdf}
+    % \includegraphics[width=\columnwidth]{figure__cifar__trade-off/legacy__augmentedcifar10__raw__-0.5.pdf}
+    \includegraphics[width=\columnwidth]{figure__cifar__trade-off/appendix__augmentedcifar10__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
-    Compression-accuracy frontier for $\real$ and $\tfrac12 \cplx$ versions of VGG16 on CIFAR10.
+    The compression-accuracy frontier for VGG16 ($\real$ and $\cplx$) on CIFAR10.
   }
   \label{fig:figure__cifar10__trade-off}
 \end{figure}
+
+% draw some conclusions
+Figure~\ref{fig:figure__cifar10__trade-off} shows that, although ARD method offers slightly
+less compression, it makes up for it by marginally better accuracy post fine-tune. VGG16 and
+$\cplx$-VGG16 exhibit similar declining compression-accuracy trade-off, but due to higher
+capacity $\cplx$-valued network yields higher accuracy \citep{monning_evaluation_2018}. Unlike
+MNIST, fine-tuning stage significantly improves the test performance, which, we speculate, might
+be due to dataset augmentation and deeper model.
 
 % subsection cifar10_100 (end)
 
@@ -1980,45 +1981,6 @@ double the number of parameters against $\cplx$ for Fourier input features on fi
 \end{figure}
 
 % section mnist_like_experiments (end)
-
-\clearpage
-
-\section{CIFAR10 experiments} % (fold)
-\label{sec:cifar_experiments}
-
-In addition to the results reported in the main paper, we conduct additional experiment
-on CIFAR10 and VGG16 with a much more slowly annealed learning rate. Similar to MNIST-like
-experiments, we start with the rate set to $10^{-3}$ and then reduce it by $10$ after the
-$10$-the epoch. In summary, for the CIFAR10 experiments we reuse the set-up with the following
-changes:
-\begin{itemize}
-  \item we allocate $20$, $40$, and $20$ epochs to each stage
-  \item the weight of the KL divergence term varies over a smaller grid $
-    C \in \{
-      \tfrac32 2^{-\tfrac{k}2} \colon k=7, \cdots, 15
-    \}
-  $
-  \item we use full $50$k training split of the CIFAR10 dataset for training and raw color
-  features only
-  \item dataset is randomly augmented: every image within a batch of size $128$ is randomly
-  cropped and flipped horizontally
-\end{itemize}
-Random cropping is done by zero-padding each side of a $32\times 32$ image by four pixels
-and then a extracting a random $32\times 32$ patch from the $40\times 40$ intermediate image.
-
-We experiment with $\real$ VGG16 network \citep{simonyan_very_2015} and its $\cplx$-valued
-variant, which straightforwardly replaces $\real$ layers with their $\cplx$ counterparts.
-
-\begin{figure}[htb]
-  \centering
-  \includegraphics[width=\columnwidth]{figure__cifar__trade-off/appendix__augmentedcifar10__raw__-0.5.pdf}
-  \caption{%
-    The compression-accuracy trade-off for $\real$ and $\cplx$ VGG16 using raw input features.
-  }
-  \label{fig:appendix__cifar__trade-off__VGG16__raw}
-\end{figure}
-
-% section cifar_experiments (end)
 
 \section{Backpropagation through $\cplx$-networks} % (fold)
 \label{sub:wirtinger_calculus}
