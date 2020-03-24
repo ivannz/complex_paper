@@ -80,23 +80,25 @@ relevant.
 Inherently complex-valued nature of data in signal processing, specifically, acoustic or radio
 frequency signal analysis, has been the key driver behind the adoption of $\cplx$-networks.
 %
-\citet{hirose_complex-valued_2009} argues that the key merit of $\cplx$-valued neural
-networks is simultaneous phase rotation and amplitude adjustment, intrinsic to multiplication
-in $\cplx$ field. Despite inherently higher arithmetic complexity, which stems from up to four
-floating point operations per single $\cplx$ multiplication
-$\cplx$-arithmetic reduces ineffective degrees of freedom in comparison with an analogous
-double-dimensional $\real$-valued network. \citet{hirose_complex-valued_2009} lists numerous
-applications related to acoustic and radio signal processing and demonstrates superiority of
-$\cplx$-networks in the task of shallow landmine detection using ground penetrating radar
-imaging. More recently they have been applied to music transcription and speech recognition
-\citep{trabelsi_deep_2017}. \citet{arjovsky_unitary_2016} propose $\cplx$-valued unitary-RNNs
-to deal with exploding~/~vanishing gradients and apply the recurrent models to long-term
-dependence prediction tasks. \citet{wisdom_full-capacity_2016} expand on their work by optimizing
-recurrent weights on the $\cplx^{n \times n}$ Stiefel manifold. And \citet{wolter_complex_2018}
-investigate different $\cplx$-valued gating mechanisms for unitary-RNNs and conduct experiments
-on human motion prediction and music transcription. \citet{yang_complex_2019} develop complex
+\citet{hirose_complex-valued_2009} argues that $\cplx$-valued networks merit from the
+simultaneous phase rotation and amplitude adjustment, intrinsic to $\cplx$ arithmetic,
+which reduce ineffective degrees of freedom in comparison with an double-dimensional
+$\real$-valued networks. Their study lists numerous applications related to acoustic
+and radio signal processing and demonstrates superiority of $\cplx$-networks in the
+task of shallow landmine detection using ground penetrating radar imaging, in spite of
+inherently higher arithmetic complexity of $\cplx$-networks, stemming from $3-4$ floating
+point operations per single $\cplx$ multiplication. More recently $\cplx$-networks have
+been applied to music transcription and speech recognition \citep{trabelsi_deep_2017}.
+\citet{arjovsky_unitary_2016} propose $\cplx$-valued unitary-RNNs to deal with exploding~/~vanishing
+gradients and apply the recurrent models to long-term dependence prediction tasks.
+\citet{wisdom_full-capacity_2016} expand on their work by optimizing recurrent weights on
+the $\cplx^{n \times n}$ Stiefel manifold. And \citet{wolter_complex_2018} investigate
+different $\cplx$-valued gating mechanisms for unitary-RNNs and conduct experiments on
+motion prediction and music transcription. \citet{yang_complex_2019} develop complex
 transformer, with $\cplx$-attention and complex encoder-decoder, and apply it to music
-transcription and wireless signal classification.
+transcription and wireless signal classification. \citet{tarver_design_2019} achieve
+significantly lower out-of-band performance with a $\cplx$-valued network in Digital Signal
+Predistortion task.
 
 % complex-valued distributions \citep{pav_moments_2015,taubock_complex-valued_2012},
 % and \citep{karseras_caution:_2014}
@@ -495,7 +497,10 @@ $ for some $\real$-valued non-linearity $\sigma$, possibly with learnable parame
 We propose to use fully factorized complex Gaussian posterior approximation and $\cplx$
 variant of the local reparameterization trick to extend Bayesian Dropout techniques to
 $\cplx$-valued networks. In this section we describe the approximation and derive the
-divergence penalties in \eqref{eq:elbo}.
+divergence penalties in \eqref{eq:elbo}. Similarly to $\real$-valued Variational Dropout,
+the proposed $\cplx$-valued extension can be straightforwardly enhanced to provide
+structured sparsity.
+
 
 \subsection{$\cplx$-Gaussian Distribution} % (fold)
 \label{sub:c_gauss_and_local_rep}
@@ -956,7 +961,7 @@ be disentangled from the local output noise by additive reparameterization.
 \section{Experiments} % (fold)
 \label{sec:experiments}
 
-We study the compression-performance trade-off of the proposed Bayesian sparsification
+We study the performance-compression trade-off of the proposed Bayesian sparsification
 method for $\cplx$-valued networks presented above on image classification and music
 annotation tasks.
 %
@@ -1058,7 +1063,7 @@ In comparison, $\tau = 3$ is commonly used as the threshold
 \label{sub:mnist_like_datasets}
 
 We conduct a moderately sized experiment on MNIST-like datasets of $28\times 28$ greyscale
-images to study the compression-performance trade-off of the proposed $\cplx$-variational
+images to study the performance-compression trade-off of the proposed $\cplx$-variational
 dropout: MNIST \citep{lecun_gradient-based_1998}, KMNIST \citep{clanuwat_deep_2018},
 EMNIST \citep{cohen_emnist_2017} and Fashion-MNIST \citep{xiao_fashion-mnist_2017}.
 %
@@ -1177,7 +1182,7 @@ features as the latter.
 \label{sub:cifar10}
 
 We conduct an experiment on the CIFAR10 classification dataset \citep{krizhevsky_learning_2009}
-comprising $32\times 32$ color images of $10$ classes to study the compression-performance
+comprising $32\times 32$ color images of $10$ classes to study the performance-compression
 trade-off of a moderately large deep network.
 % same experimental setup as in MNIST, describe the VGG16 model and its cplx-valued modification
 The experiment is set up similarly to MNIST-like experiment, except that we train $\real$
@@ -1348,21 +1353,18 @@ downwards.
 \section{Conclusion} % (fold)
 \label{sec:conclusion}
 
-Despite having higher arithmetic complexity, complex-valued models provide built-in
-amplitude-phase transformations and regularization \citep{hirose_complex-valued_2009}
-and enjoy superior performance on naturally $\cplx$-valued datasets \citep{tarver_design_2019}.
-In this study we address the issue of excessive arithmetic complexity of complex-valued
-networks by extending the existing Bayesian compression techniques by \citet{kingma_variational_2015},
+In this study we have extended Variational Dropout methods of \citet{kingma_variational_2015},
 \citet{molchanov_variational_2017} and \citet{kharitonov_variational_2018} to $\cplx$-valued
-parameters. To this end we have conducted a large numerical study of such networks to assess
-the performance-compression rate trade-off and have achieved performance comparable to
-the state-of-the-art in $\cplx$-valued networks on the MusicNet dataset.
+Bayesian networks. To validate the proposed technique we have conducted a large numerical
+study of complex-valued networks with simple architectures in image recognition tasks to
+assess the feasible performance-compression trade-off. At the cost of marginally lower performance,
+we have achieved $50-100\times$ compression of the state-of-the-art deep $\cplx$-valued network
+of \citet{trabelsi_deep_2017} on the MusicNet.
 
-Much like $\real$-valued variational dropout, the proposed $\cplx$-valued extension can be
-straightforwardly enhanced to provide structured sparsity. The results of this study have
-direct implications for real-time signal processing with embedded deep learning applications
-both in terms of lower storage requirements and higher throughput stemming from fewer
-floating-point multiplications.
+The results of this study have direct implications for real-time signal processing with
+embedded deep learning applications both in terms of lower storage requirements and higher
+throughput stemming from fewer floating-point multiplications, despite higher arithmetic
+complexity of $\cplx$-valued networks.
 
 % section conclusion (end)
 
