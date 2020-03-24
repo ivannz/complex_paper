@@ -1220,34 +1220,45 @@ be due to dataset augmentation and deeper model.
 % subsection cifar10_100 (end)
 
 
-\subsection{musicNet} % (fold)
+\subsection{MusicNet} % (fold)
 \label{sub:musicnet}
 
 % describe musicnet as in Trabelsi et al. (2017) also get some hints from thickstun_learning_2017
-MusicNet \citep{thickstun_learning_2017} is an annotated audio dataset, consisting of $330$
-musical compositions. Following \citet{trabelsi_deep_2017}, we use it in automatic music
-transcription task and study the $1d$ VGG-like $\cplx$-convent proposed therein. Similarly to
-the study, we downsample the audio from 44.1kHz to 11kHz, retain only $84$ out of $128$ labels,
-and hold-out the same validation and test splits. During each training epoch we sample $1000$
-mini-batches of the remaining $321$ compositions, with each mini-batch comprised of a random
-full window of $4096$ samples picked from each waveform and transformed from $\real$ to
-$\cplx$ with $1d$ FFT. Annotation labels are taken at the mid-point of the window.
+We use MusicNet \citep{thickstun_learning_2017}, an audio dataset of $330$ annotated
+musical compositions, to investigate compressibility of the $1d$ VGG-like $\cplx$-convent
+proposed by \citet{trabelsi_deep_2017}. Similarly to the study, we downsample the audio
+from 44.1kHz to 11kHz, retain only $84$ out of $128$ labels, and hold-out the same validation
+and test compositions, on which we score the models with the pooled average precision.
+Each epoch lasts for $1000$ random mini-batches of the remaining $321$ pieces. The input
+features are $\cplx$-valued Fourier transformed windows of $4096$ samples from each waveform.
+The label vectors are taken from annotations at the middle of the window.
 
-Preliminary experiments with the model without sparsification have shown that early stopping
-almost always terminates the training process within the first $10-20$ epochs with the validation
-performance peaking at $10-15$ epochs, much sooner than $200$ epochs used by \citet{trabelsi_deep_2017}.
-Thus we adopt shorter lasting stages: $12$, $32$ and $50$ epochs, which essentially turn the
-``dense'' stage into pretraining. Early stopping is used only during the ``fine-tune'' stage.
-To keep the learning rate schedule consistent, we allow the base rate of $10^{-3}$ to be scaled
-after $5$, $10$, and $20$-th epoch by $\tfrac1{10}$, $\tfrac1{20}$ and $\tfrac1{100}$, respectively.
-Other key deviations from the set-up used by \citet{trabelsi_deep_2017} include: shifting lower
-frequencies to the centre of the window to maintain locality after applying the FFT
-(sec.~\ref{sub:mnist_like_datasets}), and clipping $\ell_2$ norm of the gradients to $0.05$.
+Experiments with the uncompressed model aimed at replicating the result of \citet{trabelsi_deep_2017}
+have shown that early stopping almost always terminates much sooner, than $200$ epochs used
+in their study: within the first $10-20$ epochs with the validation performance peaking at
+$10-15$ epochs and steadily declining afterwards.
+%
+Thus we opt to use shorter stages: $12$, $32$ and $50$ epochs (sec.~\ref{sub:staging}), with
+early stopping activated only during the ``fine-tune'' stage. To keep the learning rate schedule
+consistent, we scale the learning rate of $10^{-3}$ after $5$, $10$, and $20$-th epoch by
+$\tfrac1{10}$, $\tfrac1{20}$ and $\tfrac1{100}$, respectively.
 
-% perfromance metrics
-Similarly to \citet{trabelsi_deep_2017} performance in experiments with
-MusicNet is measured with (pooled) average precision. The evaluation is done after ``dense''
-stage, before the beginning and upon termination of the ``fine-tune'' stage.
+We deviate from the set-up used by \citet{trabelsi_deep_2017} by clipping $\ell_2$ norm of the
+gradients to $0.05$ and shifting the low frequencies of the input to the centre to maintain
+spatial locality for convolutions.
+
+We test complex ARD (sec.~\ref{ssub:ard_prior}) and VD (sec.~\ref{ssub:vd_prior}) methods
+and vary $
+  C \in \{\tfrac14, \tfrac12, \tfrac34, 1\} \cdot 10^{-k}
+$ for $k=1, 2, 3$, while keeping $\tau$ at $-\tfrac12$. The performance is measured after
+``dense'' stage, before the beginning and upon termination of fine-tuning.
+%
+Additionally, we test the model of \citet{trabelsi_deep_2017}, in which we purposefully
+halve the receptive field of the first convolution from $6$ to $3$ (denoted by suffix $k_3$).
+The motivation is to test if the handicap introduced by the forced compression of the most
+upstream layer can be alleviated by non-uniform compression, induced by variational dropout.
+We test only complex VD in this sub-experiment, since prior results have not demonstrated
+significant superiority of one method over another.  % it should've been ARD
 
 \begin{figure}[!t]
   \centering
@@ -1256,38 +1267,52 @@ stage, before the beginning and upon termination of the ``fine-tune'' stage.
     \includegraphics[width=\columnwidth]{figure__musicnet__trade-off/paper__musicnetram__fft__-0.5.pdf}
   \end{subfigure}
   \caption{%
-    Performance-compression trade-off using \textbf{\color{blue} VD} and \textbf{\color{orange} ARD}.
-    The \textbf{\color{pink} version} of the network with kernel $3$ in the first convolution is
-    compressed with VD only.
+    Performance-compression curve for \textbf{\color{blue} VD}, \textbf{\color{orange} ARD},
+    and the ${\color{pink} k_3}$ version compressed with VD.
   }
   \label{fig:musicnet__trade-off}
 \end{figure}
 
-In each experiment we vary the method and the value $C$, while keeping $\tau$ at $-\tfrac12$.
+Figure~\ref{fig:musicnet__trade-off} shows the resulting performance-compression frontier.
+ARD slightly outperforms VD in terms of performance, but both deliver similar compression
+rates. The trade-off demonstrates that with the proposed $\cplx$-valued variational dropout
+methods (sec.~\ref{sec:c_variational_dropout}) and post-sparsification fine-tuning it is
+possible to achieve average precision level comparable to the result of \citet{trabelsi_deep_2017}
+with a model compressed $50\times$-$200\times$. Furthermore, the $k_3$ model, compressed
+$110 \times$ with $\cplx$ VD, outperforms its uncompressed baseline, but yields lower
+performance than the full model.
 
-Figure~\ref{fig:musicnet__trade-off} shows the resulting performance-compression frontier
-for the deep network of \citet{trabelsi_deep_2017} and its version, in which we purposefully
-halve the spatial size of the first $1d$ convolution kernel from $6$ to $3$ (denoted by
-suffix \textit{k}$3$). The motivation is to test if the handicap introduced by the forced
-compression of the most upstream layer can be alleviated through non-uniform compression,
-induced by variational dropout. We test only VD (sec.~\ref{ssub:vd_prior}) this
-sub-experiment, since prior results have not demonstrated significant superiority of one method
-over another (sec.~\ref{ssub:ard_prior}).
+\begin{figure}[!t]
+  \centering
+  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
+    \centering
+    \includegraphics[width=\columnwidth]{figure__fine-tune_fx__early.pdf}
+  \end{subfigure}
+  \caption{%
+    Early stopping epoch at fine-tuning stage.
+  }
+  \label{fig:musicnet__early_stopping}
+\end{figure}
 
-For compression levels lower than $50$, the final stage overfits the network, since it still
-remains overparameterized. For the rates higher than $\approx 100$ the ``fine-tune'' stage
-serves its purpose, essentially, due regularizing effects of high sparsity. There is evidence
-in favour of achievability of the SOTA average precision of \citet{trabelsi_deep_2017} within
-the $50$-$100$ compression region with $\cplx$-valued variational dropout with ARD prior
-(sec.~\ref{ssub:ard_prior}).
+% why is there such a dramamtic difference in impact of ``fine-tune''?
+We provide the following interpretation of the apparent difference in performance impact
+of the ``fine-tune'' stage between less than $50\times$ and higher than $100\times$ compression
+regimes in figure~\ref{fig:musicnet__trade-off}, also observed in sec.~\ref{sub:mnist_like_datasets}.
+%
+% * early stopping kick in at around 10-20 epoch
+% * performance peaks at 10-15 epoch and then gradually declines
+The value of $C$ in \eqref{eq:elbo_with_coef} is a good proxy for the ranking of the final
+compression rate since it directly affects the feedback from sparsifying prior. So, with
+low $C$ models get less compressed during $50$ epoch allotted for ``sparsify'' stage, which
+appears to be insufficient to move model away from the parameters after the dense stage.
+It is reasonable therefore to expect that for undercompressed models the fine-tuning stage
+acts essentially as a continuation of the pre-training stage. Since we have observed that
+longer training invariably deteriorates the validation performance, the ``fine-tune'' stage
+leads to overfitting. Figure~\ref{fig:musicnet__early_stopping}, which shows that the models,
+which have been sparsified with $C$ less than $\tfrac1{400}$ and have $50\times$ compression,
+need considerably less training epochs before early stopping terminates the process.
 
-% conlcusions
-The impact of the ``fine-tune'' stage appears to be strongly influenced by the compression
-rate. We can observe in this and, more prominently, in MusicNet experiment (sec.~\ref{sub:musicnet})
-that higher compression rate render the model more regularized, leaving less capacity for
-overfitting.
-% more ``holes'' Bayesian dropout ``poked'' makes the ``fine-tune'' serve as extended training.
-
+% testing the fx of the threshold
 \begin{figure}[!t]
   \centering
   \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
@@ -1301,12 +1326,19 @@ overfitting.
 \end{figure}
 
 % effects of extra training epochs and the impact of tau
-Figure~\ref{fig:hist__and__threshold__tradeoff} is constructed
-for $C \in \{\tfrac1{20}, \frac1{200}\}$ before running the ``fine-tune'' stage. From
-\eqref{eq:elbo_with_coef}, the relative positions of the compression curves on this
-plot, and the results of experiments below it can be concluded that $C$ has much more
-substantial impact on the sparsity and performance, than the choice of $\tau$. Furthermore,
-for $\tau > 0$ the performance quickly saturates while compression creeps downwards.
+We take the models from experiments with $C \in \{\tfrac1{20}, \frac1{200}\}$ and plot
+the compression and performance metrics before fine-tuning for various threshold levels
+on figure~\ref{fig:hist__and__threshold__tradeoff}. From \eqref{eq:elbo_with_coef} and
+the relative positions of the compression curves it can be concluded that $C$ has much
+more substantial impact on the sparsity and performance, than the choice of $\tau$.
+Furthermore, for $\tau > 0$ the performance quickly saturates while compression creeps
+downwards.
+
+% (pending) threshold and fune-tuning?
+% By reducing the excess degrees of freedom, high compression rates could act as a regularizer,
+% leaving less capacity for overfitting. Which seems sufficient enough for models in higher
+% compression regime
+% more ``holes'' Bayesian dropout ``poked'' makes the ``fine-tune'' serve as extended training.
 
 % subsection musicnet (end)
 
