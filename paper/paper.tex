@@ -1,4 +1,4 @@
-\documentclass[a4paper,10pt,twocolumn]{article}
+\documentclass[a4paper,10pt,onecolumn]{article}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -1379,70 +1379,6 @@ complexity of $\cplx$-valued networks.
 \appendix
 \onecolumn
 
-\section{Complex-valued local reparameterization} % (fold)
-\label{sec:complex_valued_local_reparameterization}
-
-%notation
-By $e_i$ we denote the $i$-th real unit vector of dimensionality \textit{conforming} to the
-matrix-vector expression it is used in. Let $\vec{M}$ denote \textit{row-major} flattening
-of $M$ into a vector, i.e. in lexicographic order of its indices. $\diag{(\cdot)}$ embeds
-$\cplx^n$ into $n\times n$ diagonal matrices, and $\otimes$ denotes the Kronecker product,
-for which we note the following identities $
-  \vec{P Q R} = (P \otimes R^\top) \vec{Q}
-$, and $
-  (P \otimes R) (C \otimes S) = P Q \otimes R S
-$ \citep{petersen_matrix_2012}.
-% It follows from the definition of the Kronecker product
-% of $P$ and $R^\top$ and the row-major order vectorization.
-
-If we assume a mean field $\cplx$-Gaussian approximate posterior for $
-  W \in \cplx^{n\times m}
-$, then
-\begin{equation}  \label{eq:c-gauss-vi-general-vec}
-  \vec{W}
-    \sim \mathcal{N}^{\cplx}_{nm} \bigl(
-      \vec{\mu}, \diag{\vec{\Sigma}}, \diag{\vec{C}}
-    \bigr)
-  \,,
-\end{equation}
-where mean, \textit{variance} and relation are given by matrices $
-  \mu, \Sigma, C \in \cplx^{n\times m}
-$ with $\Sigma_{ij} \geq 0$, and $
-  \lvert C_{ij} \rvert^2 \leq \Sigma_{ij}
-$. For any $x \in \cplx^m$ and $b\in \cplx^n$ $
-  y = W x + b
-    = (I_n \otimes x^\top) \vec{W} + b
-$, whence the covariance and relation matrices of $y$ are
-\begin{align}
-  (I \otimes x^\top) \diag{\vec{\Sigma}} (I \otimes x^\top)^{\hop}
-    % = \sum_{ij} (I \otimes x^\top) e_i \otimes e_j
-    %   \Sigma_{ij} (e_i \otimes e_j)^\top (I \otimes x^\top)^{\hop}
-    % = \sum_{ij} (e_i \otimes x^\top e_j)
-    %   \Sigma_{ij} (e_i \otimes x^\top e_j)^{\hop}
-    % = \sum_{ij} (e_i \otimes x_j) \Sigma_{ij} (e_i^\top \otimes \conj{x}_j)
-    & = \sum_{i=1}^n (e_i e_i^\top) \sum_{j=1}^m \Sigma_{ij} x_j \conj{x}_j
-    \,,  \label{eq:cn-gauss-lrt-cov} \\
-  (I \otimes x^\top) \diag{\vec{C}} (I \otimes x^\top)^\top
-    % = \sum_{ij} (e_i \otimes x_j) C_{ij} (e_i \otimes x_j)^\top
-    & = \sum_{i=1}^n (e_i e_i^\top) \sum_{j=1}^m C_{ij} x_j^2
-    \,.  \label{eq:cn-gauss-lrt-rel}
-\end{align}
-Since \eqref{eq:cn-gauss-lrt-cov} and \eqref{eq:cn-gauss-lrt-rel} are diagonal, $(y_i)_{i=1}^n$
-are independent whence \eqref{eq:cn-affine} implies
-\begin{equation}  \label{eq:cplx-gauss-trick-appendix}
-  y_i
-    \sim \mathcal{N}^{\cplx}
-      \bigl(
-        e_i^\top \mu x + b_i,
-        \, \sum_{j=1}^m \Sigma_{ij} \lvert x_j \rvert^2,
-        \, \sum_{j=1}^m C_{ij} x_j^2
-      \bigr)
-    \,.
-\end{equation}
-Hence \eqref{eq:cplx-gauss-trick} follows.
-
-% section complex_valued_local_reparameterization (end)
-
 \section{Gradient of the KL-divergence in $\real$ case} % (fold)
 \label{sec:real-chisq-grad}  % gradient_of_the_kl_divergence_in_R_case
 
@@ -1752,16 +1688,21 @@ fit the best approximation \eqref{eq:improper-kl-div-real-approx}, and compare t
 \section{MNIST-like experiments} % (fold)
 \label{sec:mnist_like_experiments}
 
-Each figure shows the compression-accuracy trade-off of a particular method and input features
-for \textit{SimpleConvModel} and \textit{TwoLayerDenseModel} models for all four of the studied
-datasets (described in the main text): \emph{top-left} EMNIST-Letters, \emph{top-right} KMNIST,
-\emph{bottom-left} Fashion MNIST, and \emph{bottom-right} MNIST.
+The plots presented in this appendix support the conclusions made in the main text and
+provide an overview of the experiments conducted on MNIST-like datasets.
+
+Each figure shows the compression-accuracy trade-off of a particular method and input
+features for \textit{SimpleConvModel} and \textit{TwoLayerDenseModel} models for all four
+of the studied datasets (described in the main text): EMNIST-Letters on the \textit{top-left},
+KMNIST -- \textit{top-right}, Fashion MNIST -- \textit{bottom-left}, and MNIST on the
+\textit{bottom-right}.
 %
 Figures \ref{fig:appendix__mnist-like__trade-off__ARD__fft}, \ref{fig:appendix__mnist-like__trade-off__VD__fft},
 \ref{fig:appendix__mnist-like__trade-off__ARD__raw}, and \ref{fig:appendix__mnist-like__trade-off__VD__raw}
-present $\real$ and $\cplx$ models with \emph{the same architecture}. We also report the
-trade-off comparison, when the argument by \citet{monning_evaluation_2018} for higher intrinsic
-capacity of $\cplx$-valued networks has been taken into account.
+present $\real$ and $\cplx$ models with \textit{the same intermediate feature sizes}.
+
+We also report the trade-off comparison, when the argument by \citet{monning_evaluation_2018}
+for higher intrinsic capacity of $\cplx$-valued networks has been taken into account.
 %
 We compare $\real$ networks against $\tfrac12 \cplx$ with half the number of parameters
 for raw input features on figures \ref{fig:appendix__cmp__mnist-like__trade-off__ARD__raw},
@@ -2014,7 +1955,73 @@ double the number of parameters against $\cplx$ for Fourier input features on fi
   \label{fig:paper__mnist-like__trade-off__VD__raw}
 \end{figure}
 
+% \clearpage
+
 % section mnist_like_experiments (end)
+
+\section{Complex-valued local reparameterization} % (fold)
+\label{sec:complex_valued_local_reparameterization}
+
+%notation
+By $e_i$ we denote the $i$-th real unit vector of dimensionality \textit{conforming} to the
+matrix-vector expression it is used in. Let $\vec{M}$ denote \textit{row-major} flattening
+of $M$ into a vector, i.e. in lexicographic order of its indices. $\diag{(\cdot)}$ embeds
+$\cplx^n$ into $n\times n$ diagonal matrices, and $\otimes$ denotes the Kronecker product,
+for which we note the following identities $
+  \vec{P Q R} = (P \otimes R^\top) \vec{Q}
+$, and $
+  (P \otimes R) (C \otimes S) = P Q \otimes R S
+$ \citep{petersen_matrix_2012}.
+% It follows from the definition of the Kronecker product
+% of $P$ and $R^\top$ and the row-major order vectorization.
+
+If we assume a mean field $\cplx$-Gaussian approximate posterior for $
+  W \in \cplx^{n\times m}
+$, then
+\begin{equation}  \label{eq:c-gauss-vi-general-vec}
+  \vec{W}
+    \sim \mathcal{N}^{\cplx}_{nm} \bigl(
+      \vec{\mu}, \diag{\vec{\Sigma}}, \diag{\vec{C}}
+    \bigr)
+  \,,
+\end{equation}
+where mean, \textit{variance} and relation are given by matrices $
+  \mu, \Sigma, C \in \cplx^{n\times m}
+$ with $\Sigma_{ij} \geq 0$, and $
+  \lvert C_{ij} \rvert^2 \leq \Sigma_{ij}
+$. For any $x \in \cplx^m$ and $b\in \cplx^n$ $
+  y = W x + b
+    = (I_n \otimes x^\top) \vec{W} + b
+$, whence the covariance and relation matrices of $y$ are
+\begin{align}
+  (I \otimes x^\top) \diag{\vec{\Sigma}} (I \otimes x^\top)^{\hop}
+    % = \sum_{ij} (I \otimes x^\top) e_i \otimes e_j
+    %   \Sigma_{ij} (e_i \otimes e_j)^\top (I \otimes x^\top)^{\hop}
+    % = \sum_{ij} (e_i \otimes x^\top e_j)
+    %   \Sigma_{ij} (e_i \otimes x^\top e_j)^{\hop}
+    % = \sum_{ij} (e_i \otimes x_j) \Sigma_{ij} (e_i^\top \otimes \conj{x}_j)
+    & = \sum_{i=1}^n (e_i e_i^\top) \sum_{j=1}^m \Sigma_{ij} x_j \conj{x}_j
+    \,,  \label{eq:cn-gauss-lrt-cov} \\
+  (I \otimes x^\top) \diag{\vec{C}} (I \otimes x^\top)^\top
+    % = \sum_{ij} (e_i \otimes x_j) C_{ij} (e_i \otimes x_j)^\top
+    & = \sum_{i=1}^n (e_i e_i^\top) \sum_{j=1}^m C_{ij} x_j^2
+    \,.  \label{eq:cn-gauss-lrt-rel}
+\end{align}
+Since \eqref{eq:cn-gauss-lrt-cov} and \eqref{eq:cn-gauss-lrt-rel} are diagonal, $(y_i)_{i=1}^n$
+are independent whence \eqref{eq:cn-affine} implies
+\begin{equation}  \label{eq:cplx-gauss-trick-appendix}
+  y_i
+    \sim \mathcal{N}^{\cplx}
+      \bigl(
+        e_i^\top \mu x + b_i,
+        \, \sum_{j=1}^m \Sigma_{ij} \lvert x_j \rvert^2,
+        \, \sum_{j=1}^m C_{ij} x_j^2
+      \bigr)
+    \,.
+\end{equation}
+Hence \eqref{eq:cplx-gauss-trick} follows.
+
+% section complex_valued_local_reparameterization (end)
 
 \section{Backpropagation through $\cplx$-networks} % (fold)
 \label{sub:wirtinger_calculus}
