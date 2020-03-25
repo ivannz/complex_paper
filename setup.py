@@ -2,7 +2,7 @@ from distutils.core import setup, Extension
 
 setup(
     name="cplxpaper",
-    version="0.5",
+    version="2020.3",
     description="""Backend for experiments presented in Bayesian"""
                 """ Sparsification of Deep Complex-valued Networks.""",
     license="MIT License",
