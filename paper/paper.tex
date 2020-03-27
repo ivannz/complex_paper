@@ -382,7 +382,14 @@ The key role in the factorization is played by $\alpha_j$, which reflects the re
 of the parameter $\omega_j$ it is associated to, by being the ratio of its squared mean
 to its variance. Thus, \citet{molchanov_variational_2017} focus on the model sparsification
 capabilities of Variational Dropout, optimizing $\alpha_j$ for each individual parameter,
-or across groups of parameters for structured sparsity. \citet{kharitonov_variational_2018}
+or across groups of parameters for structured sparsity.
+%
+\citet{louizos_bayesian_2017} consider hierarchical prior and approximation, which couples
+the parameters $\omega_j$ within a group $J$ through shared scaling $z_J$ and enables
+pruning entire input features in each layer.
+% {louizos_bayesian_2017} eq. (11) variance -> gaussian entropy -> informative bits 
+%
+\citet{kharitonov_variational_2018}
 address theoretical issues with improper priors and propose a method based on \textit{
 Automatic Relevance Determination} procedure, which falls under \textit{Empirical Bayes}
 approach that fits a prior distribution while performing Variational Inference. In this
@@ -398,6 +405,22 @@ $, whence
     = \frac12 \sum_j \log{\bigl(1 + \tfrac1{\alpha_j} \bigr)}
     \,.
 \end{equation}
+% \begin{align}
+%   \pi(\omega)
+%     &
+%     = \prod_J \pi(s_J)
+%       \prod_{j\in J} \pi(\omega_j \vert s_J)
+%     \propto \prod_J \frac1{\lvert s_J \rvert}
+%       \prod_{j\in J} \mathcal{N}(\omega_j \vert 0, s_J^2)
+%     \,, \\
+%   q_\theta(\omega)
+%     &
+%     % = \prod_J q_\theta(s_J)
+%     %   \prod_{j\in J} q_\theta(\omega_j \vert s_J)
+%     = \prod_J \mathcal{N}(s_J \vert \mu_J, \alpha_J \mu_J^2)
+%       \prod_{j\in J} \mathcal{N}(\omega_j \vert \mu_j s_J, \sigma_j^2 s_J^2)
+%     \,.
+% \end{align}
 
 Another contribution of \citep{kingma_variational_2015} is the analysis of the effects of the
 \textit{local reparameterization trick} on the variance of the gradient of \eqref{eq:elbo}.
@@ -459,7 +482,7 @@ More recently general development of $\cplx$-valued networks has been continued 
 networks and describe suitable representation and operations, including convolutional and
 dense layers, $\cplx$-valued activations, complex batch-normalization and weight initialization.
 Their approach coupled with $\cplx\real$ calculus for backprop transforms a $\cplx$-valued
-network into an intricately connected $\real$-valued computational graph, constructured
+network into an intricately connected $\real$-valued computational graph, constructed
 to respects $\cplx$-arithmetic.
 %
 In particular, natural identification of $\cplx$ and $\real^2$ implies that dense linear
