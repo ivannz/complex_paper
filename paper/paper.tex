@@ -1355,9 +1355,14 @@ need considerably less training epochs before early stopping terminates the proc
   \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
     \centering
     \includegraphics[width=\columnwidth]{figure__musicnet__threshold.pdf}
+  \end{subfigure} \\
+  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
+    \centering
+    \includegraphics[width=\columnwidth]{figure__musicnet__threshold__fine-tune.pdf}
   \end{subfigure}
   \caption{%
-    Test split performance and compression rate for a $\cplx$-valued net on MusicNet.
+    Performance (smooth curve) and compression (curve with markers) of select experiments
+    before (\textit{top}) and after (\textit{bottom}) fine-tuning.
   }
   \label{fig:hist__and__threshold__tradeoff}
 \end{figure}
@@ -1365,17 +1370,26 @@ need considerably less training epochs before early stopping terminates the proc
 % effects of extra training epochs and the impact of tau
 We take the models from experiments with $C \in \{\tfrac1{20}, \frac1{200}\}$ and plot
 the compression and performance metrics before fine-tuning for various threshold levels
-on figure~\ref{fig:hist__and__threshold__tradeoff}. From \eqref{eq:elbo_with_coef} and
+on figure~\ref{fig:hist__and__threshold__tradeoff} (top). From \eqref{eq:elbo_with_coef} and
 the relative positions of the compression curves it can be concluded that $C$ has much
 more substantial impact on the sparsity and performance, than the choice of $\tau$.
 Furthermore, for $\tau > 0$ the performance quickly saturates while compression creeps
 downwards.
 
-% (pending) threshold and fune-tuning?
-% By reducing the excess degrees of freedom, high compression rates could act as a regularizer,
-% leaving less capacity for overfitting. Which seems sufficient enough for models in higher
-% compression regime
-% more ``holes'' Bayesian dropout ``poked'' makes the ``fine-tune'' serve as extended training.
+% (pending) threshold and fune-tuning? BETTER text
+Bottom plot in figure~\ref{fig:hist__and__threshold__tradeoff} show improved performance
+for thresholds below $-\tfrac12$ after fine-tuning. For higher $\tau$ the final stage
+improves performance of a highly compressed model ($C=0.05$), while leaving moderately
+compressed model ($C=0.005$) unaffected. This behaviour can be explained by the regularizing
+effect of high compression rates, which servely reduce the excess degrees of freedom,
+leaving less capacity for overfitting.
+% coarser grid than in top plot in order not to wait for 20 compute days, but 9.5 on
+% 4 x Geforce 1080Ti, 256 Gb, core-i7 machine, running 4*2 experiments in parallel
+
+% takeaway: fine tune seems to improve performance for highly compressed models, but
+% within a limit. Worth a try for moderately compressed models, but willl must likely
+% overfit for undercompressed models. Varying $C$ in \eqref{eq:elbo_with_coef} affects
+% sparsity more strongly, than varying $\tau$. But this is only observational.
 
 % subsection musicnet (end)
 
