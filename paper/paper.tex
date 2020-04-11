@@ -1375,14 +1375,12 @@ the relative positions of the compression curves it can be concluded that $C$ ha
 more substantial impact on the sparsity and performance, than the choice of $\tau$.
 Furthermore, for $\tau > 0$ the performance quickly saturates while compression creeps
 downwards.
-
-% (pending) threshold and fune-tuning? BETTER text
-Bottom plot in figure~\ref{fig:hist__and__threshold__tradeoff} show improved performance
-for thresholds below $-\tfrac12$ after fine-tuning. For higher $\tau$ the final stage
-improves performance of a highly compressed model ($C=0.05$), while leaving moderately
-compressed model ($C=0.005$) unaffected. This behaviour can be explained by the regularizing
-effect of high compression rates, which servely reduce the excess degrees of freedom,
-leaving less capacity for overfitting.
+%
+The bottom plot in figure~\ref{fig:hist__and__threshold__tradeoff} shows the effect of
+the ``fine-tune'' stage: for $\tau \leq -1$ it improves the test performance, while leaving
+it mostly unaffected for positive $\tau$. We attrbute this behaviour to regularization
+effect of high compression rate, which limits the capacity for overfitting by significantly
+reducing the excess degrees of freedom.
 % coarser grid than in top plot in order not to wait for 20 compute days, but 9.5 on
 % 4 x Geforce 1080Ti, 256 Gb, core-i7 machine, running 4*2 experiments in parallel
 
