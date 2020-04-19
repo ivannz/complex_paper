@@ -113,7 +113,7 @@ and knowledge distillation \citep{hinton_distilling_2015} appear to be directly 
 to $\cplx$-valued networks.
 %
 Certain model sparsification methods, e.g. sparsity inducing regularizers, and magnitude
-pruning \citep{zhu_prune_2017}, which reactivates zeroed parameters based on gradients,
+pruning \citep{zhu_prune_2018}, which reactivates zeroed parameters based on gradients,
 can be adapted directly to $\cplx$-valued models. Other methods require additional considerations.
 % the more explicitly zero parameters there is, the less computations is needed.
 
@@ -125,7 +125,7 @@ used towards model sparsification, e.g. Variational Dropout \citep{kingma_variat
 
 % (sparsity tech large-scale models) gale-elsen-hooker.tex
 \citet{gale_state_2019} compare Variational Dropout, magnitude pruning, and $\ell_0$
-regularization \citep{louizos_learning_2017} on large-scale models. The latter is a
+regularization \citep{louizos_learning_2018} on large-scale models. The latter is a
 probabilistic regularization method, which penalizes the expected number of non-zero
 entries in $[0, 1]$-valued stochastic parameter masks with learnable hard-concrete
 distribution with atoms at $0$ and $1$ \citep{maddison_concrete_2016,jang_categorical_2017}.
