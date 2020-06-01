@@ -82,7 +82,7 @@ frequency signal analysis, has been the key driver behind the adoption of $\cplx
 %
 \citet{hirose_complex-valued_2009} argues that $\cplx$-valued networks merit from the
 simultaneous phase rotation and amplitude adjustment, intrinsic to $\cplx$ arithmetic,
-which reduce ineffective degrees of freedom in comparison with an double-dimensional
+which reduce ineffective degrees of freedom in comparison with double-dimensional
 $\real$-valued networks. Their study lists numerous applications related to acoustic
 and radio signal processing and demonstrates superiority of $\cplx$-networks in the
 task of shallow landmine detection using ground penetrating radar imaging, in spite of
@@ -213,7 +213,7 @@ The most common choice for $\rho$ is Kullback-Leibler divergence of density $q$ 
     = \mathbb{E}_{\omega \sim q}
       \log{q(\omega)}
     - \mathbb{E}_{\omega \sim q}
-      \log{p(\omega)}
+      \log{p(\omega \mid D)}
     \,,
 \end{equation}
 % and, despite it not being a metric and requiring distributions with nested support,
@@ -1056,8 +1056,9 @@ $ at the KL divergence term in \eqref{eq:elbo} to study the attainable sparsity 
   \tag{\ref{eq:elbo}'}
 \end{equation}
 By varying $C$ we adjust the importance of the sparsifying prior in learning $q_\theta(W)$,
-meaning that higher value yields more irrelevant parameters during in inference and makes
+meaning that higher value yields more irrelevant parameters during inference and makes
 layers sparser upon termination of this stage.
+% RFC: citation needed fot this "trick". Cite $\beta$-VAE maybe?
 
 % on compresssion
 Between \textit{``sparsify''} and \textit{``fine-tune''} stages we compute masks of non-zero
@@ -1179,7 +1180,7 @@ The points represent the trade-off of the compressed networks after fine-tuning,
 tails illustrate the impact of this stage on the accuracy. Transparent horizontal bands on
 each plot represent min-max performance spread of an uncompressed network on the test split.
 
-The overarching pattern in all experiments on MNIST-like datasets is that both ARD and VD yield
+The overarching pattern in all experiments on MNIST-like datasets is that both ARD and VD
 compress similarly and ARD offers marginal advantage in terms of performance after fine-tuning.
 Fourier features perform marginally worse than raw image data for each model across all
 compression rates, and their trade-off for the dense network has a hat-like shape, contrasting
@@ -1253,6 +1254,7 @@ $\cplx$-VGG16 exhibit similar declining compression-accuracy trade-off, but due 
 capacity $\cplx$-valued network yields higher accuracy \citep{monning_evaluation_2018}. Unlike
 MNIST, fine-tuning stage significantly improves the test performance, which, we speculate, might
 be due to dataset augmentation and deeper model.
+% reword this sentence
 
 % subsection cifar10_100 (end)
 
@@ -1323,7 +1325,7 @@ performance than the full model.
   \centering
   \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=\columnwidth]{figure__fine-tune_fx__early.pdf}
+    \includegraphics[width=\columnwidth]{figure__fine-tune_fx__early__compression.pdf}
   \end{subfigure}
   \caption{%
     Early stopping epoch at fine-tuning stage.
