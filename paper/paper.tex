@@ -1690,9 +1690,11 @@ The gradient of \eqref{eq:improper-kl-div-real} w.r.t $\log \alpha$ is
 \end{equation}
 
 We compute the Monte-Carlo estimator of \eqref{eq:improper-kl-div-real} on a sample of $10^7$
-draws over an equally spaced grid of $\log \alpha$ in $[-12, +12]$ of size $4096$. The optimal
-coefficients of the regression, proposed by \citet{molchanov_variational_2017}, are within
-$1\%$ relative tolerance of the reported therein.
+draws over an equally spaced grid of $\log \alpha$ in $[-12, +12]$ of size $4096$. The
+coefficients of the approximation, proposed by \citet{molchanov_variational_2017}, are
+within $1\%$ relative tolerance of the reported therein. An equivalent expression of the
+approximation is given in \eqref{eq:improper-kl-div-real-approx}.
+% see eq.~(14): flit overall sign, use $C = -k_1$, $1-\sigma(x) = \sigma(-x)$
 \begin{equation}  \label{eq:improper-kl-div-real-approx}
   \eqref{eq:improper-kl-div-real}
 % - KL(\mathcal{N}(w \mid \mu, \alpha \mu^2) \|
@@ -1723,8 +1725,8 @@ fit the best approximation \eqref{eq:improper-kl-div-real-approx}, and compare t
 \begin{figure}[!t]
   \centering
   \includegraphics[width=\columnwidth]{grad_log.pdf}
-  \caption{$\tfrac{d f(\alpha)}{d \log{\alpha}}$ of the fit proposed by
-  \citet{molchanov_variational_2017}, MC estimate of \eqref{eq:improper-kl-div-real},
+  \caption{$\tfrac{d f(\alpha)}{d \log{\alpha}}$ of the approximation
+  \eqref{eq:improper-kl-div-real-approx}, MC estimate of \eqref{eq:improper-kl-div-real},
   and the exact derivative using \eqref{eq:real-kl-div-deriv-log}.}
   \label{fig:molchanov-derivative-replica}
 \end{figure}
