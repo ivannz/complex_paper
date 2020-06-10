@@ -10,7 +10,7 @@
 
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
-\usepackage[numbers]{natbib}
+\usepackage{natbib}
 
 % \usepackage{lipsum}
 
@@ -30,6 +30,7 @@
 
 \newcommand{\real}{\mathbb{R}}
 \newcommand{\cplx}{\mathbb{C}}
+\newcommand{\conj}[1]{\overline{#1}}
 
 \title[Exam]{Bayesian Sparsification of Deep Complex-valued networks}
 
@@ -45,13 +46,23 @@
   \titlepage
 \end{frame}
 
+\begin{frame}[c]{Motivation}
+  Complex-valued networks are useful in signal processing and naturally $\cplx$-valued data
+
+  need to control sparisty and arithmetic complexity
+\end{frame}
+
 \section{Complex-valued networks} % (fold)
 \label{sec:complex_valued_networks}
 
 \begin{frame}[c]{\insertsection}
   \bigskip
-  Use complex numbers $\cplx$ instead of real numbers $\real$
+  % main reference \citep{trabelsi_deep_2018}, but need some historical perspective
+  Operate on complex numbers $\cplx$ instead of real numbers $\real$
   \begin{itemize}
+    \item represent $\cplx \simeq \real^2$: $
+      z = p + j q
+    $ for $p, q \in \real$ and $j^2 = -1$
     \item complex domain operations: $y = W x + b$ or $y = W \ast x + b$
     \item nonlinearities: trigonometric, real-imaginary ReLU etc.
   \end{itemize}
@@ -59,82 +70,93 @@
   \begin{figure}
     \centering
     \includegraphics[draft,scale=0.15]{figure/nn_illust.png}
-    % \par{
-    %   the Mandelbort set:\\
-    %   all $c \in \cplx$ that $
-    %     \lvert z_{n+1}\rvert
-    %   $ is bounded for $
-    %     z_{n+1} = z_n^2 + c
-    %   $, $z_n=0$
-    % }
   \end{figure}
 
+  if $\cplx \simeq \real^{2\times 2}$ via $
+    \phi(u + jv)
+      = \begin{pmatrix}
+        u & -v\\
+        v & u
+      \end{pmatrix}
+  $ then
+  \begin{itemize}
+    \item $\phi(z_1 + z_2) = \phi(z_1) + \phi(z_2)$
+    \item $\phi(z_1 z_2) = \phi(z_1) \phi(z_2)$
+    \item $\phi(\conj{z}) = \phi(z)^\top$
+  \end{itemize}
+
+  So essentially implementing $\cplx$-valued networks boils down consistently
+  structured $\real$-valued with double the dimensions.
+
+  \textbf{maybe an image here}
+\end{frame}
+
+\begin{frame}[c]{Applications}{\insertsection}
+
+\end{frame}
+
+\begin{frame}[t]{\insertsection}
+
+  $f\colon \cplx\to \cplx$ is $\cplx$-differentiable iff $f$ satisfies
+  Cauchy-Riemann conditions when viewed as $\real^2 \to \real^2$ map
+  % though identification $\cplx \simeq \real^2$
+  % $$
+  %   F
+  %   \colon \real^2 \to \real^2
+  %   \colon (u, v) \mapsto (\Re f(z), \Im f(z))\Big\vert_{z=u+jv}
+  % $$ satisfies Cauchy-Riemann conditions
+
+  if a $\cplx$-differentiable $f$ has takes values in $\real$, as is the
+  case with losses in ML, then $f$ has got to be constant everywhere.
+
+  ($\cplx\real$ calculus) Writinger partial derivatives $\cplx$-differentiation for non-holomorphic maps
+  \begin{itemize}
+    \item assume $\cplx\simeq \real^2$ and treat $z$ and $\conj{z}$ as independent
+    \item keeps track of both $
+      \partial_z f
+    $ and $
+      \partial_{\conj{z}} f
+    $
+    \item Cauchy-Riemann is equivalent to $\partial_{\conj{z}} f = 0$
+  \end{itemize}
+
+  % Change of variables from (x, y) to (z, \conj{z})
+
+  $\cplx$-valued networks essentially become intricate double-real computational
+  with structure that respects $\cplx$-arithmetic
+
+  architectural implementation \cite{trabelsi_deep_2018}, \cite{arjovsky_unitary_2016}
 \end{frame}
 
 % section complex_valued_networks (end)
 
-\section{Complex numbers} % (fold)
-\label{sec:complex_numbers}
 
-\begin{frame}[c]{\insertsection}
-
-  Complex numbers $\cplx$:
-  \begin{itemize}
-    \item representation $
-      z = p + j q
-    $ for $p, q \in \real$ and $j^2 = -1$
-    \item $\Re{z} = p$ and $\Im{z} = q$ are \textbf{real} and \textbf{imaginary}
-    parts of $z$
-
-    \medskip
-    \item absolute value $
-      \lvert z \rvert = \sqrt{(\Re{z})^2 + (\Im{z})^2}
-    $
-    \bigskip
-    \item multiplication $
-      (U + j V) (p + j q)
-          = (U p - V q) + j(V p + U q)
-    $
-  \end{itemize}
-
-  \begin{figure}
-    \includegraphics[draft,scale=0.20]{figure/complex_operation.png}
-  \end{figure}
-\end{frame}
-
-% section complex_numbers (end)
-
-
-\section{Compression} % (fold)
+\section{Sparsity and compression} % (fold)
 \label{sec:compression}
 
 \begin{frame}[c]{\insertsection}
-\begin{columns}[T]
-  \begin{column}{0.48\linewidth}
-    Knowledge distillation \citep{hinton_distilling_2015}
-    \begin{itemize}
-      \item Train a student to replicate intermediate outputs of the teacher
-    \end{itemize}
-    \begin{figure}
-      \centering
-      \includegraphics[draft,scale=0.35]{figure/distillation.png}
-    \end{figure}
-  \end{column}
-  \hfill%
-  \begin{column}{0.48\linewidth}
-    Pruning weak parameters \citep{zhu_prune_2018}
-    \begin{itemize}
-      \item include/exclude $\leftrightarrow$ re-train
-    \end{itemize}
-    \begin{figure}
-      \centering
-      \includegraphics[draft,scale=0.15,angle=90,origin=c]{figure/unpruned.png}
-      ~$\Rightarrow$
-      \includegraphics[draft,scale=0.15,angle=90,origin=c]{figure/pruned.png}
-    \end{figure}
-  \end{column}
-\end{columns}
-% quantization
+  General methods
+  \begin{itemize}
+    \item Knowledge distillation \citep{hinton_distilling_2015,balasubramanian_deep_2016}:
+      train a small `student' to replicate features and outputs of the `teacher',
+      tansfer knowledge
+    \item Pruning weak parameters based on magnitude \citep{han_deep_2016,zhu_prune_2018}
+    \item Decomposition methods \citep{novikov_tensorizing_2015,citation_needed}:
+      replace weight tensors with low-rank approximations, tensor-train
+  \end{itemize}
+
+  \medskip
+  In application to $\cplx$-valued networks
+  \begin{itemize}
+    \item prune-quantize-code process \citep{wu_compressing_2019}:
+      prune by absolute value based on threshold
+      $\real^2$ k-means quantization followed by Huffman compression
+      % then has to unpack CSR on-the-fly aimed at storage
+    \item LASSO ($\ell_1$) regularization for hyper-complex-valued networks
+    (quaternion) \citep{vecchi_compressing_2020}:
+      same calculus relaxation as in $\cplx\real$ calculus
+  \end{itemize}
+
 \end{frame}
 
 \subsection{Sparse Variational Dropout} % (fold)
@@ -167,7 +189,7 @@
     - \underbrace{
       KL({\color{orange} q}\|{\color{blue} \pi})
     }_{
-      \text{information difference}
+      \text{information cost}
     }
     $$
   \medskip
@@ -178,11 +200,12 @@
   \end{itemize}
 
   \bigskip
-  Sparse Variational Dropout
+  Sparse Variational Dropout \citep{molchanov_variational_2017}
   \begin{itemize}
-    \item posterior approximation: independent $
+    \item Gaussian Dropout posterior family: independent $
       w_{ij} \sim {\color{orange} q}(w_{ij})
         = \mathcal{N}(
+          w_{ij}\,\big\vert\,
           {\color{teal} \mu_{ij}},
           {\color{red} \alpha_{ij}}
             {\color{teal} \mu_{ij}}^2
@@ -194,6 +217,7 @@
           \propto \frac1{\lvert w_{ij}\rvert}
       $ (VD \citep{molchanov_variational_2017}), $
         {\color{blue} \pi}(w_{ij}) = \mathcal{N}(
+          w_{ij}\,\big\vert\,
           0, \tfrac1{{\color{teal} \tau_{ij}}}
         )
       $ (ARD \citep{kharitonov_variational_2018})
@@ -212,13 +236,14 @@
 \label{sec:extension_to_complex_parameters}
 
 \begin{frame}[c]{\insertsection}
-
+% Thechnical contrib
 The same objective, but with proper Complex-valued distributions
 \begin{itemize}
   \item $
     {\color{orange} q}(w_{ij})
-  $ is $\cplx$ Normal distribution $
-    \cplx\mathcal{N}(
+  $ is $\cplx$ Gaussian distribution $
+    \mathcal{N}^{\cplx}(
+      w_{ij}\,\big\vert\,
       {\color{teal} \mu_{ij}},
       \sigma^2_{ij},
       \gamma_{ij}
@@ -234,10 +259,12 @@ The same objective, but with proper Complex-valued distributions
     \textbf{real} and \textbf{imaginary} components are independent
 \end{itemize} 
 
-\bigskip
+Discussion?
+
+\medskip
 Complex analogues of the priors
 \begin{columns}[T]
-  \begin{column}{0.58\linewidth}
+  \begin{column}{0.63\linewidth}
     \begin{itemize}
       \item ($\cplx$-VD) $
         {\color{blue} \pi}(w_{ij})
@@ -246,13 +273,14 @@ Complex analogues of the priors
       \smallskip
       \item ($\cplx$-ARD) $
         {\color{blue} \pi}(w_{ij})
-            = \cplx\mathcal{N}(
+            = \mathcal{N}^{\cplx}(
+              w_{ij}\,\big\vert\,
               0, \tfrac1{{\color{teal} \tau_{ij}}}, 0
             )
       $
     \end{itemize}
   \end{column}
-  \begin{column}{0.40\linewidth}
+  \begin{column}{0.35\linewidth}
     \includegraphics[draft,scale=0.25]{figure/complex-gaussian.png}
   \end{column}
 \end{columns}
@@ -263,14 +291,75 @@ Complex analogues of the priors
 
 % section extension_to_complex_parameters (end)
 
+\section{Experiments} % (fold)
+\label{sec:experiments}
+
+\begin{frame}[c]{\insertsection}
+  % methodological contrib
+  Variational objective similar to $\beta$-VAE, \citep{higgins_beta-vae_2017}
+  \begin{equation}
+  \label{eq:beta_elbo}
+    \max_q
+    \mathbb{E}_{w \sim {\color{orange} q}}
+      \log p(y\mid w, x)  % ; {\color{teal} \theta})
+    - \beta KL({\color{orange} q}\|{\color{blue} \pi})
+    \tag{$\beta$-ELBO}
+  \end{equation}
+  \begin{itemize}
+    \item VAE: control the capacity and statistical independence of the latent
+    information through a constraint on the divergence
+    \item Variational Dropout: balance the gradient feedback of the loss and the
+    prior-matching terms of ELBO (information budgeting, see \citep{BitsBack})
+    \item KL-div annealing of \citet{molchanov_variational_2017} does not allow
+    to explore the performance-compression trade-off
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[c]{\insertsection}
+  % methodological contrib
+  Three-stage training:
+  \begin{enumerate}
+    \item `pre-train' the network as-is with deterministic layers
+    \item `compress' with Variational Dropout layers and \eqref{eq:beta_elbo}
+    \item `fine-tune' only relevant parameters using deterministic maskable layers
+    % sparse layers are sloooow
+  \end{enumerate}
+
+  \medskip
+  $w_{ij}$ is relevant, i.e. $m_{ij} = 1$, iff $
+    \log{{\color{red} \alpha_{ij}}} \leq \tau
+  $ for $\tau = -\tfrac12$
+  \begin{itemize}
+    \item \citet{molchanov_variational_2017,kingma_variational_2015} use $\tau=3$,
+      tied to Bernoulli Dropout with rate $95\%$
+    \item We argue, that $q$ is factorized Gaussian, $
+        \tfrac{k \lvert w - \mu \rvert^2}
+              {\alpha \lvert \mu \rvert^2}
+      $ is $\chi^2_k$ distributed with $k=1$ ($\real$) or $2$ ($\cplx$)
+    \item relevant parameters are sufficiently concentrated around their mode according
+    to the posterior
+  \end{itemize}
+
+  A picture of the typical $\log \alpha$ distribution?
+\end{frame}
+
+% section experiments (end)
+
+\begin{frame}[t]{\insertsection}
+  Image classification
+  \begin{itemize}
+    \item MNIST, Fashion-MNIST, Kanji-MNIST, EMNIST-Letters
+  \end{itemize}
+\end{frame}
+
 \section{Results on MusicNet} % (fold)
 \label{sec:results_on_musicnet}
 
 \begin{frame}[c]{\insertsection}
 
-Music annotation task:
+Music annotation task on MusicNet \citet{thickstun_learning_2017}
 \begin{itemize}
-  \item an audio dataset of 330 annotated musical compositions
+  \item an audio dataset of $330$ annotated musical compositions
   \item use power spectrum to tell which piano keys are pressed
   \item $\cplx$-networks achieve better performance than $\real$-nets,
   \cite{trabelsi_deep_2018}
@@ -282,6 +371,13 @@ Music annotation task:
   \includegraphics[draft,scale=0.19]{figure/predicted.png}
 \end{figure}
 
+\medskip
+current SOTA on MusicNet Average Precision
+$\cplx$: 72.9\% \citet{trabelsi_deep_2018} VGG-like $\cplx$-net
+$\cplx$: 74.2\% \citet{yang_complex_2019} $\cplx$-transformer
+$\real$: 77.3\% \citet{thickstun_invariances_2018} $\real$-network with special
+STFT features \citet{citation_needed}
+
 \end{frame}
 
 \begin{frame}[c]{\insertsection}
@@ -292,6 +388,10 @@ Performance-compression trade-off for the $\cplx$-network from \cite{trabelsi_de
     \includegraphics[scale=0.55]{figure__musicnet__trade-off/paper__musicnetram__fft__-0.5.pdf}
   \end{figure}
 
+\end{frame}
+
+\begin{frame}[c]{\insertsection}
+  Effects of threshold selection
 \end{frame}
 
 % section results_on_musicnet (end)
@@ -348,7 +448,8 @@ Compression results are replicable and stable across randomizations
 \section{References} % (fold)
 \label{sec:references}
 
-\begin{frame}[c,shrink=35,noframenumbering,plain]{\insertsection}
+\begin{frame}[t,noframenumbering,plain,allowframebreaks]{\insertsection}
+  \tiny
   \bibliographystyle{abbrvnat}
   \bibliography{presentation}
 \end{frame}

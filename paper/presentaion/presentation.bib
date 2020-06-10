@@ -216,3 +216,80 @@ Section: Machine Learning},
     file = {arXiv\:1811.00596 PDF:/Users/ivannazarov/Zotero/storage/VPQCYVWU/Kharitonov et al. - 2018 - Variational Dropout via Empirical Bayes.pdf:application/pdf;arXiv.org Snapshot:/Users/ivannazarov/Zotero/storage/HY3FB5HQ/1811.html:text/html}
 }
 
+@article{wu_compressing_2019,
+    title = {Compressing complex convolutional neural network based on an improved deep compression algorithm},
+    url = {http://arxiv.org/abs/1903.02358},
+    abstract = {Although convolutional neural network (CNN) has made great progress, large redundant parameters restrict its deployment on embedded devices, especially mobile devices. The recent compression works are focused on real-value convolutional neural network (Real CNN), however, to our knowledge, there is no attempt for the compression of complex-value convolutional neural network (Complex CNN). Compared with the real-valued network, the complex-value neural network is easier to optimize, generalize, and has better learning potential. This paper extends the commonly used deep compression algorithm from real domain to complex domain and proposes an improved deep compression algorithm for the compression of Complex CNN. The proposed algorithm compresses the network about 8 times on CIFAR-10 dataset with less than 3\% accuracy loss. On the ImageNet dataset, our method compresses the model about 16 times and the accuracy loss is about 2\% without retraining.},
+    urldate = {2020-04-18},
+    journal = {arXiv:1903.02358 [cs]},
+    author = {Wu, Jiasong and Ren, Hongshan and Kong, Youyong and Yang, Chunfeng and Senhadji, Lotfi and Shu, Huazhong},
+    month = mar,
+    year = {2019},
+    note = {arXiv: 1903.02358},
+    keywords = {Computer Science - Computer Vision and Pattern Recognition},
+    annote = {Comment: 5 pages, 2 figures, 4 tables},
+    file = {arXiv Fulltext PDF:/Users/ivannazarov/Zotero/storage/4BTP4CUV/Wu et al. - 2019 - Compressing complex convolutional neural network b.pdf:application/pdf;arXiv.org Snapshot:/Users/ivannazarov/Zotero/storage/PFNTNPPU/1903.html:text/html}
+}
+
+@article{vecchi_compressing_2020,
+    title = {Compressing deep quaternion neural networks with targeted regularization},
+    url = {http://arxiv.org/abs/1907.11546},
+    abstract = {In recent years, hyper-complex deep networks (e.g., quaternion-based) have received increasing interest with applications ranging from image reconstruction to 3D audio processing. Similarly to their real-valued counterparts, quaternion neural networks might require custom regularization strategies to avoid overfitting. In addition, for many real-world applications and embedded implementations there is the need of designing sufficiently compact networks, with as few weights and units as possible. However, the problem of how to regularize and/or sparsify quaternion-valued networks has not been properly addressed in the literature as of now. In this paper we show how to address both problems by designing targeted regularization strategies, able to minimize the number of connections and neurons of the network during training. To this end, we investigate two extensions of \${\textbackslash}ell\_1\$ and structured regularization to the quaternion domain. In our experimental evaluation, we show that these tailored strategies significantly outperform classical (real-valued) regularization strategies, resulting in small networks especially suitable for low-power and real-time applications.},
+    urldate = {2020-04-18},
+    journal = {arXiv:1907.11546 [cs, stat]},
+    author = {Vecchi, Riccardo and Scardapane, Simone and Comminiello, Danilo and Uncini, Aurelio},
+    month = jan,
+    year = {2020},
+    note = {arXiv: 1907.11546},
+    keywords = {Computer Science - Machine Learning, Statistics - Machine Learning},
+    annote = {Comment: Submitted to CAAI Transactions on Intelligence Technology},
+    file = {arXiv Fulltext PDF:/Users/ivannazarov/Zotero/storage/3DMH2LYB/Vecchi et al. - 2020 - Compressing deep quaternion neural networks with t.pdf:application/pdf;arXiv.org Snapshot:/Users/ivannazarov/Zotero/storage/IERBLSIX/1907.html:text/html}
+}
+
+@inproceedings{han_deep_2016,
+    title = {Deep {Compression}: {Compressing} {Deep} {Neural} {Network} with {Pruning}, {Trained} {Quantization} and {Huffman} {Coding}},
+    url = {http://arxiv.org/abs/1510.00149},
+    abstract = {Neural networks are both computationally intensive and memory intensive, making them difficult to deploy on embedded systems with limited hardware resources. To address this limitation, we introduce "deep compression", a three stage pipeline: pruning, trained quantization and Huffman coding, that work together to reduce the storage requirement of neural networks by 35x to 49x without affecting their accuracy. Our method first prunes the network by learning only the important connections. Next, we quantize the weights to enforce weight sharing, finally, we apply Huffman coding. After the first two steps we retrain the network to fine tune the remaining connections and the quantized centroids. Pruning, reduces the number of connections by 9x to 13x; Quantization then reduces the number of bits that represent each connection from 32 to 5. On the ImageNet dataset, our method reduced the storage required by AlexNet by 35x, from 240MB to 6.9MB, without loss of accuracy. Our method reduced the size of VGG-16 by 49x from 552MB to 11.3MB, again with no loss of accuracy. This allows fitting the model into on-chip SRAM cache rather than off-chip DRAM memory. Our compression method also facilitates the use of complex neural networks in mobile applications where application size and download bandwidth are constrained. Benchmarked on CPU, GPU and mobile GPU, compressed network has 3x to 4x layerwise speedup and 3x to 7x better energy efficiency.},
+    booktitle = {4th {International} {Conference} on {Learning} {Representations}, {ICLR} 2016, {San} {Juan}, {Puerto} {Rico}, {May} 2-4, 2016, {Conference} {Track} {Proceedings}},
+    author = {Han, Song and Mao, Huizi and Dally, William J.},
+    editor = {Bengio, Yoshua and LeCun, Yann},
+    year = {2016},
+    annote = {Comment: Published as a conference paper at ICLR 2016 (oral)},
+    file = {arXiv Fulltext PDF:/Users/ivannazarov/Zotero/storage/V247BBUH/Han et al. - 2016 - Deep Compression Compressing Deep Neural Networks.pdf:application/pdf;arXiv.org Snapshot:/Users/ivannazarov/Zotero/storage/8TVXP7HU/1510.html:text/html}
+}
+
+@incollection{novikov_tensorizing_2015,
+    title = {Tensorizing {Neural} {Networks}},
+    url = {http://papers.nips.cc/paper/5787-tensorizing-neural-networks.pdf},
+    urldate = {2019-11-02},
+    booktitle = {Advances in {Neural} {Information} {Processing} {Systems} 28},
+    publisher = {Curran Associates, Inc.},
+    author = {Novikov, Alexander and Podoprikhin, Dmitrii and Osokin, Anton and Vetrov, Dmitry P},
+    editor = {Cortes, C. and Lawrence, N. D. and Lee, D. D. and Sugiyama, M. and Garnett, R.},
+    year = {2015},
+    pages = {442--450},
+    file = {NIPS Full Text PDF:/Users/ivannazarov/Zotero/storage/WJIPECL7/Novikov et al. - 2015 - Tensorizing Neural Networks.pdf:application/pdf;NIPS Snapshot:/Users/ivannazarov/Zotero/storage/FP9U3J8U/5787-tensorizing-neural-networks.html:text/html}
+}
+
+@article{balasubramanian_deep_2016,
+    title = {Deep {Model} {Compression}: {Distilling} {Knowledge} from {Noisy} {Teachers}},
+    shorttitle = {Deep {Model} {Compression}},
+    url = {http://arxiv.org/abs/1610.09650},
+    abstract = {The remarkable successes of deep learning models across various applications have resulted in the design of deeper networks that can solve complex problems. However, the increasing depth of such models also results in a higher storage and runtime complexity, which restricts the deployability of such very deep models on mobile and portable devices, which have limited storage and battery capacity. While many methods have been proposed for deep model compression in recent years, almost all of them have focused on reducing storage complexity. In this work, we extend the teacher-student framework for deep model compression, since it has the potential to address runtime and train time complexity too. We propose a simple methodology to include a noise-based regularizer while training the student from the teacher, which provides a healthy improvement in the performance of the student network. Our experiments on the CIFAR-10, SVHN and MNIST datasets show promising improvement, with the best performance on the CIFAR-10 dataset. We also conduct a comprehensive empirical evaluation of the proposed method under related settings on the CIFAR-10 dataset to show the promise of the proposed approach},
+    urldate = {2020-06-07},
+    author = {Balasubramanian, Vineeth N.},
+    year = {2016},
+    file = {Full Text PDF:/Users/ivannazarov/Zotero/storage/847VLLUG/Balasubramanian - Deep Model Compression Distilling Knowledge from .pdf:application/pdf;Snapshot:/Users/ivannazarov/Zotero/storage/8ZBUKQAA/80948240.html:text/html}
+}
+
+@article{higgins_beta-vae_2017,
+    title = {beta-{VAE}: {Learning} {Basic} {Visual} {Concepts} with a {Constrained} {Variational} {Framework}},
+    shorttitle = {beta-{VAE}},
+    url = {https://openreview.net/forum?id=Sy2fzU9gl},
+    abstract = {Learning an interpretable factorised representation of the independent data generative factors of the world without supervision is an important precursor for the development of artificial intelligence that is able to learn and reason in the same way that humans do. We introduce beta-VAE, a new state-of-the-art framework for automated discovery of interpretable factorised latent representations from raw image data in a completely unsupervised manner. Our approach is a modification of the variational autoencoder (VAE) framework. We introduce an adjustable hyperparameter beta that balances latent channel capacity and independence constraints with reconstruction accuracy. We demonstrate that beta-VAE with appropriately tuned  beta {\textgreater} 1 qualitatively outperforms VAE (beta = 1), as well as state of the art unsupervised (InfoGAN) and semi-supervised (DC-IGN) approaches to disentangled factor learning on a variety of datasets (celebA, faces and chairs). Furthermore, we devise a protocol to quantitatively compare the degree of disentanglement learnt by different models, and show that our approach also significantly outperforms all baselines quantitatively. Unlike InfoGAN, beta-VAE is stable to train, makes few assumptions about the data and relies on tuning a single hyperparameter, which can be directly optimised through a hyper parameter search using weakly labelled data or through heuristic visual inspection for purely unsupervised data.},
+    urldate = {2020-04-18},
+    author = {Higgins, Irina and Matthey, Loic and Pal, Arka and Burgess, Christopher and Glorot, Xavier and Botvinick, Matthew and Mohamed, Shakir and Lerchner, Alexander},
+    month = apr,
+    year = {2017},
+    file = {Full Text PDF:/Users/ivannazarov/Zotero/storage/2NLNBC5B/Higgins et al. - 2016 - beta-VAE Learning Basic Visual Concepts with a Co.pdf:application/pdf;Snapshot:/Users/ivannazarov/Zotero/storage/3NIJG8CG/forum.html:text/html}
+}
