@@ -10,7 +10,7 @@
 
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
-\usepackage{natbib}
+\usepackage[numbers]{natbib}
 
 % \usepackage{lipsum}
 
@@ -20,6 +20,9 @@
 \setcounter{tocdepth}{1}
 
 \usepackage{amsmath,amsfonts,amssymb}
+\usepackage{tikz}
+\usetikzlibrary{matrix,positioning,decorations.pathreplacing}
+
 
 \usepackage{graphicx}
 \usepackage{xcolor}
@@ -46,53 +49,142 @@
   \titlepage
 \end{frame}
 
-\begin{frame}[c]{Motivation}
-  Complex-valued networks are useful in signal processing and naturally $\cplx$-valued data
+% \begin{frame}[c]{Summary}
+%   \begin{enumerate}
+%     \item Complex-valued neural networks (CVNN) offer superior performance in naturally $\cplx$-valued data
+%     \medskip
+%     \item A CVNN uses half as many floats, but requires double the flops
+%     \medskip
+%     \item So inducing sparsity becomes important for lower arithmetic complexity
+%     \medskip
+%     \item To this end we propose $\cplx$ variant of Sparse Variational Dropout
+%     \medskip
+%     \item Validate the technique by exploring the performance-compression frontier
+%   \end{enumerate}
+% \end{frame}
 
-  need to control sparisty and arithmetic complexity
-\end{frame}
-
-\section{Complex-valued networks} % (fold)
+\section{Complex-valued neural networks} % (fold)
 \label{sec:complex_valued_networks}
 
 \begin{frame}[c]{\insertsection}
+  Geometric representation of the complex numbers $\cplx \simeq \real^2$
+  \begin{itemize}
+    \item $\Re{z}$ and $\Im{z}$ are \textbf{real} and \textbf{imaginary} parts of $z$
+    \item $z = \Re{z} + i \Im{z} = \lvert z \rvert e^{i \arg{\!(z)}}$, $i^2 = -1$
+  \end{itemize}
   \bigskip
   % main reference \citep{trabelsi_deep_2018}, but need some historical perspective
-  Operate on complex numbers $\cplx$ instead of real numbers $\real$
+  $\cplx$VNN operate on complex numbers $\cplx$ instead of real numbers $\real$
+  \vspace{-1em}
+  \begin{columns}[T]
+    \begin{column}{0.45\linewidth}
+      \begin{figure}
+        % \begin{center}
+          \input{real_block.tex}
+        % \end{center}
+        {$\real$VNN linear operation}
+      \end{figure}
+    \end{column}%
+    \begin{column}{0.45\linewidth}
+      \begin{figure}
+        % \begin{center}
+          \input{cplx_block.tex}
+        % \end{center}
+        {$\cplx$VNN linear operation}
+      \end{figure}
+    \end{column}
+  \end{columns}
+
+  % \begin{figure}
+  %   \centering
+  %   \includegraphics[draft,scale=0.15]{figure/nn_illust.png}
+  % \end{figure}
+
+  % if $\cplx \simeq \real^{2\times 2}$ via $
+  %   \phi(u + jv)
+  %     = \begin{pmatrix}
+  %       u & -v\\
+  %       v & u
+  %     \end{pmatrix}
+  % $ then
+  % \begin{itemize}
+  %   \item $\phi(z_1 + z_2) = \phi(z_1) + \phi(z_2)$
+  %   \item $\phi(z_1 z_2) = \phi(z_1) \phi(z_2)$
+  %   \item $\phi(\conj{z}) = \phi(z)^\top$
+  % \end{itemize}
+
+  % So essentially implementing $\cplx$-valued networks boils down consistently
+  % structured $\real$-valued with double the dimensions.
+
+    % % \medskip
+    % % \item absolute value $
+    % %   \lvert z \rvert = \sqrt{(\Re{z})^2 + (\Im{z})^2}
+    % % $
+    % \item multiplication
+    % \begin{eqnarray*}
+    %   Wz
+    %     &=& (\Re W + j \Im W) (\Re z + j \Im z)
+    %     \\
+    %     &=& (U + j V) (p + j q)
+    %     \\
+    %     &=& (U p - V q) + j(V p + U q)
+    % \end{eqnarray*}
+    % \item complex domain operations: $y = W x + b$ or $y = W \ast x + b$
+    % \item nonlinearities: trigonometric, real-imaginary ReLU etc.
+
+  \bigskip
   \begin{itemize}
-    \item represent $\cplx \simeq \real^2$: $
-      z = p + j q
-    $ for $p, q \in \real$ and $j^2 = -1$
-    \item complex domain operations: $y = W x + b$ or $y = W \ast x + b$
-    \item nonlinearities: trigonometric, real-imaginary ReLU etc.
+    \item Richer phase-amplitude representations $
+      r e^{\,i \phi} \in \cplx
+    $, \citep{reichert_neuronal_2014}
+    \item Combined phase-amplitude transformations,
+      \citep{hirose_generalization_2012}
+    % \item ability to compute multiscale windowed spectra
+    %   \citep{bruna_mathematical_2015}
+    \item Stable BPTT in RNN via unitary transition matrices,
+      \citep{arjovsky_unitary_2016,wisdom_full-capacity_2016}
   \end{itemize}
 
-  \begin{figure}
-    \centering
-    \includegraphics[draft,scale=0.15]{figure/nn_illust.png}
-  \end{figure}
-
-  if $\cplx \simeq \real^{2\times 2}$ via $
-    \phi(u + jv)
-      = \begin{pmatrix}
-        u & -v\\
-        v & u
-      \end{pmatrix}
-  $ then
-  \begin{itemize}
-    \item $\phi(z_1 + z_2) = \phi(z_1) + \phi(z_2)$
-    \item $\phi(z_1 z_2) = \phi(z_1) \phi(z_2)$
-    \item $\phi(\conj{z}) = \phi(z)^\top$
-  \end{itemize}
-
-  So essentially implementing $\cplx$-valued networks boils down consistently
-  structured $\real$-valued with double the dimensions.
-
-  \textbf{maybe an image here}
 \end{frame}
 
 \begin{frame}[c]{Applications}{\insertsection}
-
+%  * applications with 
+%  * list of references which consider complex-valued networks and their application and motivation
+  Applications with natural $\cplx$-valued data representation
+  \bigskip
+  \begin{itemize}
+    \smallskip
+    \item radar and sattelite imaging
+      \citep{hirose_complex-valued_2009,hansch_complex-valued_2010,zhang_complex-valued_2017}
+    \smallskip
+    \item magnetic resonance imaging
+      \citep{hui_mri_1995,wang_deepcomplexmri_2020}
+    \smallskip
+    \item radio signal classification \citep{yang_complex_2019,tarver_design_2019}
+    \smallskip
+    \item spectral speech modelling and music transcription
+      \citep{wisdom_full-capacity_2016,trabelsi_deep_2018,yang_complex_2019}
+    \smallskip
+    \item sequence modelling, dynamical system identification
+      \citep{danihelka_associative_2016,wisdom_full-capacity_2016}
+    \smallskip
+    \item image classification, road~/~lane segmentation  % KITTI Road Estimation
+      \citep{popa_complex-valued_2017,trabelsi_deep_2018,gaudet_deep_2018}
+  \end{itemize}
+  % key impediment: what 
+  % Timeline
+  % % $\cplx$-valued convolutional NN 
+  % \citep{hansch_complex-valued_2010} later \citep{popa_complex-valued_2017,zhang_complex-valued_2017}
+  % % $\cplx$ RNN with holographic associative memory
+  % \citep{danihelka_associative_2016}
+  % % unitary transition matrices
+  % \citep{wisdom_full-capacity_2016}
+  % % $\cplx$-valued Batchnorm and Init
+  % \citep{trabelsi_deep_2018}
+  % % complex-valued transformer
+  % \citet{yang_complex_2019}
+  % % quaternion netwroks
+  % \citep{gaudet_deep_2018}
 \end{frame}
 
 \begin{frame}[t]{\insertsection}
