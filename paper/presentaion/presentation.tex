@@ -10,7 +10,8 @@
 
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
-\usepackage[numbers]{natbib}
+% \usepackage[numbers]{natbib}
+\usepackage{natbib}
 
 % \usepackage{lipsum}
 
@@ -19,7 +20,7 @@
 
 \setcounter{tocdepth}{1}
 
-\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{amsmath,amssymb}
 \usepackage{tikz}
 \usetikzlibrary{matrix,positioning,decorations.pathreplacing}
 
@@ -34,6 +35,10 @@
 \newcommand{\real}{\mathbb{R}}
 \newcommand{\cplx}{\mathbb{C}}
 \newcommand{\conj}[1]{\overline{#1}}
+% \newcommand{\iu}{{\imath}}
+\newcommand{\iu}{{\jmath}}
+% \newcommand{\iu}{{\mathrm{i}}}
+% \newcommand{\iu}{{i\mkern1mu}}
 
 \title[Exam]{Bayesian Sparsification of Deep Complex-valued networks}
 
@@ -67,11 +72,25 @@
 \label{sec:complex_valued_networks}
 
 \begin{frame}[c]{\insertsection}
-  Geometric representation of the complex numbers $\cplx \simeq \real^2$
+  Geometric representation of complex numbers $\cplx \simeq \real^2$
+  % \citep{arjovsky_unitary_2016,wisdom_full-capacity_2016,trabelsi_deep_2018,gaudet_deep_2018}
   \begin{itemize}
     \item $\Re{z}$ and $\Im{z}$ are \textbf{real} and \textbf{imaginary} parts of $z$
-    \item $z = \Re{z} + i \Im{z} = \lvert z \rvert e^{i \arg{\!(z)}}$, $i^2 = -1$
+    \item $z = \Re{z} + \iu \Im{z} = \lvert z \rvert e^{\iu \arg{\!(z)}}$, $\iu^2 = -1$
+
+  % \item nonlinearities: trigonometric, real-imaginary ReLU etc.
+  \item activations
+    \begin{itemize}
+      \item split $
+        z \mapsto g(\Re{z}) + \iu g(\Im{z}) % split
+      $ or $
+        z \mapsto g(\lvert z\rvert) e^{\iu \arg{\!(z)}}
+      $ % \citep{trabelsi_deep_2018,hirose_generalization_2012,reichert_neuronal_2014} % relu, tanh, sigmoid
+      \item full: trigonometric, holomorphic
+    \end{itemize}
+  % \citep{hirose_complex-valued_2009}  argues that holomorphy and nondifferentiability are non-issues
   \end{itemize}
+
   \bigskip
   % main reference \citep{trabelsi_deep_2018}, but need some historical perspective
   $\cplx$VNN operate on complex numbers $\cplx$ instead of real numbers $\real$
@@ -83,6 +102,7 @@
           \input{real_block.tex}
         % \end{center}
         {$\real$VNN linear operation}
+        % {$\real$VNN $W x$}
       \end{figure}
     \end{column}%
     \begin{column}{0.45\linewidth}
@@ -91,27 +111,10 @@
           \input{cplx_block.tex}
         % \end{center}
         {$\cplx$VNN linear operation}
+        % {$\cplx$VNN $(W_{11} + iW_{21}) (x_1 + i x_2)$ }
       \end{figure}
     \end{column}
   \end{columns}
-
-  % \begin{figure}
-  %   \centering
-  %   \includegraphics[draft,scale=0.15]{figure/nn_illust.png}
-  % \end{figure}
-
-  % if $\cplx \simeq \real^{2\times 2}$ via $
-  %   \phi(u + jv)
-  %     = \begin{pmatrix}
-  %       u & -v\\
-  %       v & u
-  %     \end{pmatrix}
-  % $ then
-  % \begin{itemize}
-  %   \item $\phi(z_1 + z_2) = \phi(z_1) + \phi(z_2)$
-  %   \item $\phi(z_1 z_2) = \phi(z_1) \phi(z_2)$
-  %   \item $\phi(\conj{z}) = \phi(z)^\top$
-  % \end{itemize}
 
   % So essentially implementing $\cplx$-valued networks boils down consistently
   % structured $\real$-valued with double the dimensions.
@@ -130,7 +133,6 @@
     %     &=& (U p - V q) + j(V p + U q)
     % \end{eqnarray*}
     % \item complex domain operations: $y = W x + b$ or $y = W \ast x + b$
-    % \item nonlinearities: trigonometric, real-imaginary ReLU etc.
 
   \bigskip
   \begin{itemize}
@@ -150,8 +152,7 @@
 \begin{frame}[c]{Applications}{\insertsection}
 %  * applications with 
 %  * list of references which consider complex-valued networks and their application and motivation
-  Applications with natural $\cplx$-valued data representation
-  \bigskip
+  Natural $\cplx$-valued data representation
   \begin{itemize}
     \smallskip
     \item radar and sattelite imaging
@@ -164,13 +165,8 @@
     \smallskip
     \item spectral speech modelling and music transcription
       \citep{wisdom_full-capacity_2016,trabelsi_deep_2018,yang_complex_2019}
-    \smallskip
-    \item sequence modelling, dynamical system identification
-      \citep{danihelka_associative_2016,wisdom_full-capacity_2016}
-    \smallskip
-    \item image classification, road~/~lane segmentation  % KITTI Road Estimation
-      \citep{popa_complex-valued_2017,trabelsi_deep_2018,gaudet_deep_2018}
   \end{itemize}
+  \bigskip
   % key impediment: what 
   % Timeline
   % % $\cplx$-valued convolutional NN 
@@ -185,116 +181,108 @@
   % \citet{yang_complex_2019}
   % % quaternion netwroks
   % \citep{gaudet_deep_2018}
-\end{frame}
-
-\begin{frame}[t]{\insertsection}
-
-  $f\colon \cplx\to \cplx$ is $\cplx$-differentiable iff $f$ satisfies
-  Cauchy-Riemann conditions when viewed as $\real^2 \to \real^2$ map
-  % though identification $\cplx \simeq \real^2$
-  % $$
-  %   F
-  %   \colon \real^2 \to \real^2
-  %   \colon (u, v) \mapsto (\Re f(z), \Im f(z))\Big\vert_{z=u+jv}
-  % $$ satisfies Cauchy-Riemann conditions
-
-  if a $\cplx$-differentiable $f$ has takes values in $\real$, as is the
-  case with losses in ML, then $f$ has got to be constant everywhere.
-
-  ($\cplx\real$ calculus) Writinger partial derivatives $\cplx$-differentiation for non-holomorphic maps
+  Exploring benefits beyond $\cplx$-valued data
   \begin{itemize}
-    \item assume $\cplx\simeq \real^2$ and treat $z$ and $\conj{z}$ as independent
-    \item keeps track of both $
-      \partial_z f
-    $ and $
-      \partial_{\conj{z}} f
-    $
-    \item Cauchy-Riemann is equivalent to $\partial_{\conj{z}} f = 0$
+    \item sequence modelling, dynamical system identification
+      \citep{danihelka_associative_2016,wisdom_full-capacity_2016}
+    \smallskip
+    \item image classification, road~/~lane segmentation  % KITTI Road Estimation
+      \citep{popa_complex-valued_2017,trabelsi_deep_2018,gaudet_deep_2018}
   \end{itemize}
-
-  % Change of variables from (x, y) to (z, \conj{z})
-
-  $\cplx$-valued networks essentially become intricate double-real computational
-  with structure that respects $\cplx$-arithmetic
-
-  architectural implementation \cite{trabelsi_deep_2018}, \cite{arjovsky_unitary_2016}
 \end{frame}
 
 % section complex_valued_networks (end)
-
 
 \section{Sparsity and compression} % (fold)
 \label{sec:compression}
 
 \begin{frame}[c]{\insertsection}
-  General methods
+% Compression is not just making the nets smaller, it is also
+% making them use less artihmetic operations, or faster ops
+  Improve power, storage or throughput efficiency of deep nets:
   \begin{itemize}
-    \item Knowledge distillation \citep{hinton_distilling_2015,balasubramanian_deep_2016}:
-      train a small `student' to replicate features and outputs of the `teacher',
-      tansfer knowledge
-    \item Pruning weak parameters based on magnitude \citep{han_deep_2016,zhu_prune_2018}
-    \item Decomposition methods \citep{novikov_tensorizing_2015,citation_needed}:
-      replace weight tensors with low-rank approximations, tensor-train
+    \item Knowledge distillation
+      \citep{hinton_distilling_2015,balasubramanian_deep_2016}
+    \item Network pruning
+      \citep{lecun_optimal_1990,seide_conversational_2011,zhu_prune_2018}
+    \item Low-rank matrix~/~tensor decomposition
+      \citep{denton_exploiting_2014,novikov_tensorizing_2015}
+    \item Quantization and fixed point arithmetic
+      \cite{courbariaux_training_2015,han_deep_2016,chen_fxpnet_2017}
   \end{itemize}
+% Making them smaller or using faster ops:
+% * Knowledge distillation -- creating a smaller replica
+% * low-rank approximations -- low-rank structure with efficient mat-vec operations
+% * quantization -- dynamic range of floating-points to fixed-points and use fixed range int arithmetic
+% * sparsisty -- inducing regularizers (lasso)
+% * pruning -- remove insignificant parameters
 
-  \medskip
-  In application to $\cplx$-valued networks
+  \bigskip
+  Applications to $\cplx$VNN:
   \begin{itemize}
-    \item prune-quantize-code process \citep{wu_compressing_2019}:
-      prune by absolute value based on threshold
-      $\real^2$ k-means quantization followed by Huffman compression
-      % then has to unpack CSR on-the-fly aimed at storage
-    \item LASSO ($\ell_1$) regularization for hyper-complex-valued networks
-    (quaternion) \citep{vecchi_compressing_2020}:
-      same calculus relaxation as in $\cplx\real$ calculus
+    \item $\cplx$ modulus pruning, quantization with $k$-means in $
+      \real^2%\simeq \cplx
+    $, \citep{wu_compressing_2019}
+    \item $\ell_1$ regularization for hyper-complex-valued networks, \citep{vecchi_compressing_2020}
+      % same calculus relaxation as in $\cplx\real$ calculus
   \end{itemize}
 
 \end{frame}
 
-\subsection{Sparse Variational Dropout} % (fold)
+\subsection{Sparse Variational Dropout \citep{molchanov_variational_2017}} % (fold)
 \label{sub:sparse_variational_dropout}
 
 \begin{frame}[c]{\insertsubsection}{\insertsection}
-% decided to go with this term
-  Bayesian Variational Inference method for parameter pruning \citep{kingma_variational_2015}
+  Variational Inference with automatic relevance determination effect
 
-  \medskip
+% decided to go with this term
+% Bayesian inference objective: combine prior assumptions with data into posterior beliefs
+% VI -> SGVB: Jordan, Hoffman, Kingma (2014)
+%  (give the elbo equation)
+
+% Bayesian Variational Inference perspective on prior dropout techniques proposed by Kingma at al. (2015), repurposed by Molchanov et al. (2017)
+% and Kharitonov et al. (2018) for sparsification
+%  the assumptions on q and \pi (VD, ARD)
+
   $$
     \underset{
-      {\color{orange} q}
+      {\color{orange} q} \in \mathcal{Q}
       % , {\color{teal} \theta}
     }{\text{maximize}}
     \quad
     \underbrace{
       \mathbb{E}_{w \sim {\color{orange} q}}
         \overbrace{
-          \log p(y\mid w, x)  % ; {\color{teal} \theta})
+          \log p(D\mid w)  % ; {\color{teal} \theta})
         }^{
           \text{model}
           \,
           x\mapsto \hat{y}_w(x)
         }
     }_{
-      \text{data likelihood}
+      \text{data model likelihood}
     }
     \quad
     - \underbrace{
       KL({\color{orange} q}\|{\color{blue} \pi})
     }_{
-      \text{information cost}
+      \text{variational regularization}
     }
     $$
-  \medskip
-  \begin{itemize}
-    \item prior assumptions ${\color{blue} \pi}$
-      $\to$ data likelihood
-      $\to$ posterior beliefs ${\color{orange} q}$
-  \end{itemize}
 
+  % Combine prior assumptions with data into posterior beliefs
+  \medskip
+  prior ${\color{blue} \pi}$
+    $\to$ data model likelihood
+    $\to$ posterior ${\color{orange} q}$
+    (close to $p(x \mid D)$)
+  
   \bigskip
-  Sparse Variational Dropout \citep{molchanov_variational_2017}
+  % Bayesian interpretation of Dropout of \citep{kingma_variational_2015}
+  % repurposed for parameter pruning by 
+  Factorized Gaussian dropout posterior family $\mathcal{Q}$
   \begin{itemize}
-    \item Gaussian Dropout posterior family: independent $
+    \item $
       w_{ij} \sim {\color{orange} q}(w_{ij})
         = \mathcal{N}(
           w_{ij}\,\big\vert\,
@@ -303,21 +291,23 @@
             {\color{teal} \mu_{ij}}^2
         )
     $, $\alpha_{ij} > 0$, and ${\color{teal} \mu_{ij}} \in \real$
-    \smallskip
-    \item priors $
-        {\color{blue} \pi}(w_{ij})
-          \propto \frac1{\lvert w_{ij}\rvert}
-      $ (VD \citep{molchanov_variational_2017}), $
-        {\color{blue} \pi}(w_{ij}) = \mathcal{N}(
-          w_{ij}\,\big\vert\,
-          0, \tfrac1{{\color{teal} \tau_{ij}}}
-        )
-      $ (ARD \citep{kharitonov_variational_2018})
-      % tau_{ij} -- precision
-
-    \item parameter importance $\propto \frac1{{\color{red} \alpha_{ij}}}$
+    \item parameter relevance $\propto \frac1{{\color{red} \alpha_{ij}}}$
   \end{itemize}
 
+  \smallskip
+  Factorized prior $
+    {\color{blue} \pi}(w_{ij})
+      \propto \frac1{\lvert w_{ij}\rvert}
+  $ (VD)
+  \begin{itemize}
+    \item (ARD) $
+      {\color{blue} \pi}(w_{ij}) = \mathcal{N}(
+        w_{ij}\,\big\vert\,
+        0, \tfrac1{{\color{teal} \tau_{ij}}}
+      )
+    $, \citep{kharitonov_variational_2018}
+  \end{itemize}
+  % precision $\tau_{ij} > 0$
 \end{frame}
 
 % subsection sparse_variational_dropout (end)
@@ -547,5 +537,38 @@ Compression results are replicable and stable across randomizations
 \end{frame}
 
 % section references (end)
+
+\begin{frame}[t]{\insertsection}
+
+  $f\colon \cplx\to \cplx$ is $\cplx$-differentiable iff $f$ satisfies
+  Cauchy-Riemann conditions when viewed as $\real^2 \to \real^2$ map
+  % though identification $\cplx \simeq \real^2$
+  % $$
+  %   F
+  %   \colon \real^2 \to \real^2
+  %   \colon (u, v) \mapsto (\Re f(z), \Im f(z))\Big\vert_{z=u+jv}
+  % $$ satisfies Cauchy-Riemann conditions
+
+  if a $\cplx$-differentiable $f$ has takes values in $\real$, as is the
+  case with losses in ML, then $f$ has got to be constant everywhere.
+
+  ($\cplx\real$ calculus) Writinger partial derivatives $\cplx$-differentiation for non-holomorphic maps
+  \begin{itemize}
+    \item assume $\cplx\simeq \real^2$ and treat $z$ and $\conj{z}$ as independent
+    \item keeps track of both $
+      \partial_z f
+    $ and $
+      \partial_{\conj{z}} f
+    $
+    \item Cauchy-Riemann is equivalent to $\partial_{\conj{z}} f = 0$
+  \end{itemize}
+
+  % Change of variables from (x, y) to (z, \conj{z})
+
+  $\cplx$-valued networks essentially become intricate double-real computational
+  with structure that respects $\cplx$-arithmetic
+
+  architectural implementation \cite{trabelsi_deep_2018}, \cite{arjovsky_unitary_2016}
+\end{frame}
 
 \end{document}
