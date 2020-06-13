@@ -68,32 +68,101 @@
 %   \end{enumerate}
 % \end{frame}
 
-\section{Complex-valued neural networks} % (fold)
+\section{$\cplx$-valued neural networks} % (fold)
 \label{sec:complex_valued_networks}
 
-\begin{frame}[c]{\insertsection}
-  Geometric representation of complex numbers $\cplx \simeq \real^2$
-  % \citep{arjovsky_unitary_2016,wisdom_full-capacity_2016,trabelsi_deep_2018,gaudet_deep_2018}
+\begin{frame}[c]{\insertsection: Motivation}
+
+  Rectangular form: $z = \Re{z} + \iu \Im{z}$, $\iu^2 = -1$
   \begin{itemize}
     \item $\Re{z}$ and $\Im{z}$ are \textbf{real} and \textbf{imaginary} parts of $z$
-    \item $z = \Re{z} + \iu \Im{z} = \lvert z \rvert e^{\iu \arg{\!(z)}}$, $\iu^2 = -1$
+  \end{itemize}
 
-  % \item nonlinearities: trigonometric, real-imaginary ReLU etc.
-  \item activations
-    \begin{itemize}
-      \item split $
-        z \mapsto g(\Re{z}) + \iu g(\Im{z}) % split
-      $ or $
-        z \mapsto g(\lvert z\rvert) e^{\iu \arg{\!(z)}}
-      $ % \citep{trabelsi_deep_2018,hirose_generalization_2012,reichert_neuronal_2014} % relu, tanh, sigmoid
-      \item full: trigonometric, holomorphic
-    \end{itemize}
-  % \citep{hirose_complex-valued_2009}  argues that holomorphy and nondifferentiability are non-issues
+  Polar form: $z = r e^{\iu \phi}$
+  \begin{itemize}
+    \item $r = \lvert z \rvert$ -- modulus, $\phi = \arg{\!(z)}$ -- argument of $z$
   \end{itemize}
 
   \bigskip
+  Benefits of using complex numbers $\cplx$ in neural networks
+  \begin{itemize}
+    \item Richer representation via phase and amplitude $
+        r e^{\,\iu \phi} \in \cplx
+      $,
+      {\tiny \\ \quad
+        \citep{reichert_neuronal_2014}}
+        \smallskip
+    \item Non-degenerate combined phase-amplitude transformations,
+      {\tiny \\ \quad
+        \citep{hirose_generalization_2012}}
+    \smallskip
+    % \item ability to compute multiscale windowed spectra
+    %   {\tiny \\ \quad
+    %     \citep{bruna_mathematical_2015}}
+    % \smallskip
+    \item Stable BPTT in RNN via unitary transition matrices,
+      {\tiny \\ \quad
+        \citep{arjovsky_unitary_2016,wisdom_full-capacity_2016}}
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}[c]{\insertsection: Applications}
+%  * applications with 
+%  * list of references which consider complex-valued networks and their application and motivation
+  Natural $\cplx$-valued data representation
+  \begin{itemize}
+    \smallskip
+    \item radar and sattelite imaging
+      {\tiny \\ \quad
+        \citep{hirose_complex-valued_2009,hansch_complex-valued_2010,zhang_complex-valued_2017}}
+    \smallskip
+    \item magnetic resonance imaging
+      {\tiny \\ \quad
+        \citep{hui_mri_1995,wang_deepcomplexmri_2020}}
+    \smallskip
+    \item radio signal classification
+      {\tiny \\ \quad
+        \citep{yang_complex_2019,tarver_design_2019}}
+    \smallskip
+    \item spectral speech modelling and music transcription
+      {\tiny \\ \quad
+        \citep{wisdom_full-capacity_2016,trabelsi_deep_2018,yang_complex_2019}}
+  \end{itemize}
+  \medskip
+  % key impediment: what 
+  % Timeline
+  % % $\cplx$-valued convolutional NN 
+  % \citep{hansch_complex-valued_2010} later \citep{popa_complex-valued_2017,zhang_complex-valued_2017}
+  % % $\cplx$ RNN with holographic associative memory
+  % \citep{danihelka_associative_2016}
+  % % unitary transition matrices
+  % \citep{wisdom_full-capacity_2016}
+  % % $\cplx$-valued Batchnorm and Init
+  % \citep{trabelsi_deep_2018}
+  % % complex-valued transformer
+  % \citet{yang_complex_2019}
+  % % quaternion netwroks
+  % \citep{gaudet_deep_2018}
+  Exploring benefits beyond $\cplx$-valued data
+  \begin{itemize}
+    \item sequence modelling, dynamical system identification
+      {\tiny \\ \quad
+        \citep{danihelka_associative_2016,wisdom_full-capacity_2016}}
+    \smallskip
+    \item image classification, road~/~lane segmentation  % KITTI Road Estimation
+      {\tiny \\ \quad
+        \citep{popa_complex-valued_2017,trabelsi_deep_2018,gaudet_deep_2018}}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[c]{\insertsection: Implementation}
   % main reference \citep{trabelsi_deep_2018}, but need some historical perspective
   $\cplx$VNN operate on complex numbers $\cplx$ instead of real numbers $\real$
+
+  \medskip
+  % \citep{arjovsky_unitary_2016,wisdom_full-capacity_2016,trabelsi_deep_2018,gaudet_deep_2018}
+  An intricate double-$\real$ network that respects $\cplx$-arithmetic
   \vspace{-1em}
   \begin{columns}[T]
     \begin{column}{0.45\linewidth}
@@ -116,79 +185,34 @@
     \end{column}
   \end{columns}
 
+  \bigskip
+  % \item nonlinearities: trigonometric, real-imaginary ReLU etc.
+  Activations
+  \begin{itemize}
+    \item split $
+      z \mapsto g(\Re{z}) + \iu g(\Im{z}) % split
+    $ or $
+      z \mapsto g(\lvert z\rvert) e^{\iu \arg{\!(z)}}
+    $ % \citep{trabelsi_deep_2018,hirose_generalization_2012,reichert_neuronal_2014} % relu, tanh, sigmoid
+    \item full: trigonometric, holomorphic
+  \end{itemize}
+  % \citep{hirose_complex-valued_2009}  argues that holomorphy and nondifferentiability are non-issues
+
+  \smallskip
+  Geometric representation $\cplx \simeq \real^2$ for backpropagation
+  % REWRITE THIS
+  \begin{itemize}
+    \item Wirtinger calculus: independent $z$ and ${\conj{z}}$ $
+        \partial_z
+      $ and $
+        \partial_{\conj{z}}
+      $
+    \item $\nabla_z L = \partial_{\conj{z}} L(z)$ for $L\colon \cplx^m \to \real$
+    % \citep{zimmermann_comparison_2011}
+  \end{itemize}
+    % \cite{trabelsi_deep_2018}, \cite{arjovsky_unitary_2016}
   % So essentially implementing $\cplx$-valued networks boils down consistently
   % structured $\real$-valued with double the dimensions.
-
-    % % \medskip
-    % % \item absolute value $
-    % %   \lvert z \rvert = \sqrt{(\Re{z})^2 + (\Im{z})^2}
-    % % $
-    % \item multiplication
-    % \begin{eqnarray*}
-    %   Wz
-    %     &=& (\Re W + j \Im W) (\Re z + j \Im z)
-    %     \\
-    %     &=& (U + j V) (p + j q)
-    %     \\
-    %     &=& (U p - V q) + j(V p + U q)
-    % \end{eqnarray*}
-    % \item complex domain operations: $y = W x + b$ or $y = W \ast x + b$
-
-  \bigskip
-  \begin{itemize}
-    \item Richer phase-amplitude representations $
-      r e^{\,i \phi} \in \cplx
-    $, \citep{reichert_neuronal_2014}
-    \item Combined phase-amplitude transformations,
-      \citep{hirose_generalization_2012}
-    % \item ability to compute multiscale windowed spectra
-    %   \citep{bruna_mathematical_2015}
-    \item Stable BPTT in RNN via unitary transition matrices,
-      \citep{arjovsky_unitary_2016,wisdom_full-capacity_2016}
-  \end{itemize}
-
-\end{frame}
-
-\begin{frame}[c]{Applications}{\insertsection}
-%  * applications with 
-%  * list of references which consider complex-valued networks and their application and motivation
-  Natural $\cplx$-valued data representation
-  \begin{itemize}
-    \smallskip
-    \item radar and sattelite imaging
-      \citep{hirose_complex-valued_2009,hansch_complex-valued_2010,zhang_complex-valued_2017}
-    \smallskip
-    \item magnetic resonance imaging
-      \citep{hui_mri_1995,wang_deepcomplexmri_2020}
-    \smallskip
-    \item radio signal classification \citep{yang_complex_2019,tarver_design_2019}
-    \smallskip
-    \item spectral speech modelling and music transcription
-      \citep{wisdom_full-capacity_2016,trabelsi_deep_2018,yang_complex_2019}
-  \end{itemize}
-  \bigskip
-  % key impediment: what 
-  % Timeline
-  % % $\cplx$-valued convolutional NN 
-  % \citep{hansch_complex-valued_2010} later \citep{popa_complex-valued_2017,zhang_complex-valued_2017}
-  % % $\cplx$ RNN with holographic associative memory
-  % \citep{danihelka_associative_2016}
-  % % unitary transition matrices
-  % \citep{wisdom_full-capacity_2016}
-  % % $\cplx$-valued Batchnorm and Init
-  % \citep{trabelsi_deep_2018}
-  % % complex-valued transformer
-  % \citet{yang_complex_2019}
-  % % quaternion netwroks
-  % \citep{gaudet_deep_2018}
-  Exploring benefits beyond $\cplx$-valued data
-  \begin{itemize}
-    \item sequence modelling, dynamical system identification
-      \citep{danihelka_associative_2016,wisdom_full-capacity_2016}
-    \smallskip
-    \item image classification, road~/~lane segmentation  % KITTI Road Estimation
-      \citep{popa_complex-valued_2017,trabelsi_deep_2018,gaudet_deep_2018}
-  \end{itemize}
 \end{frame}
 
 % section complex_valued_networks (end)
@@ -202,13 +226,17 @@
   Improve power, storage or throughput efficiency of deep nets:
   \begin{itemize}
     \item Knowledge distillation
-      \citep{hinton_distilling_2015,balasubramanian_deep_2016}
+      {\tiny \\ \quad
+        \citep{hinton_distilling_2015,balasubramanian_deep_2016}}
     \item Network pruning
-      \citep{lecun_optimal_1990,seide_conversational_2011,zhu_prune_2018}
+      {\tiny \\ \quad
+        \citep{lecun_optimal_1990,seide_conversational_2011,zhu_prune_2018}}
     \item Low-rank matrix~/~tensor decomposition
-      \citep{denton_exploiting_2014,novikov_tensorizing_2015}
+      {\tiny \\ \quad
+        \citep{denton_exploiting_2014,novikov_tensorizing_2015}}
     \item Quantization and fixed point arithmetic
-      \cite{courbariaux_training_2015,han_deep_2016,chen_fxpnet_2017}
+      {\tiny \\ \quad
+        \citep{courbariaux_training_2015,han_deep_2016,chen_fxpnet_2017}}
   \end{itemize}
 % Making them smaller or using faster ops:
 % * Knowledge distillation -- creating a smaller replica
@@ -221,9 +249,13 @@
   Applications to $\cplx$VNN:
   \begin{itemize}
     \item $\cplx$ modulus pruning, quantization with $k$-means in $
-      \real^2%\simeq \cplx
-    $, \citep{wu_compressing_2019}
-    \item $\ell_1$ regularization for hyper-complex-valued networks, \citep{vecchi_compressing_2020}
+        \real^2%\simeq \cplx
+      $, 
+      {\tiny \\ \quad
+        \citep{wu_compressing_2019}}
+    \item $\ell_1$ regularization for hyper-complex-valued networks,
+      {\tiny \\ \quad
+        \citep{vecchi_compressing_2020}}
       % same calculus relaxation as in $\cplx\real$ calculus
   \end{itemize}
 
@@ -530,45 +562,12 @@ Compression results are replicable and stable across randomizations
 \section{References} % (fold)
 \label{sec:references}
 
-\begin{frame}[t,noframenumbering,plain,allowframebreaks]{\insertsection}
+\begin{frame}<beamer:0>[t,noframenumbering,plain,allowframebreaks]{\insertsection}
   \tiny
   \bibliographystyle{abbrvnat}
   \bibliography{presentation}
 \end{frame}
 
 % section references (end)
-
-\begin{frame}[t]{\insertsection}
-
-  $f\colon \cplx\to \cplx$ is $\cplx$-differentiable iff $f$ satisfies
-  Cauchy-Riemann conditions when viewed as $\real^2 \to \real^2$ map
-  % though identification $\cplx \simeq \real^2$
-  % $$
-  %   F
-  %   \colon \real^2 \to \real^2
-  %   \colon (u, v) \mapsto (\Re f(z), \Im f(z))\Big\vert_{z=u+jv}
-  % $$ satisfies Cauchy-Riemann conditions
-
-  if a $\cplx$-differentiable $f$ has takes values in $\real$, as is the
-  case with losses in ML, then $f$ has got to be constant everywhere.
-
-  ($\cplx\real$ calculus) Writinger partial derivatives $\cplx$-differentiation for non-holomorphic maps
-  \begin{itemize}
-    \item assume $\cplx\simeq \real^2$ and treat $z$ and $\conj{z}$ as independent
-    \item keeps track of both $
-      \partial_z f
-    $ and $
-      \partial_{\conj{z}} f
-    $
-    \item Cauchy-Riemann is equivalent to $\partial_{\conj{z}} f = 0$
-  \end{itemize}
-
-  % Change of variables from (x, y) to (z, \conj{z})
-
-  $\cplx$-valued networks essentially become intricate double-real computational
-  with structure that respects $\cplx$-arithmetic
-
-  architectural implementation \cite{trabelsi_deep_2018}, \cite{arjovsky_unitary_2016}
-\end{frame}
 
 \end{document}
