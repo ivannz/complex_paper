@@ -202,12 +202,12 @@
   Geometric representation $\cplx \simeq \real^2$ for backpropagation
   % REWRITE THIS
   \begin{itemize}
-    \item Wirtinger calculus: independent $z$ and ${\conj{z}}$ $
+    \item Wirtinger derivatives $
         \partial_z
       $ and $
-        \partial_{\conj{z}}
-      $
-    \item $\nabla_z L = \partial_{\conj{z}} L(z)$ for $L\colon \cplx^m \to \real$
+        \partial_{\,\conj{z}}
+      $ (independent $z$ and ${\conj{z}}$)
+    \item $\nabla_z L \propto \partial_{\conj{z}} L(z)$ for $L\colon \cplx^m \to \real$
     % \citep{zimmermann_comparison_2011}
   \end{itemize}
     % \cite{trabelsi_deep_2018}, \cite{arjovsky_unitary_2016}
@@ -391,9 +391,9 @@
   \end{itemize}
 
   \bigskip
-  Factorized complex-valued priors ${\color{blue} \pi}$
-  \begin{columns}[T]
+  \begin{columns}
     \begin{column}{0.60\linewidth}
+      Factorized complex-valued priors ${\color{blue} \pi}$
       \begin{itemize}
         \item ($\cplx$-VD) $
           {\color{blue} \pi}(w_{ij})
@@ -411,7 +411,8 @@
     \begin{column}{0.30\linewidth}
       \begin{figure}
         \centering
-        \includegraphics[scale=0.35]{figure__cplx_gaussian.pdf}
+        % \includegraphics[scale=0.35]{figure__cplx_gaussian.pdf}
+        \includegraphics[width=\linewidth]{figure__cplx_gaussian.pdf}
         \quad\mbox{
           \scriptsize
           $\mathcal{CN}(0, 1, \eta e^{\jmath \phi})$, $\lvert \eta \rvert \leq 1$
@@ -446,7 +447,7 @@
   % is the exponential integral
 
   \bigskip
-  ($\cplx$-ARD) empirical Bayes \eqref{eq:elbo} is optimized w.r.t. precision ${\color{teal} \tau_{ij}}$
+  ($\cplx$-ARD) in empirical Bayes \ref{eq:elbo} is optimized w.r.t. ${\color{teal} \tau_{ij}}$
   \begin{eqnarray*}
     \mathop{KL}\nolimits_{ij}
       &=& -1
@@ -470,13 +471,13 @@
 
 \begin{frame}[c]{\insertsection}
   % methodological contrib
-  Variational objective similar to $\beta$-VAE, \citep{higgins_beta-vae_2017}
+  $\beta$-VAE \ref{eq:elbo} objective, \citep{higgins_beta-vae_2017,}
   \begin{equation}
   \label{eq:beta_elbo}
     \max_q
     \mathbb{E}_{w \sim {\color{orange} q}}
       \log p(y\mid w, x)  % ; {\color{teal} \theta})
-    - \beta KL({\color{orange} q}\|{\color{blue} \pi})
+    - \beta \mathop{KL}({\color{orange} q}\|{\color{blue} \pi})
     \tag{$\beta$-ELBO}
   \end{equation}
   \begin{itemize}
