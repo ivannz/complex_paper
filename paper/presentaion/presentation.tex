@@ -274,7 +274,8 @@
 
 % Bayesian perspective on dropout proposed by Kingma at al. (2015)
 % repurposed for sparsification by Molchanov et al. (2017) and Kharitonov et al. (2018)
-  $$
+  \begin{equation}
+    \label{eq:elbo}
     \underset{
       {\color{orange} q} \in \mathcal{Q}
       % , {\color{teal} \theta}
@@ -294,11 +295,12 @@
     }
     \quad
     - \underbrace{
-      KL({\color{orange} q}\|{\color{blue} \pi})
+      \mathop{KL}({\color{orange} q}\|{\color{blue} \pi})
     }_{
       \text{variational regularization}
     }
-    $$
+    \tag{ELBO}
+  \end{equation}
 
   % Combine prior assumptions with data into posterior beliefs
   \medskip
@@ -344,62 +346,119 @@
 
 % section compression (end)
 
-\section{Extension to complex parameters} % (fold)
+\section{$\cplx$-valued Variational Dropout} % (fold)
 \label{sec:extension_to_complex_parameters}
+\begin{frame}[c]{\insertsection}
+  % The same objective, but with proper Complex-valued distributions
+  Factorized complex-valued posterior $
+    {\color{orange} q}(w) = \prod {\color{orange} q}(w_{ij})
+  $
+  \begin{itemize}
+    \item \emph{independent} $
+      \mathcal{CN}(
+        w_{ij}\,\big\vert\,
+        {\color{teal} \mu_{ij}},
+        \sigma_{ij}^2,
+        \sigma_{ij}^2 \xi_{ij}
+      )
+    $, $
+      \sigma_{ij}^2
+        = {\color{red} \alpha_{ij}} \lvert {\color{teal} \mu_{ij}} \rvert^2
+    $, $\lvert \xi_{ij} \rvert \leq 1$
+
+    \smallskip
+    \item \emph{circular symmetry}: fix $
+      \xi_{ij} = 0
+    $ for \emph{independent} $\Re w_{ij}$ and $\Im w_{ij}$
+
+    % \smallskip
+    % \item $
+    %   w_{ij} \sim {\color{orange} q}(w_{ij})
+    % $ is $
+    %   \cplx\mathcal{N}(
+    %     {\color{teal} \mu_{ij}},
+    %     \sigma^2_{ij},
+    %     0
+    %   )
+    % $ where $
+    %   {\color{teal} \mu_{ij}} \in \cplx
+    % $ and $
+    %   \sigma^2_{ij}
+    %     = {\color{red} \alpha_{ij}}
+    %       \lvert {\color{teal} \mu_{ij}} \rvert^2
+    % $
+    \item parameter relevance $\propto \frac1{{\color{red} \alpha_{ij}}}$
+  \end{itemize}
+
+  \bigskip
+  Factorized complex-valued priors ${\color{blue} \pi}$
+  \begin{columns}[T]
+    \begin{column}{0.60\linewidth}
+      \begin{itemize}
+        \item ($\cplx$-VD) $
+          {\color{blue} \pi}(w_{ij})
+              \propto \lvert w_{ij}\rvert^{-\beta}
+        $, $\beta \geq 1$
+        \smallskip
+        \item ($\cplx$-ARD) $
+          {\color{blue} \pi}(w_{ij})
+              = \cplx\mathcal{N}(
+                0, \tfrac1{{\color{teal} \tau_{ij}}}, 0
+              )
+        $
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.30\linewidth}
+      \begin{figure}
+        \centering
+        \includegraphics[scale=0.35]{figure__cplx_gaussian.pdf}
+        \quad\mbox{
+          \scriptsize
+          $\mathcal{CN}(0, 1, \eta e^{\jmath \phi})$, $\lvert \eta \rvert \leq 1$
+        }
+      \end{figure}
+    \end{column}
+  \end{columns}
+\end{frame}
 
 \begin{frame}[c]{\insertsection}
-% Thechnical contrib
-The same objective, but with proper Complex-valued distributions
-\begin{itemize}
-  \item $
-    {\color{orange} q}(w_{ij})
-  $ is $\cplx$ Gaussian distribution $
-    \mathcal{N}^{\cplx}(
-      w_{ij}\,\big\vert\,
-      {\color{teal} \mu_{ij}},
-      \sigma^2_{ij},
-      \gamma_{ij}
-    )
-  $ with $
-    {\color{teal} \mu_{ij}}, \gamma_{ij} \in \cplx
-  $, $
-    \sigma^2_{ij}
-      = {\color{red} \alpha_{ij}}
-        \lvert {\color{teal} \mu_{ij}} \rvert^2
-  $ such that $\lvert \gamma_{ij}\rvert \leq \sigma^2_{ij}$
-  \item put $\gamma_{ij} = 0$: 
-    \textbf{real} and \textbf{imaginary} components are independent
-\end{itemize} 
 
-Discussion?
+  \bigskip
+  $\mathop{KL}({\color{orange} q} \| {\color{blue} \pi})$ term in \eqref{eq:elbo}:
+  \begin{equation*}
+    \mathop{KL}({\color{orange} q} \| {\color{blue} \pi})
+      = \sum_{ij} \mathop{KL}({\color{orange} q}(w_{ij}) \| {\color{blue} \pi}(w_{ij}))
+  \end{equation*}
 
-\medskip
-Complex analogues of the priors
-\begin{columns}[T]
-  \begin{column}{0.63\linewidth}
-    \begin{itemize}
-      \item ($\cplx$-VD) $
-        {\color{blue} \pi}(w_{ij})
-            \propto \lvert w_{ij}\rvert^{-\beta}
-      $, $\beta \geq 1$
-      \smallskip
-      \item ($\cplx$-ARD) $
-        {\color{blue} \pi}(w_{ij})
-            = \mathcal{N}^{\cplx}(
-              w_{ij}\,\big\vert\,
-              0, \tfrac1{{\color{teal} \tau_{ij}}}, 0
-            )
-      $
-    \end{itemize}
-  \end{column}
-  \begin{column}{0.35\linewidth}
-    \includegraphics[draft,scale=0.25]{figure/complex-gaussian.png}
-    {
-      $\mathbb{C}\mathcal{N}(0, 1, \eta e^{\jmath \phi})$
-    }
-  \end{column}
-\end{columns}
+  \bigskip
+  ($\cplx$-VD) improper prior
+  \begin{eqnarray*}
+    \mathop{KL}\nolimits_{ij}
+      &\propto&
+        \tfrac{\beta - 2}2 \log \lvert {\color{teal} \mu_{ij}} \rvert^2
+        + \log \tfrac1{{\color{red} \alpha_{ij}}}
+        - \tfrac\beta2 Ei( - \tfrac1{{\color{red} \alpha_{ij}}})
+      \\
+    Ei(x) &=& \int_{-\infty}^x e^t t^{-1} dt
+      % \,, \tfrac{d}{dx} Ei(x) = \tfrac{e^x}{x}
+  \end{eqnarray*}
+  % with $Ei\colon (-\infty, 0) \to \real \colon x \mapsto \int_{-\infty}^x e^t t^{-1} dt$
+  % is the exponential integral
 
+  \bigskip
+  ($\cplx$-ARD) empirical Bayes \eqref{eq:elbo} is optimized w.r.t. precision ${\color{teal} \tau_{ij}}$
+  \begin{eqnarray*}
+    \mathop{KL}\nolimits_{ij}
+      &=& -1
+        - \log \sigma^2_{ij} {\color{teal} \tau_{ij}}
+        + {\color{teal} \tau_{ij}} (\sigma^2_{ij} + \lvert {\color{teal} \mu_{ij}} \rvert^2)
+      \\
+    \min_{{\color{teal} \tau_{ij}}} \mathop{KL}\nolimits_{ij}
+      &=& \log \bigl( 1 + \tfrac1{{\color{red} \alpha_{ij}}} \bigr)
+      % \,\text{ at }
+      % {\color{teal} \tau_{ij}}
+      %   = (\sigma^2_{ij} + \lvert {\color{teal} \mu_{ij}} \rvert^2)^{-1}
+  \end{eqnarray*}
 \end{frame}
 
 % subsection _cplx_valued_gaussian_distribution (end)
