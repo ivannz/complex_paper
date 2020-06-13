@@ -158,9 +158,9 @@
 
 \begin{frame}[c]{\insertsection: Implementation}
   % main reference \citep{trabelsi_deep_2018}, but need some historical perspective
-  $\cplx$VNN operate on complex numbers $\cplx$ instead of real numbers $\real$
+  % $\cplx$VNN operate on complex numbers $\cplx$ instead of real numbers $\real$
 
-  \medskip
+  % \medskip
   % \citep{arjovsky_unitary_2016,wisdom_full-capacity_2016,trabelsi_deep_2018,gaudet_deep_2018}
   An intricate double-$\real$ network that respects $\cplx$-arithmetic
   \vspace{-1em}
@@ -265,17 +265,15 @@
 \label{sub:sparse_variational_dropout}
 
 \begin{frame}[c]{\insertsubsection}{\insertsection}
+% started as model regularization method Kingma et al. (2015)
   Variational Inference with automatic relevance determination effect
 
 % decided to go with this term
 % Bayesian inference objective: combine prior assumptions with data into posterior beliefs
-% VI -> SGVB: Jordan, Hoffman, Kingma (2014)
-%  (give the elbo equation)
+% VI -> SGVB: Jordan (VI), Hoffman (SVI), Kingma (SGVB) (give the elbo equation)
 
-% Bayesian Variational Inference perspective on prior dropout techniques proposed by Kingma at al. (2015), repurposed by Molchanov et al. (2017)
-% and Kharitonov et al. (2018) for sparsification
-%  the assumptions on q and \pi (VD, ARD)
-
+% Bayesian perspective on dropout proposed by Kingma at al. (2015)
+% repurposed for sparsification by Molchanov et al. (2017) and Kharitonov et al. (2018)
   $$
     \underset{
       {\color{orange} q} \in \mathcal{Q}
@@ -284,13 +282,13 @@
     \quad
     \underbrace{
       \mathbb{E}_{w \sim {\color{orange} q}}
-        \overbrace{
+        % \overbrace{
           \log p(D\mid w)  % ; {\color{teal} \theta})
-        }^{
-          \text{model}
-          \,
-          x\mapsto \hat{y}_w(x)
-        }
+        % }^{
+          % \text{model}
+          % \,
+          % x\mapsto \hat{y}_w(x)
+        % }
     }_{
       \text{data model likelihood}
     }
@@ -307,7 +305,7 @@
   prior ${\color{blue} \pi}$
     $\to$ data model likelihood
     $\to$ posterior ${\color{orange} q}$
-    (close to $p(x \mid D)$)
+    (close to $p(w \mid D)$)
   
   \bigskip
   % Bayesian interpretation of Dropout of \citep{kingma_variational_2015}
@@ -396,6 +394,9 @@ Complex analogues of the priors
   \end{column}
   \begin{column}{0.35\linewidth}
     \includegraphics[draft,scale=0.25]{figure/complex-gaussian.png}
+    {
+      $\mathbb{C}\mathcal{N}(0, 1, \eta e^{\jmath \phi})$
+    }
   \end{column}
 \end{columns}
 
