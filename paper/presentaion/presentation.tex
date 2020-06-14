@@ -43,7 +43,7 @@
 
 \title[Exam]{Bayesian Sparsification of Deep Complex-valued networks}
 
-\author[Nazarov I., Burnaev E.]{Nazarov Ivan, Burnaev Evgeny}
+\author[Nazarov I., Burnaev E.]{Ivan Nazarov, Evgeny Burnaev}
 
 \date{\today}
 
@@ -53,31 +53,41 @@
 
 \begin{frame}[c,plain,noframenumbering]
   \titlepage
+
 \end{frame}
 
-\begin{frame}[c]{Summary}
+\section{Synopsis} % (fold)
+\label{sec:synopsis}
+
+\begin{frame}[c]{\insertsection}
   Motivation for $\cplx$-valued neural networks
   \begin{itemize}
-    \item perform better naturally $\cplx$-valued data
+    \item perform better for naturally $\cplx$-valued data
     \item use half as much storage, but the same number of flops
     % \item So inducing sparsity becomes important for lower arithmetic complexity
   \end{itemize}
 
+  \pause
   \medskip
   Propose \emph{Sparse Variational Dropout} for $\cplx$-valued neural networks
   \begin{itemize}
-    \item Bayesian sparsification method
-    \item $\cplx$-Gaussian variational posterior, $\cplx$-valued priors
+    \item Bayesian sparsification method with $\cplx$-valued distributions 
+    % \item $\cplx$-Gaussian variational posterior, $\cplx$-valued priors
     \item empirically explore the compression-performance frontier
   \end{itemize}
 
+  \pause
   \medskip
   Conclusions
   \begin{itemize}
-    \item $\cplx$-valued method compresses similarly to the original $\real$ method
-    \item performance benefits from fine-tuning sparsified model
+    \item $\cplx$-valued methods compress similarly to the original $\real$ methods
+    \item final performance benefits from fine-tuning sparsified network
+    \item compress a SOTA $\cplx$VNN on MusicNet by $50-100\times$ at a moderate performance penalty
   \end{itemize}
+
 \end{frame}
+
+% section synopsis (end)
 
 \section{$\cplx$-valued neural networks} % (fold)
 \label{sec:complex_valued_networks}
@@ -89,28 +99,35 @@
     \item $\Re{z}$ and $\Im{z}$ are \textbf{real} and \textbf{imaginary} parts of $z$
   \end{itemize}
 
+  \smallskip
   Polar form: $z = r e^{\iu \phi}$
   \begin{itemize}
     \item $r = \lvert z \rvert$ -- modulus, $\phi = \arg{\!(z)}$ -- argument of $z$
   \end{itemize}
 
+  \pause
   \bigskip
   Benefits of using complex numbers $\cplx$ in neural networks
   \begin{itemize}
+    \pause
     \item Richer representation via phase and amplitude $
         r e^{\,\iu \phi} \in \cplx
       $,
       {\tiny \\ \quad
         \citep{reichert_neuronal_2014}}
-        \smallskip
+
+    \pause
+    \smallskip
     \item Non-degenerate combined phase-amplitude transformations,
       {\tiny \\ \quad
         \citep{hirose_generalization_2012}}
-    \smallskip
     % \item ability to compute multiscale windowed spectra
     %   {\tiny \\ \quad
     %     \citep{bruna_mathematical_2015}}
     % \smallskip
+
+    \pause
+    \smallskip
     \item Stable BPTT in RNN via unitary transition matrices,
       {\tiny \\ \quad
         \citep{arjovsky_unitary_2016,wisdom_full-capacity_2016}}
@@ -123,24 +140,28 @@
 %  * list of references which consider complex-valued networks and their application and motivation
   Natural $\cplx$-valued data representation
   \begin{itemize}
-    \smallskip
+    \pause
     \item radar and satellite imaging
       {\tiny \\ \quad
         \citep{hirose_complex-valued_2009,hansch_complex-valued_2010,zhang_complex-valued_2017}}
+
     \smallskip
     \item magnetic resonance imaging
       {\tiny \\ \quad
         \citep{hui_mri_1995,wang_deepcomplexmri_2020}}
+
+    \pause
     \smallskip
     \item radio signal classification
       {\tiny \\ \quad
         \citep{yang_complex_2019,tarver_design_2019}}
+
     \smallskip
     \item spectral speech modelling and music transcription
       {\tiny \\ \quad
         \citep{wisdom_full-capacity_2016,trabelsi_deep_2018,yang_complex_2019}}
   \end{itemize}
-  \medskip
+  % \medskip
   % key impediment: what 
   % Timeline
   % % $\cplx$-valued convolutional NN 
@@ -155,16 +176,21 @@
   % \citet{yang_complex_2019}
   % % quaternion netwroks
   % \citep{gaudet_deep_2018}
+
+  \pause
+  \medskip
   Exploring benefits beyond $\cplx$-valued data
   \begin{itemize}
     \item sequence modelling, dynamical system identification
       {\tiny \\ \quad
         \citep{danihelka_associative_2016,wisdom_full-capacity_2016}}
+
     \smallskip
     \item image classification, road~/~lane segmentation  % KITTI Road Estimation
       {\tiny \\ \quad
         \citep{popa_complex-valued_2017,trabelsi_deep_2018,gaudet_deep_2018}}
   \end{itemize}
+
 \end{frame}
 
 \begin{frame}[c]{\insertsection: Implementation}
@@ -197,6 +223,9 @@
   \end{columns}
 
   \bigskip
+
+  \pause
+  \bigskip
   % \item nonlinearities: trigonometric, real-imaginary ReLU etc.
   Activations
   \begin{itemize}
@@ -205,11 +234,15 @@
     $ or $
       z \mapsto g(\lvert z\rvert) e^{\iu \arg{\!(z)}}
     $ % \citep{trabelsi_deep_2018,hirose_generalization_2012,reichert_neuronal_2014} % relu, tanh, sigmoid
+
     \item full: trigonometric, holomorphic
   \end{itemize}
   % \citep{hirose_complex-valued_2009}  argues that holomorphy and nondifferentiability are non-issues
 
-  \smallskip
+  \bigskip
+
+  \pause
+  \bigskip
   Geometric representation $\cplx \simeq \real^2$ for backpropagation
   % REWRITE THIS
   \begin{itemize}
@@ -218,12 +251,14 @@
       $ and $
         \partial_{\,\conj{z}}
       $ (independent $z$ and ${\conj{z}}$)
-    \item $\nabla_z L \propto \partial_{\conj{z}} L(z)$ for $L\colon \cplx^m \to \real$
+
+    \item $\nabla_z L \propto \partial_{\,\conj{z}} L(z)$ for $L\colon \cplx^m \to \real$
     % \citep{zimmermann_comparison_2011}
   \end{itemize}
-    % \cite{trabelsi_deep_2018}, \cite{arjovsky_unitary_2016}
+    % \citep{trabelsi_deep_2018}, \citep{arjovsky_unitary_2016}
   % So essentially implementing $\cplx$-valued networks boils down consistently
   % structured $\real$-valued with double the dimensions.
+
 \end{frame}
 
 % section complex_valued_networks (end)
@@ -234,17 +269,25 @@
 \begin{frame}[c]{\insertsection}
 % Compression is not just making the nets smaller, it is also
 % making them use less artihmetic operations, or faster ops
-  Improve power, storage or throughput efficiency of deep nets:
+  Improve power, storage or throughput efficiency of deep nets
   \begin{itemize}
+    \pause
     \item Knowledge distillation
       {\tiny \\ \quad
         \citep{hinton_distilling_2015,balasubramanian_deep_2016}}
+
+    \smallskip
     \item Network pruning
       {\tiny \\ \quad
         \citep{lecun_optimal_1990,seide_conversational_2011,zhu_prune_2018}}
+
+    \pause
+    \smallskip
     \item Low-rank matrix~/~tensor decomposition
       {\tiny \\ \quad
         \citep{denton_exploiting_2014,novikov_tensorizing_2015}}
+
+    \smallskip
     \item Quantization and fixed point arithmetic
       {\tiny \\ \quad
         \citep{courbariaux_training_2015,han_deep_2016,chen_fxpnet_2017}}
@@ -256,6 +299,7 @@
 % * sparsisty -- inducing regularizers (lasso)
 % * pruning -- remove insignificant parameters
 
+  \pause
   \bigskip
   Applications to $\cplx$VNN:
   \begin{itemize}
@@ -264,6 +308,8 @@
       $, 
       {\tiny \\ \quad
         \citep{wu_compressing_2019}}
+
+    \smallskip
     \item $\ell_1$ regularization for hyper-complex-valued networks,
       {\tiny \\ \quad
         \citep{vecchi_compressing_2020}}
@@ -272,19 +318,13 @@
 
 \end{frame}
 
-\subsection{Sparse Variational Dropout {\tiny \citep{molchanov_variational_2017}}} % (fold)
+\subsection{Sparse Variational Dropout} % (fold)
 \label{sub:sparse_variational_dropout}
 
-\begin{frame}[c]{\insertsubsection}{\insertsection}
-% started as model regularization method Kingma et al. (2015)
+\begin{frame}[c]{\insertsubsection}{\citep{molchanov_variational_2017}}
+  % Bayesian perspective on dropout model regularization proposed by Kingma at al. (2015)
+  % repurposed for sparsification by Molchanov et al. (2017) and Kharitonov et al. (2018)
   Variational Inference with automatic relevance determination effect
-
-% decided to go with this term
-% Bayesian inference objective: combine prior assumptions with data into posterior beliefs
-% VI -> SGVB: Jordan (VI), Hoffman (SVI), Kingma (SGVB) (give the elbo equation)
-
-% Bayesian perspective on dropout proposed by Kingma at al. (2015)
-% repurposed for sparsification by Molchanov et al. (2017) and Kharitonov et al. (2018)
   \begin{equation}
     \label{eq:elbo}
     \underset{
@@ -313,13 +353,18 @@
     \tag{ELBO}
   \end{equation}
 
+  % Bayesian inference objective: combine prior assumptions with data into posterior beliefs
+  % VI -> SGVB: Jordan (VI), Hoffman (SVI), Kingma (SGVB) (give the elbo equation)
   % Combine prior assumptions with data into posterior beliefs
   \medskip
   prior ${\color{blue} \pi}$
     $\to$ data model likelihood
     $\to$ posterior ${\color{orange} q}$
     (close to $p(w \mid D)$)
-  
+
+  \bigskip
+
+  \pause
   \bigskip
   % Bayesian interpretation of Dropout of \citep{kingma_variational_2015}
   % repurposed for parameter pruning by 
@@ -334,10 +379,10 @@
             {\color{teal} \mu_{ij}}^2
         )
     $, $\alpha_{ij} > 0$, and ${\color{teal} \mu_{ij}} \in \real$
-    \item parameter relevance $\propto \frac1{{\color{red} \alpha_{ij}}}$
   \end{itemize}
 
-  \smallskip
+  \pause
+  \medskip
   Factorized prior $
     {\color{blue} \pi}(w_{ij})
       \propto \frac1{\lvert w_{ij}\rvert}
@@ -349,8 +394,9 @@
         0, \tfrac1{{\color{teal} \tau_{ij}}}
       )
     $, \citep{kharitonov_variational_2018}
+    % precision $\tau_{ij} > 0$
   \end{itemize}
-  % precision $\tau_{ij} > 0$
+
 \end{frame}
 
 % subsection sparse_variational_dropout (end)
@@ -359,7 +405,9 @@
 
 \section{$\cplx$-valued Variational Dropout} % (fold)
 \label{sec:extension_to_complex_parameters}
-\begin{frame}[c]{\insertsection}
+
+\begin{frame}[c]{\insertsection}{Out proposal}
+  \medskip
   % The same objective, but with proper Complex-valued distributions
   Factorized complex-valued posterior $
     {\color{orange} q}(w) = \prod {\color{orange} q}(w_{ij})
@@ -377,10 +425,11 @@
         = {\color{red} \alpha_{ij}} \lvert {\color{teal} \mu_{ij}} \rvert^2
     $, $\lvert \xi_{ij} \rvert \leq 1$
 
-    \smallskip
-    \item \emph{circular symmetry}: fix $
+    \pause
+    \medskip
+    \item \emph{circular symmetry} about ${\color{teal} \mu_{ij}}$: fix $
       \xi_{ij} = 0
-    $ for \emph{independent} $\Re w_{ij}$ and $\Im w_{ij}$
+    $
 
     % \smallskip
     % \item $
@@ -398,16 +447,23 @@
     %     = {\color{red} \alpha_{ij}}
     %       \lvert {\color{teal} \mu_{ij}} \rvert^2
     % $
+
+    \pause
+    \medskip
     \item parameter relevance $
       \propto \frac1{{\color{red} \alpha_{ij}}}
     $ and $
       \tfrac{2 \lvert w_{ij} - {\color{teal} \mu_{ij}} \rvert^2}
             {{\color{red} \alpha_{ij}} \lvert {\color{teal} \mu_{ij}} \rvert^2}
     $ is $\chi^2_2$
+    % \chi^2_2 is exp(1)
   \end{itemize}
 
   \bigskip
-  \begin{columns}
+
+  \pause
+  \bigskip
+  \begin{columns}[T]
     \begin{column}{0.60\linewidth}
       Factorized complex-valued priors ${\color{blue} \pi}$
       \begin{itemize}
@@ -418,7 +474,7 @@
         \smallskip
         \item ($\cplx$-ARD) $
           {\color{blue} \pi}(w_{ij})
-              = \cplx\mathcal{N}(
+              = \mathcal{CN}(
                 0, \tfrac1{{\color{teal} \tau_{ij}}}, 0
               )
         $
@@ -428,7 +484,7 @@
       \begin{figure}
         \centering
         % \includegraphics[scale=0.35]{figure__cplx_gaussian.pdf}
-        \includegraphics[width=\linewidth]{figure__cplx_gaussian.pdf}
+        \includegraphics[width=1.2\linewidth]{figure__cplx_gaussian.pdf}
         \quad\mbox{
           \scriptsize
           $\mathcal{CN}(0, 1, \eta e^{\jmath \phi})$, $\lvert \eta \rvert \leq 1$
@@ -436,17 +492,19 @@
       \end{figure}
     \end{column}
   \end{columns}
+
 \end{frame}
+
 
 \begin{frame}[c]{\insertsection}
 
-  \bigskip
   $\mathop{KL}({\color{orange} q} \| {\color{blue} \pi})$ term in \eqref{eq:elbo}:
   \begin{equation*}
     \mathop{KL}({\color{orange} q} \| {\color{blue} \pi})
       = \sum_{ij} \mathop{KL}({\color{orange} q}(w_{ij}) \| {\color{blue} \pi}(w_{ij}))
   \end{equation*}
 
+  \pause
   \bigskip
   ($\cplx$-VD) improper prior
   \begin{eqnarray*}
@@ -462,6 +520,7 @@
   % with $Ei\colon (-\infty, 0) \to \real \colon x \mapsto \int_{-\infty}^x e^t t^{-1} dt$
   % is the exponential integral
 
+  \pause
   \bigskip
   ($\cplx$-ARD) prior is optimized w.r.t. ${\color{teal} \tau_{ij}}$ in empirical Bayes
   \begin{eqnarray*}
@@ -476,6 +535,7 @@
       % {\color{teal} \tau_{ij}}
       %   = (\sigma^2_{ij} + \lvert {\color{teal} \mu_{ij}} \rvert^2)^{-1}
   \end{eqnarray*}
+
 \end{frame}
 
 % subsection _cplx_valued_gaussian_distribution (end)
@@ -485,7 +545,7 @@
 \section{Experiments} % (fold)
 \label{sec:experiments}
 
-\begin{frame}[t]{Datasets}{\insertsection}
+\begin{frame}[t]{\insertsection}{Datasets}
   Four MNIST-like datasets
   % MNIST, Fashion-MNIST, KMNIST, EMNIST-Letters
   \begin{itemize}
@@ -496,6 +556,7 @@
   \end{itemize}
   % do not train to convergence, just show that the methods give comparable results under similar conditions
 
+  \pause
   \medskip
   CIFAR10 dataset ($\real^3 \hookrightarrow \cplx^3$)
   \begin{itemize}
@@ -503,6 +564,7 @@
     \item $\cplx$-valued variant of VGG16 {\tiny \citep{simonyan_very_2015}}
   \end{itemize}
 
+  \pause
   \medskip
   Music transcription on MusicNet {\tiny \citep{thickstun_learning_2017}}
   \begin{itemize}
@@ -510,9 +572,10 @@
     \item use power spectrum to tell which piano keys are pressed
     \item deep $\cplx$VNN proposed by \citep{trabelsi_deep_2018}
   \end{itemize}
+
 \end{frame}
 
-\begin{frame}[c]{Set-up}{\insertsection}
+\begin{frame}[c]{\insertsection}{Set-up}
   % methodological contrib
   $\beta$-VAE \ref{eq:elbo} objective {\tiny \citep{higgins_beta-vae_2017}}
   \begin{equation}
@@ -531,7 +594,8 @@
     % to explore the performance-compression trade-off
   \end{itemize}
 
-  \bigskip
+  \pause
+  \medskip
   % methodological contrib
   Three-stage training:
   \begin{enumerate}
@@ -541,7 +605,8 @@
     % sparse layers are sloooow
   \end{enumerate}
 
-  \bigskip
+  \pause
+  \medskip
   Pruning based on estimated ${\color{red} \alpha_{ij}}$ and threshold
   \begin{itemize}
     \item $
@@ -553,6 +618,7 @@
     % \item \citet{molchanov_variational_2017} use $\tau=3$, tied to Bernoulli Dropout with rate $95\%$
   \end{itemize}
   % A picture of the typical $\log \alpha$ distribution? bimodal
+
 \end{frame}
 
 % section experiments (end)
@@ -560,7 +626,7 @@
 \section{Results} % (fold)
 \label{sec:results}
 
-\begin{frame}[c]{MNIST}{\insertsection}
+\begin{frame}[c]{\insertsection}{MNIST}
   \begin{figure}[t]
     \begin{subfigure}[b]{0.5\columnwidth}
       \centering
@@ -583,26 +649,28 @@
       \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__fashionmnist__raw__-0.5.pdf}
     \end{subfigure}%
   \end{figure}
+
 \end{frame}
 
-\begin{frame}[c]{CIFAR10}{\insertsection}
+\begin{frame}[c]{\insertsection}{CIFAR10}
   \begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{figure__cifar__trade-off/appendix__augmentedcifar10__raw__-0.5.pdf}
     \\
-    {$\cplx$-VGG16}
+    {$\cplx$-valued version of VGG16 \citep{simonyan_very_2015}}
   \end{figure}
 
 \end{frame}
 
-\begin{frame}[c]{MusicNet}{\insertsection}
+\begin{frame}[c]{\insertsection}{MusicNet}
   \begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{figure__musicnet__trade-off/paper__musicnetram__fft__-0.5.pdf}
     \\
-    {$\cplx$VNN from \cite{trabelsi_deep_2018}}
+    {The $\cplx$VNN of \citet{trabelsi_deep_2018}}
   \end{figure}
 
+  % \pause
   % \medskip
   % \begin{enumerate}
   %   \item $77.3\%$ four-layer $\real$-network, $\log$-spaced STFT features
@@ -613,15 +681,17 @@
   %   \item $72.9\%$ VGG-like $\cplx$-net
   %     {\tiny \\ \citet{trabelsi_deep_2018}}
   % \end{enumerate}
+
 \end{frame}
 
-\begin{frame}[c]{Effects of $\tau$}{\insertsection}
+\begin{frame}[c]{\insertsection}{Effects of $\tau$}
   \begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{figure__musicnet__threshold.pdf}
     \\
-    {Before `fine-tune' on $\cplx$VNN from \cite{trabelsi_deep_2018}}
+    {Before `fine-tune' of the $\cplx$VNN of \citet{trabelsi_deep_2018}}
   \end{figure}
+
 \end{frame}
 
 \begin{frame}[c]{Effects of $\tau$}{\insertsection}
@@ -629,55 +699,70 @@
     \centering
     \includegraphics[width=\linewidth]{figure__musicnet__threshold__fine-tune.pdf}
     \\
-    {After `fine-tune' on $\cplx$VNN from \cite{trabelsi_deep_2018}}
+    {After `fine-tune' of the $\cplx$VNN of \citet{trabelsi_deep_2018}}
   \end{figure}
-\end{frame}
 
-\begin{frame}[c]{Summary}{\insertsection}
-  $\cplx$-VD and $\cplx$-ARD methods
-  \begin{itemize}
-    \item compression-performance trade-off similar to $\real$ methods
-    % no clear winner across replications and datasets in terms of compression and performance
-    \smallskip
-    \item $\real$-networks tend to compress better than $\cplx$-nets
-    % \smallskip
-    % \item Variational Dropout controllably removes redundancy in wide $\cplx$ and $\real$ networks
-    % \item compression results are replicable and stable
-  \end{itemize}
-
-  \medskip
-  Three-stage training
-  \begin{itemize}
-    \item fine-tuning improves performance in high compression regime
-    % in line with prior lit \citep{han_learning_2015}
-  \end{itemize}
-
-  \medskip
-  Threshold $\tau$
-  \begin{itemize}
-    \item weak effect on performance~/~compression than $\beta$ in \eqref{eq:beta_elbo}
-  \end{itemize}
-
-  \medskip
-  Conclusions of \citep{gale_state_2019} should carry over to $\cplx$VNN
-  \begin{itemize}
-    \item $\ell_0$ regularization uses multiplicative hard-concrete mask
-      {\tiny \\ \citep{louizos_learning_2018}}
-    \item pruning relies on absolute-value rankings
-      {\tiny \\ \citep{zhu_prune_2018}}
-  \end{itemize}
-  % Fourier features on images do not provide advantages
 \end{frame}
 
 % section results (end)
 
-\section{Limitations} % (fold)
-\label{sec:further_developments}
+\section{Summary} % (fold)
+\label{sec:summary}
 
-\begin{frame}[c]{\insertsection}
+\subsection{Results} % (fold)
+\label{sub:results}
 
+\begin{frame}[c]{\insertsubsection}{\insertsection}
+  % Recap
+  Bayesian sparsification of $\cplx$-valued networks
+  \begin{itemize}
+    \item proposed $\cplx$-VD and $\cplx$-ARD methods
+    \item investigated performance-compression trade-off
+    \item compress the $\cplx$VNN of \citet{trabelsi_deep_2018}
+    by $50-100\times$ at a small performance penalty
+  \end{itemize}
+
+  \pause
   \medskip
-  Circular $\cplx$-Gaussian ${\color{orange} q}$ implies independence of $\Re$ and $\Im$
+  Experiments
+  \begin{itemize}
+    \item $\cplx$-VD and $\cplx$-ARD have trade-off similar to $\real$ methods
+    % no clear winner across replications and datasets in terms of compression and performance
+    \smallskip
+    \item $\real$-networks tend to compress better than $\cplx$-nets
+    \smallskip
+    \item fine-tuning improves performance in high compression regime
+    % in line with prior lit \citep{han_learning_2015}
+    % \item Variational Dropout controllably removes redundancy in wide $\cplx$ and $\real$ networks
+    \smallskip
+    \item weak effect on performance~/~compression than $\beta$ in \eqref{eq:beta_elbo}
+    % \item compression results are replicable and stable
+  \end{itemize}
+
+  % \pause
+  % \medskip
+  % Conclusions of \citep{gale_state_2019} should carry over to $\cplx$VNN
+  % \begin{itemize}
+  %   \item $\ell_0$ regularization uses multiplicative hard-concrete mask
+  %     {\tiny \\ \citep{louizos_learning_2018}}
+  %   \item pruning relies on absolute-value rankings
+  %     {\tiny \\ \citep{zhu_prune_2018}}
+  % \end{itemize}
+  % % Fourier features on images do not provide advantages
+
+\end{frame}
+
+% subsection results (end)
+
+\subsection{Limitations} % (fold)
+\label{sec:limitations}
+
+\begin{frame}[c]{\insertsubsection}{\insertsection}
+
+  \emph{Circular symmetry} of the posterior ${\color{orange} q}(w_{ij})$ about
+  ${\color{teal} \mu_{ij}}$ implies \emph{independence} of $\Re$ and $\Im$
+  % var fmaily based on cgauss implies independence
+  % * if we use this param then can model polarization
   \begin{itemize}
     \item richer variational approximation family
     \item $\cplx$-ARD ${\color{blue} \pi}$ and learn relation $
@@ -685,16 +770,22 @@
     $ in ${\color{orange} q}$
   \end{itemize}
 
-  \medskip
-  Factorized ${\color{orange} q}$ implies parameter independence % in ${\color{orange} q}$ does not hold in practice
+  \bigskip
+
+  \pause
+  \bigskip
+  \emph{Factorized} ${\color{orange} q}$ implies parameter independence % in ${\color{orange} q}$ does not hold in practice
   \begin{itemize}
-    \item structured sparsity is desirable for SIMD-processing
+    \item structured sparsity is desirable for fast computations and hardware implementations
+    % \item structured sparsity is desirable for SIMD-processing
     % \item parameter coupling may give higher compression, \citep{citation_needed}
   \end{itemize}
 
 \end{frame}
 
-% section further_developments (end)
+% subsection limitations (end)
+
+% section summary (end)
 
 \section{References} % (fold)
 \label{sec:references}
@@ -709,7 +800,7 @@
 
 \appendix
 \begin{frame}[c]{MusicNet}{\insertsection}
-  Poor performance of under-compressed $\cplx$VNN of \cite{trabelsi_deep_2018}
+  Poor performance of under-compressed $\cplx$VNN of \citet{trabelsi_deep_2018}
   \begin{itemize}
     \item `pre-train' validation score peaks at $\approx 15$ epochs
     \item `fine-tune' essentially continues `pre-train' for small $\beta$ in \eqref{eq:beta_elbo}
