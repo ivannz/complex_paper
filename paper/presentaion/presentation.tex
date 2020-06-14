@@ -28,6 +28,7 @@
 \usepackage{graphicx}
 \usepackage{xcolor}
 \usepackage{caption}
+\usepackage{subcaption}
 \usepackage{grffile}
 
 \graphicspath{{../../assets/}}
@@ -261,7 +262,7 @@
 
 \end{frame}
 
-\subsection{Sparse Variational Dropout \citep{molchanov_variational_2017}} % (fold)
+\subsection{Sparse Variational Dropout {\tiny \citep{molchanov_variational_2017}}} % (fold)
 \label{sub:sparse_variational_dropout}
 
 \begin{frame}[c]{\insertsubsection}{\insertsection}
@@ -481,7 +482,7 @@
     % \item channel features ($\real \hookrightarrow \cplx$ with $\Im z = 0$) or $2$d Fourier features
     \item channel features ($\real \hookrightarrow \cplx$) or $2$d Fourier features
     \item fixed random subset of $10k$ train samples
-    \item simple dense and convolutional nets on f
+    \item simple dense and convolutional nets
   \end{itemize}
   % do not train to convergence, just show that the methods give comparable results under similar conditions
 
@@ -489,11 +490,11 @@
   CIFAR10 dataset ($\real^3 \hookrightarrow \cplx^3$)
   \begin{itemize}
     \item random cropping and horizontal flipping
-    \item $\cplx$-valued variant of VGG16, \citep{simonyan_very_2015}
+    \item $\cplx$-valued variant of VGG16 {\tiny \citep{simonyan_very_2015}}
   \end{itemize}
 
   \medskip
-  Music transcription on MusicNet \citep{thickstun_learning_2017}
+  Music transcription on MusicNet {\tiny \citep{thickstun_learning_2017}}
   \begin{itemize}
     \item audio dataset of $330$ annotated musical compositions
     \item use power spectrum to tell which piano keys are pressed
@@ -503,7 +504,7 @@
 
 \begin{frame}[c]{Setup}{\insertsection}
   % methodological contrib
-  $\beta$-VAE \ref{eq:elbo} objective, \citep{higgins_beta-vae_2017}
+  $\beta$-VAE \ref{eq:elbo} objective {\tiny \citep{higgins_beta-vae_2017}}
   % \begin{equation}
   % \label{eq:beta_elbo}
   %   \max_q
@@ -545,43 +546,69 @@
 
 % section experiments (end)
 
-\section{Results on MusicNet} % (fold)
-\label{sec:results_on_musicnet}
+\section{Results} % (fold)
+\label{sec:results}
 
-\begin{frame}[c]{\insertsection}
+\begin{frame}[c]{MNIST}{\insertsection}
+  \begin{figure}[t]
+    \begin{subfigure}[b]{0.5\columnwidth}
+      \centering
+      % \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__VD__mnist__raw__-0.5.pdf}
+      \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__mnist__fft__-0.5.pdf}
+    \end{subfigure}\hspace{-1em}%
+    \begin{subfigure}[b]{0.5\columnwidth}
+      \centering
+      % \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__VD__mnist__raw__-0.5.pdf}
+      \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__mnist__raw__-0.5.pdf}
+    \end{subfigure} \\ %
+    \begin{subfigure}[b]{0.5\columnwidth}
+      \centering
+      % \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__VD__mnist__raw__-0.5.pdf}
+      \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__kmnist__fft__-0.5.pdf}
+    \end{subfigure}\hspace{-1em}%
+    \begin{subfigure}[b]{0.5\columnwidth}
+      \centering
+      % \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__VD__mnist__raw__-0.5.pdf}
+      \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__fashionmnist__raw__-0.5.pdf}
+    \end{subfigure}%
+  \end{figure}
+\end{frame}
 
-  $\cplx$-networks achieve better performance than $\real$-nets, \citep{trabelsi_deep_2018}
-\begin{figure}[t]
-  \centering
-  \includegraphics[draft,scale=0.25]{figure/stft.png}
-  \par
-  \includegraphics[draft,scale=0.19]{figure/predicted.png}
-\end{figure}
-
-\medskip
-current SOTA on MusicNet Average Precision
-$\cplx$: 72.9\% \citet{trabelsi_deep_2018} VGG-like $\cplx$-net
-$\cplx$: 74.2\% \citet{yang_complex_2019} $\cplx$-transformer
-$\real$: 77.3\% \citet{thickstun_invariances_2018} $\real$-network with special
-STFT features \citet{citation_needed}
+\begin{frame}[c]{CIFAR10}{\insertsection}
+  \begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figure__cifar__trade-off/appendix__augmentedcifar10__raw__-0.5.pdf}
+    \\
+    {$\cplx$-VGG16}
+  \end{figure}
 
 \end{frame}
 
-\begin{frame}[c]{\insertsection}
-% We successfully compressed the network for MusicNet from \cite{trabelsi_deep_2018}
-Performance-compression trade-off for the $\cplx$-network from \cite{trabelsi_deep_2018}
+\begin{frame}[c]{MusicNet}{\insertsection}
   \begin{figure}[t]
     \centering
-    \includegraphics[scale=0.55]{figure__musicnet__trade-off/paper__musicnetram__fft__-0.5.pdf}
+    \includegraphics[width=\linewidth]{figure__musicnet__trade-off/paper__musicnetram__fft__-0.5.pdf}
+    \\
+    {$\cplx$VNN from \cite{trabelsi_deep_2018}}
   \end{figure}
 
+  % \medskip
+  % \begin{enumerate}
+  %   \item $77.3\%$ four-layer $\real$-network, $\log$-spaced STFT features
+  %     % with cosince window to prevent spectral leakeage
+  %     {\tiny \\ \citet{thickstun_invariances_2018}}
+  %   \item $74.2\%$ $\cplx$-transformer
+  %     {\tiny \\ \citet{yang_complex_2019}}
+  %   \item $72.9\%$ VGG-like $\cplx$-net
+  %     {\tiny \\ \citet{trabelsi_deep_2018}}
+  % \end{enumerate}
 \end{frame}
 
 \begin{frame}[c]{\insertsection}
   Effects of threshold selection
 \end{frame}
 
-% section results_on_musicnet (end)
+% section results (end)
 
 \section{General Results} % (fold)
 \label{sec:general_results}
