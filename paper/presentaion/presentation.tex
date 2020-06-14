@@ -505,14 +505,15 @@
 \begin{frame}[c]{Setup}{\insertsection}
   % methodological contrib
   $\beta$-VAE \ref{eq:elbo} objective {\tiny \citep{higgins_beta-vae_2017}}
-  % \begin{equation}
-  % \label{eq:beta_elbo}
-  %   \max_q
-  %   \mathbb{E}_{w \sim {\color{orange} q}}
-  %     \log p(y\mid w, x)  % ; {\color{teal} \theta})
-  %   - \beta \mathop{KL}({\color{orange} q}\|{\color{blue} \pi})
-  %   \tag{$\beta$-ELBO}
-  % \end{equation}
+  \begin{equation}
+  \label{eq:beta_elbo}
+    \max_q
+    \mathbb{E}_{w \sim {\color{orange} q}}
+      \log p(y\mid w, x)  % ; {\color{teal} \theta})
+    - \beta \mathop{KL}({\color{orange} q}\|{\color{blue} \pi})
+    \tag{$\beta$-ELBO}
+  \end{equation}
+  \vspace{-1em}
   \begin{itemize}
     \item balance the likelihood and prior-matching terms' feedback
     \item explore performance-compression trade-off by varying $\beta$
@@ -604,60 +605,86 @@
   % \end{enumerate}
 \end{frame}
 
-\begin{frame}[c]{\insertsection}
-  Effects of threshold selection
+\begin{frame}[c]{Effects of $\tau$}{\insertsection}
+  \begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figure__musicnet__threshold.pdf}
+    \\
+    {Before `fine-tune' on $\cplx$VNN from \cite{trabelsi_deep_2018}}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[c]{Effects of $\tau$}{\insertsection}
+  \begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figure__musicnet__threshold__fine-tune.pdf}
+    \\
+    {After `fine-tune' on $\cplx$VNN from \cite{trabelsi_deep_2018}}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[c]{Summary}{\insertsection}
+  $\cplx$-VD and $\cplx$-ARD methods
+  \begin{itemize}
+    \item compression-performance trade-off similar to $\real$ methods
+    % no clear winner across replications and datasets in terms of compression and performance
+    \smallskip
+    \item $\real$-networks tend to compress better than $\cplx$-nets
+    % \smallskip
+    % \item Variational Dropout controllably removes redundancy in wide $\cplx$ and $\real$ networks
+    % \item compression results are replicable and stable
+  \end{itemize}
+
+  \medskip
+  Three-stage training
+  \begin{itemize}
+    \item fine-tuning improves performance in high compression regime
+    % in line with prior lit \citep{han_learning_2015}
+  \end{itemize}
+
+  \medskip
+  Threshold $\tau$
+  \begin{itemize}
+    \item weak effect on performance~/~compression than $\beta$ in \eqref{eq:beta_elbo}
+  \end{itemize}
+
+  \medskip
+  Conclusions of \citep{gale_state_2019} should carry over to $\cplx$VNN
+  \begin{itemize}
+    \item $\ell_0$ regularization uses multiplicative hard-concrete mask
+      {\tiny \\ \citep{louizos_learning_2018}}
+    \item pruning relies on absilute-value rankings
+      {\tiny \\ \citep{zhu_prune_2018}}
+  \end{itemize}
+  % Fourier features on images do not provide advantages
 \end{frame}
 
 % section results (end)
 
-\section{General Results} % (fold)
-\label{sec:general_results}
+\section{Limitations} % (fold)
+\label{sec:further_developments}
 
 \begin{frame}[c]{\insertsection}
-Experiments on image classification and music transcription
-\begin{itemize}
-  \item $\cplx$-VD and $\cplx$-ARD equally successfully compress $\cplx$-networks
-  \smallskip
-  \item Variational Dropout controllably removes redundancy in wide $\cplx$ and $\real$ networks
-  \smallskip
-  \item $\real$-networks tend to compress better than $\cplx$-nets
-\end{itemize}
 
-\bigskip
-Compression results are replicable and stable across randomizations
-\begin{itemize}
-  \item Fine-tuning sparse parameters generally improves performance
-\end{itemize}
-\end{frame}
-
-% section general_results (end)
-
-\section{Conclusions and Further Developments} % (fold)
-\label{sec:conclusions_and_further_developments}
-
-\begin{frame}[c]{\insertsection}
-  \begin{columns}[T]
-    \begin{column}{0.38\textwidth}
-      \begin{itemize}
-        \item Extended Bayesian Sparsification method to $\cplx$-valued networks
-        \item Empirically explored the compression-performance frontier
-      \end{itemize}
-    \end{column}
-    \begin{column}{0.58\textwidth}
-      \includegraphics[scale=0.35,clip]{figure__mnist-like__trade-off/appendix__cmp__ARD__mnist__raw__-0.5.pdf}
-    \end{column}
-  \end{columns}
-
-  \bigskip
-  Key limitation: parameter independence % in ${\color{orange} q}$ does not hold in practice
+  \medskip
+  Circular $\cplx$-Gaussian ${\color{orange} q}$ implies independence of $\Re$ and $\Im$
   \begin{itemize}
-    \item utilizing parameter coupling may give higher compression
-    \item structured sparsity is desirable for SIMD-processing in embedded ML
+    \item richer variational approximation family
+    \item $\cplx$-ARD ${\color{blue} \pi}$ and learn relation $
+      \xi = {\color{teal} \eta} e^{\iu {\color{teal} \phi}}
+    $ in ${\color{orange} q}$
+  \end{itemize}
+
+  \medskip
+  Factorized ${\color{orange} q}$ implies parameter independence % in ${\color{orange} q}$ does not hold in practice
+  \begin{itemize}
+    \item structured sparsity is desirable for SIMD-processing
+    % \item parameter coupling may give higher compression, \citep{citation_needed}
   \end{itemize}
 
 \end{frame}
 
-% section conclusions_and_further_developments (end)
+% section further_developments (end)
 
 \section{References} % (fold)
 \label{sec:references}
@@ -669,5 +696,19 @@ Compression results are replicable and stable across randomizations
 \end{frame}
 
 % section references (end)
+
+\appendix
+\begin{frame}[c]{MusicNet}{\insertsection}
+  Poor performance of under-compressed $\cplx$VNN of \cite{trabelsi_deep_2018}
+  \begin{itemize}
+    \item `pre-train' validation score peaks at $\approx 15$ epochs
+    \item `fine-tune' essentially continues `pre-train' for small $\beta$ in \eqref{eq:beta_elbo}
+  \end{itemize}
+
+  \begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figure__fine-tune_fx__early__compression.pdf}
+  \end{figure}
+\end{frame}
 
 \end{document}
