@@ -55,19 +55,29 @@
   \titlepage
 \end{frame}
 
-% \begin{frame}[c]{Summary}
-%   \begin{enumerate}
-%     \item Complex-valued neural networks (CVNN) offer superior performance in naturally $\cplx$-valued data
-%     \medskip
-%     \item A CVNN uses half as many floats, but requires double the flops
-%     \medskip
-%     \item So inducing sparsity becomes important for lower arithmetic complexity
-%     \medskip
-%     \item To this end we propose $\cplx$ variant of Sparse Variational Dropout
-%     \medskip
-%     \item Validate the technique by exploring the performance-compression frontier
-%   \end{enumerate}
-% \end{frame}
+\begin{frame}[c]{Summary}
+  Motivation for $\cplx$-valued neural networks
+  \begin{itemize}
+    \item perform better naturally $\cplx$-valued data
+    \item use half as much storage, but the same number of flops
+    % \item So inducing sparsity becomes important for lower arithmetic complexity
+  \end{itemize}
+
+  \medskip
+  Propose \emph{Sparse Variational Dropout} for $\cplx$-valued neural networks
+  \begin{itemize}
+    \item Bayesian sparsification method
+    \item $\cplx$-Gaussian variational posterior, $\cplx$-valued priors
+    \item empirically explore the compression-performance frontier
+  \end{itemize}
+
+  \medskip
+  Conclusions
+  \begin{itemize}
+    \item $\cplx$-valued method compresses similarly to the original $\real$ method
+    \item performance benefits from fine-tuning sparsified model
+  \end{itemize}
+\end{frame}
 
 \section{$\cplx$-valued neural networks} % (fold)
 \label{sec:complex_valued_networks}
@@ -114,7 +124,7 @@
   Natural $\cplx$-valued data representation
   \begin{itemize}
     \smallskip
-    \item radar and sattelite imaging
+    \item radar and satellite imaging
       {\tiny \\ \quad
         \citep{hirose_complex-valued_2009,hansch_complex-valued_2010,zhang_complex-valued_2017}}
     \smallskip
@@ -502,7 +512,7 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}[c]{Setup}{\insertsection}
+\begin{frame}[c]{Set-up}{\insertsection}
   % methodological contrib
   $\beta$-VAE \ref{eq:elbo} objective {\tiny \citep{higgins_beta-vae_2017}}
   \begin{equation}
@@ -653,7 +663,7 @@
   \begin{itemize}
     \item $\ell_0$ regularization uses multiplicative hard-concrete mask
       {\tiny \\ \citep{louizos_learning_2018}}
-    \item pruning relies on absilute-value rankings
+    \item pruning relies on absolute-value rankings
       {\tiny \\ \citep{zhu_prune_2018}}
   \end{itemize}
   % Fourier features on images do not provide advantages
