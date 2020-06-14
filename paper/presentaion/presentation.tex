@@ -387,7 +387,12 @@
     %     = {\color{red} \alpha_{ij}}
     %       \lvert {\color{teal} \mu_{ij}} \rvert^2
     % $
-    \item parameter relevance $\propto \frac1{{\color{red} \alpha_{ij}}}$
+    \item parameter relevance $
+      \propto \frac1{{\color{red} \alpha_{ij}}}
+    $ and $
+      \tfrac{2 \lvert w_{ij} - {\color{teal} \mu_{ij}} \rvert^2}
+            {{\color{red} \alpha_{ij}} \lvert {\color{teal} \mu_{ij}} \rvert^2}
+    $ is $\chi^2_2$
   \end{itemize}
 
   \bigskip
@@ -397,8 +402,8 @@
       \begin{itemize}
         \item ($\cplx$-VD) $
           {\color{blue} \pi}(w_{ij})
-              \propto \lvert w_{ij}\rvert^{-\beta}
-        $, $\beta \geq 1$
+              \propto \lvert w_{ij}\rvert^{-\rho}
+        $, $\rho \geq 1$
         \smallskip
         \item ($\cplx$-ARD) $
           {\color{blue} \pi}(w_{ij})
@@ -436,9 +441,9 @@
   \begin{eqnarray*}
     \mathop{KL}\nolimits_{ij}
       &\propto&
-        \tfrac{\beta - 2}2 \log \lvert {\color{teal} \mu_{ij}} \rvert^2
+        \tfrac{\rho - 2}2 \log \lvert {\color{teal} \mu_{ij}} \rvert^2
         + \log \tfrac1{{\color{red} \alpha_{ij}}}
-        - \tfrac\beta2 Ei( - \tfrac1{{\color{red} \alpha_{ij}}})
+        - \tfrac\rho2 Ei( - \tfrac1{{\color{red} \alpha_{ij}}})
       \\
     Ei(x) &=& \int_{-\infty}^x e^t t^{-1} dt
       % \,, \tfrac{d}{dx} Ei(x) = \tfrac{e^x}{x}
@@ -447,7 +452,7 @@
   % is the exponential integral
 
   \bigskip
-  ($\cplx$-ARD) in empirical Bayes \ref{eq:elbo} is optimized w.r.t. ${\color{teal} \tau_{ij}}$
+  ($\cplx$-ARD) prior is optimized w.r.t. ${\color{teal} \tau_{ij}}$ in empirical Bayes
   \begin{eqnarray*}
     \mathop{KL}\nolimits_{ij}
       &=& -1
@@ -469,76 +474,83 @@
 \section{Experiments} % (fold)
 \label{sec:experiments}
 
-\begin{frame}[c]{\insertsection}
-  % methodological contrib
-  $\beta$-VAE \ref{eq:elbo} objective, \citep{higgins_beta-vae_2017,}
-  \begin{equation}
-  \label{eq:beta_elbo}
-    \max_q
-    \mathbb{E}_{w \sim {\color{orange} q}}
-      \log p(y\mid w, x)  % ; {\color{teal} \theta})
-    - \beta \mathop{KL}({\color{orange} q}\|{\color{blue} \pi})
-    \tag{$\beta$-ELBO}
-  \end{equation}
+\begin{frame}[t]{Datasets}{\insertsection}
+  Four MNIST-like datasets
+  % MNIST, Fashion-MNIST, KMNIST, EMNIST-Letters
   \begin{itemize}
-    \item VAE: control the capacity and statistical independence of the latent
-    information through a constraint on the divergence
-    \item Variational Dropout: balance the gradient feedback of the loss and the
-    prior-matching terms of ELBO (information budgeting, see \citep{BitsBack})
-    \item KL-div annealing of \citet{molchanov_variational_2017} does not allow
-    to explore the performance-compression trade-off
+    % \item channel features ($\real \hookrightarrow \cplx$ with $\Im z = 0$) or $2$d Fourier features
+    \item channel features ($\real \hookrightarrow \cplx$) or $2$d Fourier features
+    \item fixed random subset of $10k$ train samples
+    \item simple dense and convolutional nets on f
+  \end{itemize}
+  % do not train to convergence, just show that the methods give comparable results under similar conditions
+
+  \medskip
+  CIFAR10 dataset ($\real^3 \hookrightarrow \cplx^3$)
+  \begin{itemize}
+    \item random cropping and horizontal flipping
+    \item $\cplx$-valued variant of VGG16, \citep{simonyan_very_2015}
+  \end{itemize}
+
+  \medskip
+  Music transcription on MusicNet \citep{thickstun_learning_2017}
+  \begin{itemize}
+    \item audio dataset of $330$ annotated musical compositions
+    \item use power spectrum to tell which piano keys are pressed
+    \item deep $\cplx$VNN proposed by \citep{trabelsi_deep_2018}
   \end{itemize}
 \end{frame}
 
-\begin{frame}[c]{\insertsection}
+\begin{frame}[c]{Setup}{\insertsection}
+  % methodological contrib
+  $\beta$-VAE \ref{eq:elbo} objective, \citep{higgins_beta-vae_2017}
+  % \begin{equation}
+  % \label{eq:beta_elbo}
+  %   \max_q
+  %   \mathbb{E}_{w \sim {\color{orange} q}}
+  %     \log p(y\mid w, x)  % ; {\color{teal} \theta})
+  %   - \beta \mathop{KL}({\color{orange} q}\|{\color{blue} \pi})
+  %   \tag{$\beta$-ELBO}
+  % \end{equation}
+  \begin{itemize}
+    \item balance the likelihood and prior-matching terms' feedback
+    \item explore performance-compression trade-off by varying $\beta$
+    % \item KL-div annealing of \citet{molchanov_variational_2017} does not allow
+    % to explore the performance-compression trade-off
+  \end{itemize}
+
+  \bigskip
   % methodological contrib
   Three-stage training:
   \begin{enumerate}
     \item `pre-train' the network as-is with deterministic layers
-    \item `compress' with Variational Dropout layers and \eqref{eq:beta_elbo}
-    \item `fine-tune' only relevant parameters using deterministic maskable layers
+    \item `compress' with $\real$/$\cplx$-Variational Dropout layers
+    \item `fine-tune' pruned network (relevant parameters only)
     % sparse layers are sloooow
   \end{enumerate}
 
-  \medskip
-  $w_{ij}$ is relevant, i.e. $m_{ij} = 1$, iff $
-    \log{{\color{red} \alpha_{ij}}} \leq \tau
-  $ for $\tau = -\tfrac12$
+  \bigskip
+  Pruning based on estimated ${\color{red} \alpha_{ij}}$ and threshold
   \begin{itemize}
-    \item \citet{molchanov_variational_2017,kingma_variational_2015} use $\tau=3$,
-      tied to Bernoulli Dropout with rate $95\%$
-    \item We argue, that $q$ is factorized Gaussian, $
-        \tfrac{k \lvert w - \mu \rvert^2}
-              {\alpha \lvert \mu \rvert^2}
-      $ is $\chi^2_k$ distributed with $k=1$ ($\real$) or $2$ ($\cplx$)
-    \item relevant parameters are sufficiently concentrated around their mode according
-    to the posterior
+    \item $
+      \log{{\color{red} \alpha_{ij}}} \leq -\tfrac12
+    $ ensures that $
+      w_{ij} \sim {\color{orange} q}(w_{ij})
+    $ concentrates around ${\color{teal} \mu_{ij}}$
+    % \item Relevant $w_{ij}$ are concentrated around ${\color{teal} \mu_{ij}}$ w.h.p according ${\color{orange} q}$
+    % \item \citet{molchanov_variational_2017} use $\tau=3$, tied to Bernoulli Dropout with rate $95\%$
   \end{itemize}
-
-  A picture of the typical $\log \alpha$ distribution?
+  % A picture of the typical $\log \alpha$ distribution? bimodal
 \end{frame}
 
 % section experiments (end)
-
-\begin{frame}[t]{\insertsection}
-  Image classification
-  \begin{itemize}
-    \item MNIST, Fashion-MNIST, Kanji-MNIST, EMNIST-Letters
-  \end{itemize}
-\end{frame}
 
 \section{Results on MusicNet} % (fold)
 \label{sec:results_on_musicnet}
 
 \begin{frame}[c]{\insertsection}
 
-Music annotation task on MusicNet \citet{thickstun_learning_2017}
-\begin{itemize}
-  \item an audio dataset of $330$ annotated musical compositions
-  \item use power spectrum to tell which piano keys are pressed
-  \item $\cplx$-networks achieve better performance than $\real$-nets,
-  \cite{trabelsi_deep_2018}
-\end{itemize}
+  $\cplx$-networks achieve better performance than $\real$-nets, \citep{trabelsi_deep_2018}
 \begin{figure}[t]
   \centering
   \includegraphics[draft,scale=0.25]{figure/stft.png}
