@@ -340,7 +340,7 @@
     \underbrace{
       \mathbb{E}_{w \sim {\color{orange} q}}
         % \overbrace{
-          \log p(D\mid w)  % ; {\color{teal} \theta})
+          \log p(D \mid w)  % ; {\color{teal} \theta})
         % }^{
           % \text{model}
           % \,
@@ -419,56 +419,38 @@
     {\color{orange} q}(w) = \prod {\color{orange} q}(w_{ij})
   $
   \begin{itemize}
-    \item \emph{independent} $
+    \item $w_{ij}$ are \emph{independent} $
       \mathcal{CN}(
-        w_{ij}\,\big\vert\,
-        {\color{teal} \mu_{ij}},
-        \sigma_{ij}^2,
-        \sigma_{ij}^2 \xi_{ij}
+        w\,\big\vert\,
+        {\color{teal} \mu},
+        \sigma^2,
+        \sigma^2 \xi
       )
     $, $
-      \sigma_{ij}^2
-        = {\color{red} \alpha_{ij}} \lvert {\color{teal} \mu_{ij}} \rvert^2
-    $, $\lvert \xi_{ij} \rvert \leq 1$
+      \sigma^2
+        = {\color{red} \alpha} \lvert {\color{teal} \mu} \rvert^2
+    $, $\lvert \xi \rvert \leq 1$
 
     $$
     \begin{pmatrix}
-      \Re w_{ij} \\ \Im w_{ij}
+      \Re w \\ \Im w
     \end{pmatrix}
       \sim \mathcal{N}_{2}\biggl(
         \begin{pmatrix}
-          \Re {\color{teal} \mu_{ij}} \\ \Im {\color{teal} \mu_{ij}}
+          \Re {\color{teal} \mu} \\ \Im {\color{teal} \mu}
         \end{pmatrix},
-        \frac{\sigma_{ij}^2}2
+        \frac{\sigma^2}2
           \begin{pmatrix}
-            1 + \Re{\xi_{ij}} & \Im{\xi_{ij}} \\
-            \Im{\xi_{ij}} & 1 - \Re{\xi_{ij}}
+            1 + \Re{\xi} & \Im{\xi} \\
+            \Im{\xi} & 1 - \Re{\xi}
           \end{pmatrix}
       \biggr)
       $$
 
     \pause
     \medskip
-    \item \emph{circular symmetry} about ${\color{teal} \mu_{ij}}$: fix $
-      \xi_{ij} = 0
-    $
-
-    % \smallskip
-    % \item $
-    %   w_{ij} \sim {\color{orange} q}(w_{ij})
-    % $ is $
-    %   \cplx\mathcal{N}(
-    %     {\color{teal} \mu_{ij}},
-    %     \sigma^2_{ij},
-    %     0
-    %   )
-    % $ where $
-    %   {\color{teal} \mu_{ij}} \in \cplx
-    % $ and $
-    %   \sigma^2_{ij}
-    %     = {\color{red} \alpha_{ij}}
-    %       \lvert {\color{teal} \mu_{ij}} \rvert^2
-    % $
+    \item $w_{ij}$ are \emph{circularly symmetric} about ${\color{teal} \mu_{ij}}$
+      ($\xi_{ij} = 0$)
 
     \medskip
     \item relevance $
@@ -565,42 +547,22 @@
 \section{Experiments} % (fold)
 \label{sec:experiments}
 
-\subsection{Datasets} % (fold)
-\label{sub:datasets}
+\subsection{Goals} % (fold)
+\label{sub:goals}
 
-\begin{frame}[t]{\insertsection: \insertsubsection}
-  Four MNIST-like datasets
-  % MNIST, Fashion-MNIST, KMNIST, EMNIST-Letters
+\begin{frame}[c]{\insertsection: \insertsubsection}
+  We conduct numerous experiments on various datasets to
   \begin{itemize}
-    % \item channel features ($\real \hookrightarrow \cplx$ with $\Im z = 0$) or $2$d Fourier features
-    \item channel features ($\real \hookrightarrow \cplx$) or $2$d Fourier features
-    \item fixed random subset of $10k$ train samples
-    \item simple dense and convolutional nets
-  \end{itemize}
-  % do not train to convergence, just show that the methods give comparable results under similar conditions
-
-  \pause
-  \medskip
-  CIFAR10 dataset ($\real^3 \hookrightarrow \cplx^3$)
-  \begin{itemize}
-    \item random cropping and horizontal flipping
-    \item $\cplx$-valued variant of VGG16 {\tiny \citep{simonyan_very_2015}}
-  \end{itemize}
-
-  \pause
-  \medskip
-  Music transcription on MusicNet {\tiny \citep{thickstun_learning_2017}}
-  \begin{itemize}
-    \item audio dataset of $330$ annotated musical compositions
-    \item use power spectrum to tell which piano keys are pressed
-    \item deep $\cplx$VNN proposed by \citep{trabelsi_deep_2018}
+    \item validate the proposed $\cplx$-valued sparsification methods
+    \item explore the compression-performance profiles
+    \item compare to the $\real$-valued Sparse Variational Dropout
   \end{itemize}
 
 \end{frame}
 
-% subsection datasets (end)
+% subsection goals (end)
 
-\subsection{Details} % (fold)
+\subsection{Set-up} % (fold)
 \label{sub:details}
 
 \begin{frame}[c]{\insertsection: \insertsubsection}
@@ -610,8 +572,8 @@
   \label{eq:beta_elbo}
     \max_q
     \mathbb{E}_{w \sim {\color{orange} q}}
-      \log p(y\mid w, x)  % ; {\color{teal} \theta})
-    - \beta \mathop{KL}({\color{orange} q}\|{\color{blue} \pi})
+      \log p(D \mid w)  % ; {\color{teal} \theta})
+      - \beta \mathop{KL}({\color{orange} q}\|{\color{blue} \pi})
     \tag{$\beta$-ELBO}
   \end{equation}
   \vspace{-1em}
@@ -650,6 +612,41 @@
 \end{frame}
 
 % subsection details (end)
+
+\subsection{Datasets} % (fold)
+\label{sub:datasets}
+
+\begin{frame}[t]{\insertsection: \insertsubsection}
+  Four MNIST-like datasets
+  % MNIST, Fashion-MNIST, KMNIST, EMNIST-Letters
+  \begin{itemize}
+    % \item channel features ($\real \hookrightarrow \cplx$ with $\Im z = 0$) or $2$d Fourier features
+    \item channel features ($\real \hookrightarrow \cplx$) or $2$d Fourier features
+    \item fixed random subset of $10k$ train samples
+    \item simple dense and convolutional nets
+  \end{itemize}
+  % do not train to convergence, just show that the methods give comparable results under similar conditions
+
+  \pause
+  \medskip
+  CIFAR10 dataset ($\real^3 \hookrightarrow \cplx^3$)
+  \begin{itemize}
+    \item random cropping and horizontal flipping
+    \item $\cplx$-valued variant of VGG16 {\tiny \citep{simonyan_very_2015}}
+  \end{itemize}
+
+  \pause
+  \medskip
+  Music transcription on MusicNet {\tiny \citep{thickstun_learning_2017}}
+  \begin{itemize}
+    \item audio dataset of $330$ annotated musical compositions
+    \item use power spectrum to tell which piano keys are pressed
+    \item compress deep $\cplx$VNN proposed by \citep{trabelsi_deep_2018}
+  \end{itemize}
+
+\end{frame}
+
+% subsection datasets (end)
 
 % section experiments (end)
 
