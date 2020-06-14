@@ -45,9 +45,9 @@
 
 \author[Nazarov I., Burnaev E.]{Ivan Nazarov, Evgeny Burnaev}
 
-\date{\today}
+\date{}
 
-\institute[Skoltech]{Skolkovo Institute of Science and Technology}
+\institute[Skoltech]{ADASE Skoltech \\ Moscow, Russia}
 
 \begin{document}
 
@@ -105,18 +105,15 @@
     \item $r = \lvert z \rvert$ -- modulus, $\phi = \arg{\!(z)}$ -- argument of $z$
   \end{itemize}
 
-  \pause
   \bigskip
   Benefits of using complex numbers $\cplx$ in neural networks
   \begin{itemize}
-    \pause
     \item Richer representation via phase and amplitude $
         r e^{\,\iu \phi} \in \cplx
       $,
       {\tiny \\ \quad
         \citep{reichert_neuronal_2014}}
 
-    \pause
     \smallskip
     \item Non-degenerate combined phase-amplitude transformations,
       {\tiny \\ \quad
@@ -126,7 +123,6 @@
     %     \citep{bruna_mathematical_2015}}
     % \smallskip
 
-    \pause
     \smallskip
     \item Stable BPTT in RNN via unitary transition matrices,
       {\tiny \\ \quad
@@ -138,9 +134,8 @@
 \begin{frame}[c]{\insertsection: Applications}
 %  * applications with 
 %  * list of references which consider complex-valued networks and their application and motivation
-  Natural $\cplx$-valued data representation
+  Data with natural $\cplx$-valued representation
   \begin{itemize}
-    \pause
     \item radar and satellite imaging
       {\tiny \\ \quad
         \citep{hirose_complex-valued_2009,hansch_complex-valued_2010,zhang_complex-valued_2017}}
@@ -150,7 +145,6 @@
       {\tiny \\ \quad
         \citep{hui_mri_1995,wang_deepcomplexmri_2020}}
 
-    \pause
     \smallskip
     \item radio signal classification
       {\tiny \\ \quad
@@ -177,7 +171,6 @@
   % % quaternion netwroks
   % \citep{gaudet_deep_2018}
 
-  \pause
   \medskip
   Exploring benefits beyond $\cplx$-valued data
   \begin{itemize}
@@ -271,7 +264,6 @@
 % making them use less artihmetic operations, or faster ops
   Improve power, storage or throughput efficiency of deep nets
   \begin{itemize}
-    \pause
     \item Knowledge distillation
       {\tiny \\ \quad
         \citep{hinton_distilling_2015,balasubramanian_deep_2016}}
@@ -281,7 +273,6 @@
       {\tiny \\ \quad
         \citep{lecun_optimal_1990,seide_conversational_2011,zhu_prune_2018}}
 
-    \pause
     \smallskip
     \item Low-rank matrix~/~tensor decomposition
       {\tiny \\ \quad
@@ -299,7 +290,6 @@
 % * sparsisty -- inducing regularizers (lasso)
 % * pruning -- remove insignificant parameters
 
-  \pause
   \bigskip
   Applications to $\cplx$VNN:
   \begin{itemize}
@@ -381,19 +371,19 @@
     $, $\alpha_{ij} > 0$, and ${\color{teal} \mu_{ij}} \in \real$
   \end{itemize}
 
-  \pause
   \medskip
-  Factorized prior $
-    {\color{blue} \pi}(w_{ij})
-      \propto \frac1{\lvert w_{ij}\rvert}
-  $ (VD)
+  Factorized prior
   \begin{itemize}
+    \item (VD) $
+      {\color{blue} \pi}(w_{ij})
+        \propto \frac1{\lvert w_{ij}\rvert}
+    $ {\tiny \citep{molchanov_variational_2017}}
     \item (ARD) $
       {\color{blue} \pi}(w_{ij}) = \mathcal{N}(
         w_{ij}\,\big\vert\,
         0, \tfrac1{{\color{teal} \tau_{ij}}}
       )
-    $, \citep{kharitonov_variational_2018}
+    $ {\tiny \citep{kharitonov_variational_2018}}
     % precision $\tau_{ij} > 0$
   \end{itemize}
 
@@ -425,7 +415,6 @@
         = {\color{red} \alpha_{ij}} \lvert {\color{teal} \mu_{ij}} \rvert^2
     $, $\lvert \xi_{ij} \rvert \leq 1$
 
-    \pause
     \medskip
     \item \emph{circular symmetry} about ${\color{teal} \mu_{ij}}$: fix $
       \xi_{ij} = 0
@@ -498,13 +487,12 @@
 
 \begin{frame}[c]{\insertsection}
 
-  $\mathop{KL}({\color{orange} q} \| {\color{blue} \pi})$ term in \eqref{eq:elbo}:
+  $\mathop{KL}({\color{orange} q} \| {\color{blue} \pi})$ term in \eqref{eq:elbo}
   \begin{equation*}
     \mathop{KL}({\color{orange} q} \| {\color{blue} \pi})
       = \sum_{ij} \mathop{KL}({\color{orange} q}(w_{ij}) \| {\color{blue} \pi}(w_{ij}))
   \end{equation*}
 
-  \pause
   \bigskip
   ($\cplx$-VD) improper prior
   \begin{eqnarray*}
@@ -520,7 +508,6 @@
   % with $Ei\colon (-\infty, 0) \to \real \colon x \mapsto \int_{-\infty}^x e^t t^{-1} dt$
   % is the exponential integral
 
-  \pause
   \bigskip
   ($\cplx$-ARD) prior is optimized w.r.t. ${\color{teal} \tau_{ij}}$ in empirical Bayes
   \begin{eqnarray*}
