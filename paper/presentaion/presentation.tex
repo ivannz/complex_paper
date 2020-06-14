@@ -73,14 +73,14 @@
   \begin{itemize}
     \item Bayesian sparsification method with $\cplx$-valued distributions 
     % \item $\cplx$-Gaussian variational posterior, $\cplx$-valued priors
-    \item empirically explore the compression-performance frontier
+    \item empirically explore the compression-performance trade-off
   \end{itemize}
 
   \pause
   \medskip
   Conclusions
   \begin{itemize}
-    \item $\cplx$-valued methods compress similarly to the original $\real$ methods
+    \item $\cplx$-valued methods compress similarly to $\real$-valued predecessors
     \item final performance benefits from fine-tuning sparsified network
     \item compress a SOTA $\cplx$VNN on MusicNet by $50-100\times$ at a moderate performance penalty
   \end{itemize}
@@ -92,7 +92,7 @@
 \section{$\cplx$-valued neural networks} % (fold)
 \label{sec:complex_valued_networks}
 
-\begin{frame}[c]{\insertsection: Motivation}
+\begin{frame}<presentation:0>[noframenumbering,c]{\insertsection: Motivation}
 
   Rectangular form: $z = \Re{z} + \iu \Im{z}$, $\iu^2 = -1$
   \begin{itemize}
@@ -171,6 +171,7 @@
   % % quaternion netwroks
   % \citep{gaudet_deep_2018}
 
+  \pause
   \medskip
   Exploring benefits beyond $\cplx$-valued data
   \begin{itemize}
@@ -182,6 +183,11 @@
     \item image classification, road~/~lane segmentation  % KITTI Road Estimation
       {\tiny \\ \quad
         \citep{popa_complex-valued_2017,trabelsi_deep_2018,gaudet_deep_2018}}
+
+    \smallskip
+    \item unitary transition matrices in recurrent networks
+      {\tiny \\ \quad
+        \citep{arjovsky_unitary_2016,wisdom_full-capacity_2016}}
   \end{itemize}
 
 \end{frame}
@@ -190,7 +196,15 @@
   % main reference \citep{trabelsi_deep_2018}, but need some historical perspective
   % $\cplx$VNN operate on complex numbers $\cplx$ instead of real numbers $\real$
 
-  % \medskip
+  Geometric representation $\cplx \simeq \real^2$
+  \begin{itemize}
+    \item $z = \Re{z} + \iu \Im{z}$, $\iu^2 = -1$
+    \item $\Re{z}$ and $\Im{z}$ are \textbf{real} and \textbf{imaginary} parts of $z$
+  \end{itemize}
+
+  \bigskip
+
+  \bigskip
   % \citep{arjovsky_unitary_2016,wisdom_full-capacity_2016,trabelsi_deep_2018,gaudet_deep_2018}
   An intricate double-$\real$ network that respects $\cplx$-arithmetic
   \vspace{-1em}
@@ -217,7 +231,6 @@
 
   \bigskip
 
-  \pause
   \bigskip
   % \item nonlinearities: trigonometric, real-imaginary ReLU etc.
   Activations
@@ -232,25 +245,26 @@
   \end{itemize}
   % \citep{hirose_complex-valued_2009}  argues that holomorphy and nondifferentiability are non-issues
 
-  \bigskip
+  % A BLOCK ON COMPLEX BACKPROP -- just say it out loud
+  % \bigskip
 
-  \pause
-  \bigskip
-  Geometric representation $\cplx \simeq \real^2$ for backpropagation
-  % REWRITE THIS
-  \begin{itemize}
-    \item Wirtinger derivatives $
-        \partial_z
-      $ and $
-        \partial_{\,\conj{z}}
-      $ (independent $z$ and ${\conj{z}}$)
+  % \pause
+  % \bigskip
+  % Geometric representation $\cplx \simeq \real^2$ for backpropagation
+  % % REWRITE THIS
+  % \begin{itemize}
+  %   \item Wirtinger derivatives $
+  %       \partial_z
+  %     $ and $
+  %       \partial_{\,\conj{z}}
+  %     $ (independent $z$ and ${\conj{z}}$)
 
-    \item $\nabla_z L \propto \partial_{\,\conj{z}} L(z)$ for $L\colon \cplx^m \to \real$
-    % \citep{zimmermann_comparison_2011}
-  \end{itemize}
-    % \citep{trabelsi_deep_2018}, \citep{arjovsky_unitary_2016}
-  % So essentially implementing $\cplx$-valued networks boils down consistently
-  % structured $\real$-valued with double the dimensions.
+  %   \item $\nabla_z L \propto \partial_{\,\conj{z}} L(z)$ for $L\colon \cplx^m \to \real$
+  %   % \citep{zimmermann_comparison_2011}
+  % \end{itemize}
+  %   % \citep{trabelsi_deep_2018}, \citep{arjovsky_unitary_2016}
+  % % So essentially implementing $\cplx$-valued networks boils down consistently
+  % % structured $\real$-valued with double the dimensions.
 
 \end{frame}
 
@@ -259,6 +273,7 @@
 \section{Sparsity and compression} % (fold)
 \label{sec:compression}
 
+% \begin{frame}<presentation:0>[noframenumbering,c]{\insertsection}
 \begin{frame}[c]{\insertsection}
 % Compression is not just making the nets smaller, it is also
 % making them use less artihmetic operations, or faster ops
@@ -396,7 +411,8 @@
 \section{$\cplx$-valued Variational Dropout} % (fold)
 \label{sec:extension_to_complex_parameters}
 
-\begin{frame}[c]{\insertsection}{Out proposal}
+\begin{frame}[c]{\insertsection}{Our proposal}
+
   \medskip
   % The same objective, but with proper Complex-valued distributions
   Factorized complex-valued posterior $
@@ -415,6 +431,23 @@
         = {\color{red} \alpha_{ij}} \lvert {\color{teal} \mu_{ij}} \rvert^2
     $, $\lvert \xi_{ij} \rvert \leq 1$
 
+    $$
+    \begin{pmatrix}
+      \Re w_{ij} \\ \Im w_{ij}
+    \end{pmatrix}
+      \sim \mathcal{N}_{2}\biggl(
+        \begin{pmatrix}
+          \Re {\color{teal} \mu_{ij}} \\ \Im {\color{teal} \mu_{ij}}
+        \end{pmatrix},
+        \frac{\sigma_{ij}^2}2
+          \begin{pmatrix}
+            1 + \Re{\xi_{ij}} & \Im{\xi_{ij}} \\
+            \Im{\xi_{ij}} & 1 - \Re{\xi_{ij}}
+          \end{pmatrix}
+      \biggr)
+      $$
+
+    \pause
     \medskip
     \item \emph{circular symmetry} about ${\color{teal} \mu_{ij}}$: fix $
       \xi_{ij} = 0
@@ -437,9 +470,8 @@
     %       \lvert {\color{teal} \mu_{ij}} \rvert^2
     % $
 
-    \pause
     \medskip
-    \item parameter relevance $
+    \item relevance $
       \propto \frac1{{\color{red} \alpha_{ij}}}
     $ and $
       \tfrac{2 \lvert w_{ij} - {\color{teal} \mu_{ij}} \rvert^2}
@@ -470,6 +502,7 @@
       \end{itemize}
     \end{column}
     \begin{column}{0.30\linewidth}
+    \vspace{-5em}
       \begin{figure}
         \centering
         % \includegraphics[scale=0.35]{figure__cplx_gaussian.pdf}
@@ -532,7 +565,10 @@
 \section{Experiments} % (fold)
 \label{sec:experiments}
 
-\begin{frame}[t]{\insertsection}{Datasets}
+\subsection{Datasets} % (fold)
+\label{sub:datasets}
+
+\begin{frame}[t]{\insertsection: \insertsubsection}
   Four MNIST-like datasets
   % MNIST, Fashion-MNIST, KMNIST, EMNIST-Letters
   \begin{itemize}
@@ -562,7 +598,12 @@
 
 \end{frame}
 
-\begin{frame}[c]{\insertsection}{Set-up}
+% subsection datasets (end)
+
+\subsection{Details} % (fold)
+\label{sub:details}
+
+\begin{frame}[c]{\insertsection: \insertsubsection}
   % methodological contrib
   $\beta$-VAE \ref{eq:elbo} objective {\tiny \citep{higgins_beta-vae_2017}}
   \begin{equation}
@@ -576,21 +617,10 @@
   \vspace{-1em}
   \begin{itemize}
     \item balance the likelihood and prior-matching terms' feedback
-    \item explore performance-compression trade-off by varying $\beta$
+    \item explore performance-compression frontier by varying $\beta$
     % \item KL-div annealing of \citet{molchanov_variational_2017} does not allow
     % to explore the performance-compression trade-off
   \end{itemize}
-
-  \pause
-  \medskip
-  % methodological contrib
-  Three-stage training:
-  \begin{enumerate}
-    \item `pre-train' the network as-is with deterministic layers
-    \item `compress' with $\real$/$\cplx$-Variational Dropout layers
-    \item `fine-tune' pruned network (relevant parameters only)
-    % sparse layers are sloooow
-  \end{enumerate}
 
   \pause
   \medskip
@@ -606,14 +636,27 @@
   \end{itemize}
   % A picture of the typical $\log \alpha$ distribution? bimodal
 
+  \pause
+  \medskip
+  % methodological contrib
+  Three-stage training:
+  \begin{enumerate}
+    \item `pre-train' the network as-is with deterministic layers
+    \item `compress' with $\real$/$\cplx$-Variational Dropout layers
+    \item `fine-tune' pruned network (relevant parameters only)
+    % sparse layers are sloooow
+  \end{enumerate}
+
 \end{frame}
+
+% subsection details (end)
 
 % section experiments (end)
 
 \section{Results} % (fold)
 \label{sec:results}
 
-\begin{frame}[c]{\insertsection}{MNIST}
+\begin{frame}<presentation:0>[noframenumbering,c]{\insertsection: MNIST}
   \begin{figure}[t]
     \begin{subfigure}[b]{0.5\columnwidth}
       \centering
@@ -639,7 +682,7 @@
 
 \end{frame}
 
-\begin{frame}[c]{\insertsection}{CIFAR10}
+\begin{frame}[c]{\insertsection: CIFAR10}
   \begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{figure__cifar__trade-off/appendix__augmentedcifar10__raw__-0.5.pdf}
@@ -649,7 +692,7 @@
 
 \end{frame}
 
-\begin{frame}[c]{\insertsection}{MusicNet}
+\begin{frame}[c]{\insertsection: MusicNet}
   \begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{figure__musicnet__trade-off/paper__musicnetram__fft__-0.5.pdf}
@@ -671,7 +714,7 @@
 
 \end{frame}
 
-\begin{frame}[c]{\insertsection}{Effects of $\tau$}
+\begin{frame}[c]{MusicNet: Effects of pruning threshold}
   \begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{figure__musicnet__threshold.pdf}
@@ -681,7 +724,7 @@
 
 \end{frame}
 
-\begin{frame}[c]{Effects of $\tau$}{\insertsection}
+\begin{frame}[c]{MusicNet: Effects of pruning threshold}
   \begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{figure__musicnet__threshold__fine-tune.pdf}
@@ -699,7 +742,7 @@
 \subsection{Results} % (fold)
 \label{sub:results}
 
-\begin{frame}[c]{\insertsubsection}{\insertsection}
+\begin{frame}[c]{\insertsection: \insertsubsection}
   % Recap
   Bayesian sparsification of $\cplx$-valued networks
   \begin{itemize}
@@ -722,7 +765,8 @@
     % in line with prior lit \citep{han_learning_2015}
     % \item Variational Dropout controllably removes redundancy in wide $\cplx$ and $\real$ networks
     \smallskip
-    \item weak effect on performance~/~compression than $\beta$ in \eqref{eq:beta_elbo}
+    % \item threshold weakly affects performance~/~compression than $\beta$ in \eqref{eq:beta_elbo}
+    \item $\beta$ in \ref{eq:beta_elbo} influences compression stronger than threshold
     % \item compression results are replicable and stable
   \end{itemize}
 
@@ -744,22 +788,23 @@
 \subsection{Limitations} % (fold)
 \label{sec:limitations}
 
-\begin{frame}[c]{\insertsubsection}{\insertsection}
+\begin{frame}[c]{\insertsection: \insertsubsection}
 
   \emph{Circular symmetry} of the posterior ${\color{orange} q}(w_{ij})$ about
   ${\color{teal} \mu_{ij}}$ implies \emph{independence} of $\Re$ and $\Im$
   % var fmaily based on cgauss implies independence
   % * if we use this param then can model polarization
   \begin{itemize}
-    \item richer variational approximation family
-    \item $\cplx$-ARD ${\color{blue} \pi}$ and learn relation $
-      \xi = {\color{teal} \eta} e^{\iu {\color{teal} \phi}}
-    $ in ${\color{orange} q}$
+    \item modelling $
+      \mathop{corr}(w_{ij}, \conj{w}_{ij})
+    $ gives better variational approximation
+    % \item $\cplx$-ARD ${\color{blue} \pi}$ and learn relation $
+    %   \xi = {\color{teal} \eta} e^{\iu {\color{teal} \phi}}
+    % $ in ${\color{orange} q}$
   \end{itemize}
 
   \bigskip
 
-  \pause
   \bigskip
   \emph{Factorized} ${\color{orange} q}$ implies parameter independence % in ${\color{orange} q}$ does not hold in practice
   \begin{itemize}
@@ -768,6 +813,12 @@
     % \item parameter coupling may give higher compression, \citep{citation_needed}
   \end{itemize}
 
+  % \bigskip
+
+  % \bigskip
+  
+  % \begin{itemize}
+  % \end{itemize}
 \end{frame}
 
 % subsection limitations (end)
@@ -777,7 +828,7 @@
 \section{References} % (fold)
 \label{sec:references}
 
-\begin{frame}<beamer:0>[t,noframenumbering,plain,allowframebreaks]{\insertsection}
+\begin{frame}<presentation:0>[noframenumbering,t,plain,allowframebreaks]{\insertsection}
   \tiny
   \bibliographystyle{abbrvnat}
   \bibliography{presentation}
@@ -786,7 +837,7 @@
 % section references (end)
 
 \appendix
-\begin{frame}[c]{MusicNet}{\insertsection}
+\begin{frame}<presentation:0>[noframenumbering,c]{MusicNet}{\insertsection}
   Poor performance of under-compressed $\cplx$VNN of \citet{trabelsi_deep_2018}
   \begin{itemize}
     \item `pre-train' validation score peaks at $\approx 15$ epochs
