@@ -1,0 +1,375 @@
+\documentclass[a4paper,10pt,onecolumn]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{a4paper,margin=10mm}
+\usepackage[english]{babel}
+\usepackage{natbib}
+% \setcitestyle{authoryear,open={((},close={))}}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\usepackage{xcolor}
+\usepackage{graphicx, url}
+\usepackage{grffile}
+
+\graphicspath{{../assets/}}
+
+\usepackage{subcaption}
+
+\usepackage{booktabs}
+
+\title{Bayesian Sparsification of Deep $\cplx$-valued networks}
+\author{Ivan Nazarov, and Evgeny Burnaev}
+
+%% notation
+\newcommand{\real}{\mathbb{R}}
+\newcommand{\cplx}{\mathbb{C}}
+
+\begin{document}
+\maketitle
+\listoffigures
+
+\clearpage
+
+\begin{figure}[b]
+  \centering
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__emnist_letters__fft__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__emnist_letters__fft__-0.5.pdf}
+  \end{subfigure} \\ %
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    % used in main text
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__emnist_letters__fft__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__emnist_letters__fft__-0.5.pdf}
+  \end{subfigure} \\ %
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__emnist_letters__raw__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__emnist_letters__raw__-0.5.pdf}
+  \end{subfigure} \\ %
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__emnist_letters__raw__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__emnist_letters__raw__-0.5.pdf}
+  \end{subfigure}
+  \caption{%
+    \texttt{emnist\_letters}: (row 1) $2\real / \cplx$, (rows 2, 3) $\real / \cplx$, (row 4) $\real / \tfrac12\cplx$.
+    % ARD method for $\real$ and $\cplx$ models using Fourier features.
+  }
+  % \label{fig:appendix__mnist-like__trade-off__emnist_letters}
+\end{figure}
+
+\begin{figure}[b]
+  \centering
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__kmnist__fft__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__kmnist__fft__-0.5.pdf}
+  \end{subfigure} \\ %
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    % used in main text
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__kmnist__fft__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__kmnist__fft__-0.5.pdf}
+  \end{subfigure} \\ %
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__kmnist__raw__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__kmnist__raw__-0.5.pdf}
+  \end{subfigure} \\ %
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__kmnist__raw__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__kmnist__raw__-0.5.pdf}
+  \end{subfigure}
+  \caption{%
+    \texttt{kmnist}: (row 1) $2\real / \cplx$, (rows 2, 3) $\real / \cplx$, (row 4) $\real / \tfrac12\cplx$.
+    % VD method for $\real$ and $\cplx$ models using Fourier features.
+  }
+  % \label{fig:appendix__mnist-like__trade-off__kmnist}
+\end{figure}
+
+\begin{figure}[b]
+  \centering
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__fashionmnist__fft__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__fashionmnist__fft__-0.5.pdf}
+  \end{subfigure} \\%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    % used in main text
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__fashionmnist__fft__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__fashionmnist__fft__-0.5.pdf}
+  \end{subfigure} \\%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__fashionmnist__raw__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__fashionmnist__raw__-0.5.pdf}
+  \end{subfigure} \\ %
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__fashionmnist__raw__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__fashionmnist__raw__-0.5.pdf}
+  \end{subfigure}
+  \caption{%
+    \texttt{fashionmnist}: (row 1) $2\real / \cplx$, (rows 2, 3) $\real / \cplx$, (row 4) $\real / \tfrac12\cplx$.
+    % ARD method for $\real$ and $\cplx$ models using raw features.
+  }
+  % \label{fig:appendix__mnist-like__trade-off__fashionmnist}
+\end{figure}
+
+\begin{figure}[b]
+  \centering
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__mnist__fft__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__mnist__fft__-0.5.pdf}
+  \end{subfigure} \\%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    % used in main text
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__mnist__fft__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__mnist__fft__-0.5.pdf}
+  \end{subfigure} \\%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__mnist__raw__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__mnist__raw__-0.5.pdf}
+  \end{subfigure} \\ %
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__mnist__raw__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__mnist__raw__-0.5.pdf}
+  \end{subfigure}
+  \caption{%
+    \texttt{mnist}: (row 1) $2\real / \cplx$, (rows 2, 3) $\real / \cplx$, (row 4) $\real / \tfrac12\cplx$.
+    % VD method for $\real$ and $\cplx$ models using raw features.
+  }
+  % \label{fig:appendix__mnist-like__trade-off__mnist}
+\end{figure}
+
+
+% judging features
+\begin{figure}[b]
+  \centering
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__emnist_letters__raw__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__emnist_letters__raw__-0.5.pdf}
+  \end{subfigure} \\ %
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    % used in main text
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__emnist_letters__raw__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__emnist_letters__raw__-0.5.pdf}
+  \end{subfigure} \\ %
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__kmnist__raw__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__kmnist__raw__-0.5.pdf}
+  \end{subfigure} \\ %
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__kmnist__raw__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__kmnist__raw__-0.5.pdf}
+  \end{subfigure}
+  \caption{%
+    \texttt{emnist\_letters}: (row 1) $2\real / \cplx$, (rows 2, 3) $\real / \cplx$, (row 4) $\real / \tfrac12\cplx$.
+    % ARD method for $\real$ and $\cplx$ models using Fourier features.
+  }
+  % \label{fig:appendix__mnist-like__trade-off__emnist_letters}
+\end{figure}
+
+\begin{figure}[b]
+  \centering
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__fashionmnist__raw__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__fashionmnist__raw__-0.5.pdf}
+  \end{subfigure} \\ %
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    % used in main text
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__fashionmnist__raw__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__fashionmnist__raw__-0.5.pdf}
+  \end{subfigure} \\ %
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__mnist__raw__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__mnist__raw__-0.5.pdf}
+  \end{subfigure} \\ %
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__mnist__raw__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__mnist__raw__-0.5.pdf}
+  \end{subfigure}
+  \caption{%
+    \texttt{kmnist}: (row 1) $2\real / \cplx$, (rows 2, 3) $\real / \cplx$, (row 4) $\real / \tfrac12\cplx$.
+    % VD method for $\real$ and $\cplx$ models using Fourier features.
+  }
+  % \label{fig:appendix__mnist-like__trade-off__kmnist}
+\end{figure}
+
+\begin{figure}[b]
+  \centering
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__emnist_letters__fft__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__emnist_letters__fft__-0.5.pdf}
+  \end{subfigure} \\%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    % used in main text
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__emnist_letters__fft__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__emnist_letters__fft__-0.5.pdf}
+  \end{subfigure} \\%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__kmnist__fft__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__kmnist__fft__-0.5.pdf}
+  \end{subfigure} \\ %
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__kmnist__fft__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__kmnist__fft__-0.5.pdf}
+  \end{subfigure}
+  \caption{%
+    \texttt{fashionmnist}: (row 1) $2\real / \cplx$, (rows 2, 3) $\real / \cplx$, (row 4) $\real / \tfrac12\cplx$.
+    % ARD method for $\real$ and $\cplx$ models using raw features.
+  }
+  % \label{fig:appendix__mnist-like__trade-off__fashionmnist}
+\end{figure}
+
+\begin{figure}[b]
+  \centering
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__fashionmnist__fft__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__fashionmnist__fft__-0.5.pdf}
+  \end{subfigure} \\%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    % used in main text
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__fashionmnist__fft__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__fashionmnist__fft__-0.5.pdf}
+  \end{subfigure} \\%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__mnist__fft__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__mnist__fft__-0.5.pdf}
+  \end{subfigure} \\ %
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__mnist__fft__-0.5.pdf}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\columnwidth}
+    \centering
+    \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__mnist__fft__-0.5.pdf}
+  \end{subfigure}
+  \caption{%
+    \texttt{mnist}: (row 1) $2\real / \cplx$, (rows 2, 3) $\real / \cplx$, (row 4) $\real / \tfrac12\cplx$.
+    % VD method for $\real$ and $\cplx$ models using raw features.
+  }
+  % \label{fig:appendix__mnist-like__trade-off__mnist}
+\end{figure}
+
+\end{document}
