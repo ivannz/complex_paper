@@ -1354,17 +1354,13 @@ need considerably less training epochs before early stopping terminates the proc
 % testing the fx of the threshold
 \begin{figure}[!t]
   \centering
-  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
-    \centering
-    \includegraphics[width=\columnwidth]{figure__musicnet__threshold.pdf}
-  \end{subfigure} \\
-  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
-    \centering
-    \includegraphics[width=\columnwidth]{figure__musicnet__threshold__fine-tune.pdf}
-  \end{subfigure}
+  \includegraphics[width=1\columnwidth]{figure__musicnet__threshold__C__DeepConvNet.pdf}
   \caption{%
-    Performance (smooth curve) and compression (curve with markers) of select experiments
-    before (\textit{top}) and after (\textit{bottom}) fine-tuning.
+    Effects of finetunig on performance-compression curves parametrized by $
+      \tau\in \{\tfrac{k}2\colon k=-8..+8 \}
+    $ for $
+      C\in \{\tfrac1{20}, \frac1{200}\}
+    $ in \eqref{eq:elbo_with_coef} during sparsification (sec.~\ref{sub:staging}).
   }
   \label{fig:hist__and__threshold__tradeoff}
 \end{figure}
