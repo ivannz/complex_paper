@@ -127,6 +127,17 @@ although pruning is preferred for simplicity, stability and speed. They also obs
 VD induces non-uniform sparsity throughout the model, which \citet{he_amc:_2018} have shown
 to be essential for superior compression.
 % Magnitude pruning induces user-specified sparsity distributions.
+
+% our contribution
+Sparse Variational Dropout is a Bayesian Variational Inference method with automatic
+parameter relevance determination effect. In this study we extend \emph{Sparse VD} to
+$\cplx$VNN, inspired by the results of \citet{gale_state_2019}, and motivated by seldom
+application of Bayesian Inference to $\cplx$-valued networks \citep{popa_complex-valued_2018}
+and apparent scarcity of compression methods specific to them. We assess the performance-%
+compression trade-off of the extension by conducting a large-scale numerical study on
+image classification on MNIST-like and CIFAR10 datasets and music transcription on MusicNet.
+%
+% THIS SHOULD GO TO CONCLUSIONS!
 %
 % L0 and dropout work in the low-to-mid sparsity range, variational dropout consistently
 % ranked behind L0 on Transformer, and was bested by magnitude pruning for sparsity
@@ -136,26 +147,13 @@ We expect the overall conclusion of \citet{gale_state_2019} to carry over to $\c
 since there is nothing fundamentally different in $\cplx$-valued versions of the methods
 they study, except for the need to operate on pairs of parameters.
 
-% with noting that compression and sparsification techniques serve dual purpose as model
-% regularization. and can be regarded as a Bayesian network pruning method
-
-% our contribution
-Sparse Variational Dropout is a Bayesian Variational Inference method with automatic
-parameter relevance determination effect. In this study we extend this technique to
-$\cplx$VNN, inspired by the results of \citet{gale_state_2019}, and motivated by seldom
-application of Bayesian Inference to $\cplx$-valued networks \citep{popa_complex-valued_2018}
-and apparent scarcity of compression methods specific to them. We assess the performance-%
-compression trade-off of the extension by conducting a large-scale numerical study on
-image classification on MNIST-like and CIFAR10 datasets and music transcription on MusicNet.
-
-The paper is structured as follows. Sec.~\ref{sec:variational_dropout} reviews Bayesian
-dropout techniques, and sec.~\ref{sec:c_valued_networks} provides a brief summary of
-the inner working of complex-valued networks. The main contribution of this study is
-presented in sec.~\ref{sec:c_variational_dropout}, where we outline the details of
-different variational approximations and priors and derive the penalty terms in the
-evidence lower bound. In sec.~\ref{sec:experiments} we evaluate the sparsification rate,
-compare the resulting performance of various $\cplx$-networks proposed in prior work,
-and discuss the outcomes.
+The paper is structured as follows. Sec.~\ref{sec:variational_dropout} reviews Variational
+Dropout, and sec.~\ref{sec:c_valued_networks} provides a brief summary of the inner
+working of complex-valued networks. The main contribution of this study is presented in
+sec.~\ref{sec:c_variational_dropout}, where we outline the details of different variational
+approximations and priors and derive the penalty terms in the evidence lower bound.
+In sec.~\ref{sec:experiments} we evaluate the sparsification rate, compare the resulting
+performance of various $\cplx$-networks proposed in prior work, and discuss the outcomes.
 
 
 % section introduction (end)
@@ -164,102 +162,53 @@ and discuss the outcomes.
 \section{Variational Dropout} % (fold)
 \label{sec:variational_dropout}
 
-% segue into bayesian inference
-  % \speak{R 1}
-  % In the first paragraph of section 2: Although the Bayesian prior over weights can indeed
-  % be interpreted as a prior over models, the inclusion of this notation in the first
-  % paragraph of section 2 seems unnecessary. Especially considering that the authors refer
-  % to weights, and not models, for the remainder of the paper.
+% overview
+In broad terms Bayesian Inference is a principled framework of reasoning about uncertainty
+and a tool to update prior beliefs about model's parameters in accordance with evidence or
+empirical data into a posterior distribution. The posterior is useful for inference
+regarding unobserved data, predictive statistics, parameter confidence regions, and
+model's uncertainty.
+% intuitive definition of  of model given data is the same as probability of data under hypothesis (model)
+% KL-div min & VI -- \citep{jordan_introduction_1999} approximate Bayesian inference
+% SVI -- \citep{hoffman_stochastic_2013} scalable stochastic variant
+% SGVB -- \citep{kingma_auto-encoding_2014} differentiable MCMC estimator of the evidence lower bound for SVI
 
-Bayesian Inference is a principled framework of reasoning about uncertainty, and in broad
-terms Bayesian methods are used to update prior assumptions in accordance with their
-likelihood based on empirical evidence into posterior beliefs. Under suitable modelling
-and distributional assumptions, Bayesian methods can be used towards model regularization,
-e.g. Variational Dropout \citep{kingma_variational_2015}.
-% Bayesian perspective on dropout model regularization proposed by Kingma at al. (2015)
-% repurposed for sparsification by Molchanov et al. (2017) and Kharitonov et al. (2018)
-
-In general, the core of Bayesian Inference can be summarized as follows: given a prior
-distribution $\pi(m)$ on models (hypotheses) $\mathcal{M}$, utilize the empirical evidence
-$D$ to update the assumptions by considering the likelihood of the observations under each
-$m \in \mathcal{M}$. Models are represented by a parametric family indexed by parameters
-$\omega \in \Omega$ and each $m_\omega(\cdot)$ specifies the conditional distribution of
-the data $
+For an observed dataset $
   D = (z_i)_{i=1}^N
-$. The posterior distribution $p(\omega \mid D)$, derived using the Bayes rule $
-  p(m \mid D) = \tfrac{p(D \mid m) \pi(m)}{p(D)}
-$ with $
-  p(D) = \mathbb{E}_{\pi(m)} p(D \mid m)
-$, provides useful information about yet unobserved data and model parameters, e.g
-classification uncertainty, predictive statistics, and parameter relevance.
-
-Save for the relatively simple cases, the posterior distribution is intractable, and
-therefore exactness Bayesian Inference is traded for tractability and scalability of
-Variational Bayesian Inference. Instead of deriving the posterior $p(\omega \mid D)$,
-this approach postulates an optimization problem for finding an approximation $q$,
-which is close to $p(\omega \mid D)$ in terms of a proximity score $\rho$
-\begin{equation}  \label{eq:variational-progam}
-  q_*
-    \in \arg \min_{\theta} \rho\bigl(
-      q_\theta(\omega), p(\omega \mid D)
-    \bigr)
-    \,,
-\end{equation}
-over a tractable parametric family of distributions on the parameter space $
-  \mathcal{Q} = \{Q_\theta(d\omega) \colon \theta \in \Theta\}
-$, $\theta$ -- generic variational parameter. The variational approximation class
-$\mathcal{Q}$ is chosen so that its members have tractable densities $
-  q_\theta(\omega) d\omega
-$, can be sampled from and have either tractable $\log$-derivatives $
-  \omega \mapsto \nabla_\theta \log q_\theta(\omega)
-$ or can be represented as differentiable transformations of non-parametric noise
-\citep{williams_simple_1992,kingma_auto-encoding_2014,figurnov_implicit_2019}.
-% (reparameterization trick, pathwise gradient) $q_{\theta}(d\omega)$ is a push-forward
-% of $p(d\varepsilon)$ by a differentiable map $g(\varepsilon; \theta)$.
-% % http://stillbreeze.github.io/REINFORCE-vs-Reparameterization-trick/#fn:1
+$ with parametric statistical model (likelihood) $
+  p(D \mid \omega)
+    = \prod_i \log p(z_i \mid \omega)
+    % $D$ conditional independence given parameters $\omega$
+$ the Bayes rule $
+  p(\omega \mid D) = \tfrac{p(D \mid \omega) \pi(\omega)}{p(D)}
+$ transforms prior hypotheses $\pi(\omega)$ about the unknown distribution of model's
+parameters $\omega$ into the posterior distribution $p(\omega \mid D)$.
 %
-The most common choice for $\rho$ is Kullback-Leibler divergence of density $q$ from $p$,
-\begin{equation}  \label{eq:kl-div-def}
-  KL(q \| p)
+% In general the marginal likelihood of the dataset is intractable $
+%   p(D) = \mathbb{E}_{\pi(\omega)} p(D \mid \omega)
+% $.
+Save for the relatively simple set-ups, either the posterior distribution itself or the
+mathematical expectations it is involved in are analytically intractable or impractical
+to compute numerically. Thus, Variational Inference (VI), an approximate inference method
+proposed by \citet{jordan_introduction_1999}, is used to find an approximation within
+a parametric distribution family with densities $q_\theta(\omega)$, that is closest
+in terms of Kullback-Leibler (KL) divergence to the true posterior distribution, $
+  KL(q_\theta(\omega) \| p(\omega \mid D))
     % = \int \frac{dQ}{dP} \log{\frac{dQ}{dP}} P(d\omega)
     % = \int \frac{q(\omega)}{p(\omega)} \log{\frac{q(\omega)}{p(\omega)}} p(\omega) d\omega
     % = \mathbb{E}_{\omega \sim q}
     %   \log\frac{q(\omega)}{p(\omega)}
     = \mathbb{E}_{\omega \sim q}
-      \log{q(\omega)}
-    - \mathbb{E}_{\omega \sim q}
-      \log{p(\omega \mid D)}
-    \,,
-\end{equation}
-% and, despite it not being a metric and requiring distributions with nested support,
-the main reason being that it satisfies the following identity for well-behaved densities:
-% $(q, p, \pi)$
-\begin{multline}  \label{eq:kl-div-master}
-  % \log p(D)
-    % = \mathbb{E}_{q(\omega)} \log \frac{p(D, \omega)}{p(\omega \mid D)}
-    % = \mathbb{E}_{q(\omega)} \log \frac{
-    %   p(D \mid \omega) \pi(\omega)
-    % }{p(\omega \mid D)}
-    % = \mathbb{E}_{q(\omega)} \log \frac{
-    %   p(D \mid \omega) \pi(\omega)
-    % }{q(\omega)}
-    % + \mathbb{E}_{q(\omega)} \log \frac{q(\omega)}{p(\omega \mid D)}
-    % - \mathbb{E}_{q(\omega)} \log \frac{q(\omega)}{\pi(\omega)}
-    % = \mathbb{E}_{q(\omega)} \log{p(D \mid \omega)}
-    % + \mathbb{E}_{q(\omega)} \log \frac{q(\omega)}{p(\omega \mid D)}
-  \log p(D)
-    - KL(q \| p(\omega \mid D))
-    \\ = \mathbb{E}_{q(\omega)} \log{p(D \mid \omega)}
-    - KL(q \| \pi)
-    \,.
-\end{multline}
-This leads to an equivalent problem for \eqref{eq:variational-progam} of maximizing
-the \textit{evidence lower bound} (ELBO)
+      \log \tfrac{q_\theta(\omega)}{p(\omega \mid D)}
+$. The approximation family is chosen so that the expectations become tractable.
+%
+\citet{jordan_introduction_1999} showed that this problem is equivalent to \emph{maximizing}
+the \emph{Evidence Lower Bound} (ELBO)
 \begin{equation}  \label{eq:elbo_general}
   \mathcal{L}(\theta; \phi, \lambda)
     = - KL(q_{\theta} \| \pi_{\lambda})
-      + \mathbb{E}_{\omega \sim q_{\theta}}
-        \log p_{\phi}(D \mid \omega)
+      + \sum_{i=1}^N \mathbb{E}_{\omega \sim q_{\theta}}
+        \log p_{\phi}(z_i \mid \omega)
       % \mathbb{E}_{\omega \sim q_{\theta}}
         % \log\frac{q_\theta(\omega)}{\pi_{\lambda}(\omega)}
   % = \mathbb{E}_{\omega \sim q_{\theta}}
@@ -267,30 +216,49 @@ the \textit{evidence lower bound} (ELBO)
   %   + \mathbb{H}(q_{\theta})
   \,,
 \end{equation}
-where $\lambda$, $\theta$ and $\phi$ are optimization parameters of the prior $\pi$,
-approximation $q$ and the likelihood $p(D\mid \omega)$, respectively. Other objectives
-are possible, besides \eqref{eq:elbo_general}, provided $p(\omega \mid D)$ is evaluated
-only through $\log p(D \mid \omega)$ and $\log \pi(\omega)$, \citep{ranganath_operator_2018}.
+where $\lambda$ and $\phi$ parameterize the prior and the likelihood, respectively.
+%
+It is possible to use other objectives, besides \eqref{eq:elbo_general}, provided $
+  p(\omega \mid D)
+$ is evaluated only through $\log p(D \mid \omega)$ and $\log \pi(\omega)$,
+\citep{ranganath_operator_2018}.
 
-\textit{Stochastic Gradient Variational Bayes} (SGVB), proposed by \citet{kingma_auto-encoding_2014},
-replaces the Variational objective \eqref{eq:elbo_general} by its unbiased differentiable
-Monte-Carlo estimator, which makes it possible to employ stochastic gradient optimization
-methods to solve \eqref{eq:variational-progam}. If $
+To make VI able to handle large-scale datasets \citet{hoffman_stochastic_2013} proposed
+\emph{Stochastic Variational Inference}, which uses stochastic gradient optimization over
+mini-batches from $D$ to solve \eqref{eq:elbo_general} with exponential families of
+distributions. To allow for efficient inference with non-conjugate distributions
+in large-scale setting \citet{titsias_doubly_2014} proposed \emph{Doubly Stochastic
+Variational Bayes} that uses unbiased Monte-Carlo estimate of the gradient of ELBO
+and requires that $q_\theta$ can be efficiently sampled from and have tractable
+$\nabla_\theta \log q_\theta(\omega)$.
+%
+Independently, \citet{kingma_auto-encoding_2014} proposed \emph{Stochastic Gradient
+Variational Bayes} estimator for ELBO and its gradient \eqref{eq:elbo_general} with
+respect to parameters via an unbiased differentiable Monte-Carlo estimator, provided
+the density $q_\theta(\omega)$ is amenable to the \emph{reparameterization trick},
+i.e. $
   \omega \sim q_{\theta}
 $ is equivalent in distribution to $
   \omega = g(\varepsilon; \theta)
-$ for some differentiable $
-  g(\varepsilon; \theta)
-$ and non-parametric random variable $
+$ for some non-parametric random variable $
     \varepsilon \sim p_\varepsilon
-$, then the SGVB objective is
+$ and $g(\varepsilon; \theta)$ differentiable with respect to $\theta$.
+
+% HERE
+% The Local Reparameterization Trick reduces the variance of SGVB
+% even further by sampling independent weight matrices for
+% each data-point inside mini-batch. So we need both original SGVB
+% (per sample randomness) and local reparameterization (that is an
+% efficient and less noisy equivalent to per-sample weight sampling)
+%
+The SGVB objective is
 \begin{equation}  \label{eq:sgvb_objective}
   \widetilde{\mathcal{L}} %(\theta; \phi, \lambda)
     = - KL(q_{\theta} \| \pi_{\lambda})
       % + \frac{N}{\lvert B \rvert} \sum_{i\in B}
         % \log p(z_i \mid \omega_i)b
-      + \frac1{L} \sum_{l=1}^L
-        \log p_{\phi}(D \mid g(\varepsilon_{l}; \theta))
+      + \frac1{L} \sum_{i=1}^N \sum_{l=1}^L
+        \log p_{\phi}(z_i \mid g(\varepsilon_{il}; \theta))
         % \log p_{\phi}(D \mid \omega_{l})
         %   \Big\vert_{\omega_{l} = g(\varepsilon_{l}; \theta)}
       % =
@@ -298,33 +266,28 @@ $, then the SGVB objective is
       % + N \mathbb{E}_{B \sim \{D\}_M \otimes q_\theta^M}
         % \hat{\mathbb{E}}_{z,\omega \sim B}
           % \log p(z \mid \omega)
-    \,, 
+    \,,
 \end{equation}
 where $
   (\varepsilon_{l})_{l=1}^L
-$ is an iid sample from $p_\varepsilon$, the KL-divergence term replaced by unbiased
-differentiable finite sample estimator if it is intractable.
-%
-For the purposes of this study, we assume that the likelihood satisfies $
-  \log p_\phi(D\mid \omega)
-    = \sum_i \log p_\phi(z_i \mid \omega)
-$, i.e. the observed data $
-  D = (z_i)_{i=1}^N
-$ is conditionally independent, and consider \eqref{eq:sgvb_objective} with $L=1$
-and random mini-batches from $D$:
+$ is an iid sample from $p_\varepsilon$. The KL divergence term can replaced by an
+unbiased differentiable finite sample estimator if it is intractable.
+
+For the purposes of this study, we follow \citet{kingma_auto-encoding_2014} and use
+\eqref{eq:sgvb_objective} with random batches of size $M$ from $D$ and $L=1$ $\varepsilon$
+samples per datapoint in the mini-batch:
 \begin{equation}  \label{eq:elbo}
   \widetilde{\mathcal{L}} %(\theta; \phi, \lambda)
     = - KL(q_{\theta} \| \pi_{\lambda})
       + \frac{N}{M} \sum_{k=1}^M
         \log p_{\phi}(z_{i_k} \mid g(\varepsilon_k; \theta))
     \,,
-\end{equation}
+\end{equation}  % \citet{kingma_auto-encoding_2014}
 for a random subsample $(z_{i_k})_{k=1}^M$ and iid $\varepsilon_k \sim p_\varepsilon$.
-%
-% (DSVI) titsias-lazaro.tex \todo{DSVI} \citep{titsias_doubly_2014}
 
-With a special family of posterior approximation, Variational Inference can be used as
-a regularization method and as a model sparsification technique.
+\medskip
+With a special posterior approximation family and suitable prior assumptions, Variational
+Inference can be used as model regularization and sparsification technique.
 
 % on dropout
 Dropout \citep{hinton_improving_2012} prevents overfitting by injecting multiplicative
@@ -343,6 +306,9 @@ method, utilizing the learning capacity of the network better.
 % (fast dropout gauss-approx) wang-manning.tex
 % (gauss dropout) srivastava-et-al.tex
 
+% VD is a Bayesian perspective on dropout regularization \citep{hinton_improving_2012} offered
+% by \citet{kingma_variational_2015} and repurposed for sparsification by \citet{molchanov_variational_2017}.
+%
 Dropout can be viewed as a Bayesian model averaging method, where models share parameters
 and are weighted equally. Thus, \citet{kingma_variational_2015} consider Dropout, DropConnect
 \citep{wan_regularization_2013}, and Gaussian dropout \citep{wang_fast_2013} through the
@@ -1404,7 +1370,7 @@ need considerably less training epochs before early stopping terminates the proc
   \centering
   \includegraphics[width=1\columnwidth]{figure__musicnet__threshold__C__DeepConvNet.pdf}
   \caption{%
-    Effects of finetunig on performance-compression curves parametrized by $
+    Effects of finetunig on performance-compression curves parameterized by $
       \tau\in \{\tfrac{k}2\colon k=-8..+8 \}
     $ for $
       C\in \{\tfrac1{20}, \frac1{200}\}
