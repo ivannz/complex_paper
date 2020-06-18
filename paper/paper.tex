@@ -250,7 +250,9 @@ $ and $g(\varepsilon; \theta)$ differentiable with respect to $\theta$.
 % each data-point inside mini-batch. So we need both original SGVB
 % (per sample randomness) and local reparameterization (that is an
 % efficient and less noisy equivalent to per-sample weight sampling)
-%
+% SGVB is specifically for VAE (local latent varaibles per data-point)
+% what Kingma propose is SGVB for global shared latent varaibles aka
+% WEIGHTS!!
 The SGVB objective is
 \begin{equation}  \label{eq:sgvb_objective}
   \widetilde{\mathcal{L}} %(\theta; \phi, \lambda)
