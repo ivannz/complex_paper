@@ -1,9 +1,9 @@
-\documentclass[a4paper,10pt,onecolumn]{article}
+\documentclass[a4paper,10pt,twocolumn]{article}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
-\usepackage{natbib}
+\usepackage[sort&compress]{natbib}
 % \setcitestyle{authoryear,open={((},close={))}}
 
 \usepackage{amsmath}
@@ -57,7 +57,7 @@ representation. To this end we extend Sparse Variational Dropout to complex-valu
 networks and verify the proposed Bayesian technique by conducting a large numerical
 study of the performance-compression trade-off of $\cplx$-valued networks on two tasks:
 image recognition on MNIST-like and CIFAR10 datasets and music transcription on MusicNet.
-We replicate the state-of-the-art result by \citet{trabelsi_deep_2017} on MusicNet with
+We replicate the state-of-the-art result by \citet{trabelsi_deep_2018} on MusicNet with
 a complex-valued network compressed by $50-100\times$ at a small performance penalty.
 \end{abstract}
 
@@ -77,92 +77,107 @@ relevant.
 % Solving the storage and artihmetic constraints encourages development of model compression
 % and sparsification methods, that focus on favourable trade-off between performance and size.
 
-Inherently complex-valued nature of data in signal processing, specifically, acoustic or radio
-frequency signal analysis, has been the key driver behind the adoption of $\cplx$-networks.
-%
-\citet{hirose_complex-valued_2009} argues that $\cplx$-valued networks merit from the
-simultaneous phase rotation and amplitude adjustment, intrinsic to $\cplx$ arithmetic,
-which reduce ineffective degrees of freedom in comparison with double-dimensional
-$\real$-valued networks. Their study lists numerous applications related to acoustic
-and radio signal processing and demonstrates superiority of $\cplx$-networks in the
-task of shallow landmine detection using ground penetrating radar imaging, in spite of
-inherently higher arithmetic complexity of $\cplx$-networks, stemming from $3-4$ floating
-point operations per single $\cplx$ multiplication. More recently $\cplx$-networks have
-been applied to music transcription and speech recognition \citep{trabelsi_deep_2017}.
-\citet{arjovsky_unitary_2016} propose $\cplx$-valued unitary-RNNs to deal with exploding~/~vanishing
-gradients and apply the recurrent models to long-term dependence prediction tasks.
-\citet{wisdom_full-capacity_2016} expand on their work by optimizing recurrent weights on
-the $\cplx^{n \times n}$ Stiefel manifold. And \citet{wolter_complex_2018} investigate
-different $\cplx$-valued gating mechanisms for unitary-RNNs and conduct experiments on
-motion prediction and music transcription. \citet{yang_complex_2019} develop complex
-transformer, with $\cplx$-attention and complex encoder-decoder, and apply it to music
-transcription and wireless signal classification. \citet{tarver_design_2019} achieve
-significantly lower out-of-band performance with a $\cplx$-valued network in Digital Signal
-Predistortion task.
-
-% complex-valued distributions \citep{pav_moments_2015,taubock_complex-valued_2012},
-% and \citep{karseras_caution:_2014}
+% applications of cvnn
+Complex-valued nature of the data in acoustic and radio signal processing has been
+the main driver behind the adoption of $\cplx$-valued neural networks ($\cplx$VNN).
+\citet{hirose_complex-valued_2009} argues that the combined phase-magnitude effect of
+$\cplx$-valued transformations reduces removes the excess degrees of freedom, that cause
+degenerate transformation in $\real$-valued networks with twice the feature dimensions.
+Their study demonstrates superiority of $\cplx$VNN in landmine detection using ground
+penetrating radar imaging. Other examples, where $\cplx$-valued networks have outperformed
+$\real$-valued networks include magnetic resonance \citep{hui_mri_1995,wang_deepcomplexmri_2020}
+and radar imaging \citep{haensch_complex-valued_2010,zhang_complex-valued_2017}, music
+transcription and spectral speech modelling \citep{wisdom_full-capacity_2016,trabelsi_deep_2018},
+and wireless signal classification \citep{yang_complex_2019}. \citet{tarver_design_2019}
+have lowered the out-of-band power leakage with a $\cplx$-valued network for digital
+signal predistortion. The networks have also been applied to non $\cplx$-valued domains,
+such as image classification \citep{popa_complex-valued_2017}, sequence modelling
+\citep{danihelka_associative_2016}, and motion prediction \citep{wolter_complex_2018},
+and for stabilizing back-propagation in RNN \citep{wisdom_full-capacity_2016}.
 
 % motivation and other methods
-However, in spite of relative success of $\cplx$-valued networks, compression methods tailored
-to $\cplx$-domain remain a niche field of research.
-%
-Computational efficiency improvement and model compression methods such as quantization
-\citep{uhlich_differentiable_2019}, integer-based arithmetic \citep{lin_fixed_2016,chen_fxpnet_2017},
-and knowledge distillation \citep{hinton_distilling_2015} appear to be directly applicable
-to $\cplx$-valued networks.
-%
-Certain model sparsification methods, e.g. sparsity inducing regularizers, and magnitude
-pruning \citep{zhu_prune_2018}, which reactivates zeroed parameters based on gradients,
-can be adapted directly to $\cplx$-valued models. Other methods require additional considerations.
+Despite promising results for embedded signal processing applications, $\cplx$-valued
+networks remain a niche in deep learning, and as such little attention has been paid
+to compression methods specific to $\cplx$VNN. \citet{wu_compressing_2019} adapt $k$-means
+quantization to $\cplx \simeq \real^2$ parameters and successfully compress $\cplx$VNN
+with the ``prune-quantize-code'' procedure of \citet{han_deep_2016}.
+
+Yet there is an abundance of research related to real-valued network compression, and
+many results can be applied to $\cplx$VNN. Methods such as knowledge distillation
+\citep{hinton_distilling_2015}, which trains a small network to replicate a large
+well-trained teacher, low-rank matrix \citep{denton_exploiting_2014} and tensor decomposition
+\citep{novikov_tensorizing_2015}, or magnitude-based parameter pruning \citep{zhu_prune_2018}
+can be adapted to $\cplx$VNN without modifications. Parameter quantization and conversion
+from floating to fixed point arithmetic \citep{courbariaux_training_2015,uhlich_mixed_2020},
+appear to be readily applicable as well. \citet{louizos_learning_2018} propose probabilistic
+$\ell_0$ regularization through multiplicative $[0, 1]$-valued stochastic masks with
+distribution having an atom at $0$, yet differentiable via the reparameterization trick
+\citep{kingma_auto-encoding_2014}. By sharing a single mask value within a group of
+parameters their approach can be adapted to $\cplx$ parameters. However, methods such
+as Hessian-based parameter pruning \citep{lecun_optimal_1990} or Sparse Variational Dropout
+\citep{molchanov_variational_2017} require additional considerations.
 % the more explicitly zero parameters there is, the less computations is needed.
 
-% segue into bayesian inference
-Bayesian Inference is a principled framework of reasoning about uncertainty, which updates
-prior beliefs in accordance with the likelihood of empirical observations into posterior
-belief. Under suitable modelling and distributional assumptions, Bayesian methods can be
-used towards model sparsification, e.g. Variational Dropout \citep{kingma_variational_2015,molchanov_variational_2017}.
-
+% segue into why we chose sparse VD rather than anything else
 % (sparsity tech large-scale models) gale-elsen-hooker.tex
-\citet{gale_state_2019} compare Variational Dropout, magnitude pruning, and $\ell_0$
-regularization \citep{louizos_learning_2018} on large-scale models. The latter is a
-probabilistic regularization method, which penalizes the expected number of non-zero
-entries in $[0, 1]$-valued stochastic parameter masks with learnable hard-concrete
-distribution with atoms at $0$ and $1$ \citep{maddison_concrete_2016,jang_categorical_2017}.
-Their results suggest that Variational Dropout may achieve good accuracy-sparsity balance
-and outperform pruning and $\ell_0$ in deep architectures, although pruning is prefered for
-simplicity, stability and speed. They also observe that dropout induces non-uniform sparsity
-throughout the model, which \citet{he_amc:_2018} has shown to be essential for superior
-compression.
+\citet{gale_state_2019} compare magnitude pruning, $\ell_0$ regularization and Sparse
+Variational Dropout (VD) on large-scale models. Their results suggest that VD may achieve
+good accuracy-sparsity balance and outperform pruning and $\ell_0$ in deep architectures,
+although pruning is preferred for simplicity, stability and speed. They also observe that
+VD induces non-uniform sparsity throughout the model, which \citet{he_amc:_2018} have shown
+to be essential for superior compression.
 % Magnitude pruning induces user-specified sparsity distributions.
 %
 % L0 and dropout work in the low-to-mid sparsity range, variational dropout consistently
 % ranked behind L0 on Transformer, and was bested by magnitude pruning for sparsity
 % levels of 80\% and up. Variational dropout consistently produces models on-par or better
 % than magnitude pruning on ResNet-50, and l0 fails to produce sparse models at all.
-%
+We expect the overall conclusion of \citet{gale_state_2019} to carry over to $\cplx$VNN,
+since there is nothing fundamentally different in $\cplx$-valued versions of the methods
+they study, except for the need to operate on pairs of parameters.
+
+% with noting that compression and sparsification techniques serve dual purpose as model
+% regularization. and can be regarded as a Bayesian network pruning method
 
 % our contribution
-Inspired by variational and stochastic sparsification techniques we extend Bayesian dropout
-to $\cplx$-valued networks. We assess the performance-compression trade-off of the proposed
-Bayesian technique by conducting a large-scale numerical study of $\cplx$-valued networks
-on two tasks: image recognition on MNIST-like and CIFAR10 datasets and music transcription
-on MusicNet \citep{thickstun_learning_2017}.
+Sparse Variational Dropout is a Bayesian Variational Inference method with automatic
+parameter relevance determination effect. In this study we extend this technique to
+$\cplx$VNN, inspired by the results of \citet{gale_state_2019}, and motivated by seldom
+application of Bayesian Inference to $\cplx$-valued networks \citep{popa_complex-valued_2018}
+and apparent scarcity of compression methods specific to them. We assess the performance-%
+compression trade-off of the extension by conducting a large-scale numerical study on
+image classification on MNIST-like and CIFAR10 datasets and music transcription on MusicNet.
 
-The paper is structured as follows. In sec.~\ref{sec:variational_dropout} we review Bayesian
-dropout techniques, and in sec.~\ref{sec:c_valued_networks} we provide a brief summary of
-the inner working of complex-valued networks as functions of complex argument. The main
-contribution of this study is presented in sec.~\ref{sec:c_variational_dropout},
-where we consider different variational approximations and priors, outline the tricks
-and derive the penalty terms in the evidence lower bound. In sec.~\ref{sec:experiments}
-we evaluate the sparsification rate, compare the resulting performance of various $\cplx$-networks
-proposed in prior work, and discuss the outcomes.
+The paper is structured as follows. Sec.~\ref{sec:variational_dropout} reviews Bayesian
+dropout techniques, and sec.~\ref{sec:c_valued_networks} provides a brief summary of
+the inner working of complex-valued networks. The main contribution of this study is
+presented in sec.~\ref{sec:c_variational_dropout}, where we outline the details of
+different variational approximations and priors and derive the penalty terms in the
+evidence lower bound. In sec.~\ref{sec:experiments} we evaluate the sparsification rate,
+compare the resulting performance of various $\cplx$-networks proposed in prior work,
+and discuss the outcomes.
+
 
 % section introduction (end)
 
 
 \section{Variational Dropout} % (fold)
 \label{sec:variational_dropout}
+
+% segue into bayesian inference
+  % \speak{R 1}
+  % In the first paragraph of section 2: Although the Bayesian prior over weights can indeed
+  % be interpreted as a prior over models, the inclusion of this notation in the first
+  % paragraph of section 2 seems unnecessary. Especially considering that the authors refer
+  % to weights, and not models, for the remainder of the paper.
+
+Bayesian Inference is a principled framework of reasoning about uncertainty, and in broad
+terms Bayesian methods are used to update prior assumptions in accordance with their
+likelihood based on empirical evidence into posterior beliefs. Under suitable modelling
+and distributional assumptions, Bayesian methods can be used towards model regularization,
+e.g. Variational Dropout \citep{kingma_variational_2015}.
+% Bayesian perspective on dropout model regularization proposed by Kingma at al. (2015)
+% repurposed for sparsification by Molchanov et al. (2017) and Kharitonov et al. (2018)
 
 In general, the core of Bayesian Inference can be summarized as follows: given a prior
 distribution $\pi(m)$ on models (hypotheses) $\mathcal{M}$, utilize the empirical evidence
@@ -316,7 +331,7 @@ Dropout \citep{hinton_improving_2012} prevents overfitting by injecting multipli
 binary noise into layer's weights, which breaks up co-adaptations that could occur
 during training. \citet{wang_fast_2013} argue that the overall effect of binary dropout
 on the intermediate outputs via the Central Limit Theorem can be approximated by a Gaussian
-with weight-input dependent mean and variance. \citet{srivastava_dropout_2014} propose
+with weight-input dependent mean and variance. \citet{srivastava_dropout:_2014} propose
 using independent $\mathcal{N}(1,1)$ noise, arguing that higher entropy of a Gaussian has
 better regularizing effect. In a recent study concerning multitask learning
 \citet{cheung_superposition_2019} have shown the possibility of storing task-specific
@@ -464,6 +479,39 @@ $ when needed in the divergence term.
 \section{$\cplx$-valued networks} % (fold)
 \label{sec:c_valued_networks}
 
+% Although $\cplx$-valued dense layers and back-propagation have been around since early
+% 1990-s, one of the earliest accounts
+
+Development of deep $\cplx$-valued networks has been active. \citet{haensch_complex-valued_2010}
+put forward $\cplx$-valued convolutional networks, \citet{guberman_complex_2016} and
+\citet{popa_complex-valued_2017} developed modifications of pooling, \citet{arjovsky_unitary_2016}
+and \citet{wisdom_full-capacity_2016} proposed $\cplx$-valued RNNs with unitary recurrent
+transition matrices, and \citet{danihelka_associative_2016} developed $\cplx$-valued
+holographic representations for LSTMs. More recently \citet{trabelsi_deep_2018} proposed
+$\cplx$-valued batch-normalization and weight initialization, \citet{wolter_complex_2018}
+investigated different $\cplx$-valued gating mechanisms for RNNs, \citet{yang_complex_2019}
+proposed $\cplx$-valued self-attention and complex transformer architecture. It merits
+noting that \citet{gaudet_deep_2018} generalized $\cplx$VNN further to deep quaternion-valued
+networks, and \citet{vecchi_compressing_2020} studied sparsity inducing regularizers for
+them.
+
+% Nonlinearities used in $\cplx$VNN are of two classes: split that operate on equivalent
+% planar or polar representations of $\cplx$, of full which consider the complex number
+% as a whole. Split planar $
+%   z \mapsto g(\Re{z}) + \iu g(\Im{z}) % split
+% $, \citep{benvenuto_complex_1992,hirose_generalization_2012,haensch_complex-valued_2010},
+% or polar $
+%   z \mapsto g(\lvert z\rvert) e^{\iu \arg{\!(z)}}
+% $, \citep{wolter_complex_2018,arjovsky_unitary_2016}. Full trigonometric, holomorphic, 
+% % \citet{hirose_generalization_2012} polar (tanh)
+% % \citet{savitha_2011} trig (sinh)
+% % \citet{arjovsky_unitary_2016} polar (modReLU)
+% % \citet{guberman_complex_2016} polar (zRelU)
+% % \citet{wolter_complex_2018} gating for $\cplx$-RNN
+
+% % complex-valued distributions \citep{pav_moments_2015,taubock_complex-valued_2012},
+% % and \citep{karseras_caution:_2014}
+
 Complex-valued networks are, in general, non-holomorphic, i.e. not $\cplx$-differentiable, which is
 exacerbated by the loss being real-valued. Indeed a $\cplx$-differentiable real-valued function is
 necessarily trivial by Cauchy-Riemann conditions. This issue is dealt with by employing Wirtinger,
@@ -478,7 +526,7 @@ appendix~\ref{sub:wirtinger_calculus}).
 % \todo{read on holomorphic nets}
 
 More recently general development of $\cplx$-valued networks has been continued by
-\citet{trabelsi_deep_2017}, who outline the essential building blocks for deep $\cplx$-valued
+\citet{trabelsi_deep_2018}, who outline the essential building blocks for deep $\cplx$-valued
 networks and describe suitable representation and operations, including convolutional and
 dense layers, $\cplx$-valued activations, complex batch-normalization and weight initialization.
 Their approach coupled with $\cplx\real$ calculus for backprop transforms a $\cplx$-valued
@@ -509,7 +557,7 @@ non-linearities \citep{hirose_complex-valued_2009}: polar (phase-amplitude) $
 $ or planar (real-imaginary) $
   z \mapsto \sigma(\Re z) + j \sigma(\Im z)
 $ for some $\real$-valued non-linearity $\sigma$, possibly with learnable parameters
-\citep{trabelsi_deep_2017,wolter_complex_2018}.
+\citep{trabelsi_deep_2018,wolter_complex_2018}.
 
 % section c_valued_networks (end)
 
@@ -997,7 +1045,7 @@ We study the performance-compression trade-off of the proposed Bayesian sparsifi
 method for $\cplx$-valued networks presented above on image classification and music
 annotation tasks.
 %
-Following \citet{wolter_complex_2018} and \citet{trabelsi_deep_2017}, the class logit scores
+Following \citet{wolter_complex_2018} and \citet{trabelsi_deep_2018}, the class logit scores
 are taken as real part of the complex-valued output of a network.
 %
 % image features
@@ -1005,7 +1053,7 @@ Since image data is not naturally $\cplx$-valued, we preprocess it by either emb
 $\real$-data into $\cplx$ assuming $\Im z = 0$ (\texttt{raw}), or applying the two-dimensional
 Fourier Transform (\texttt{fft}), centering the lower frequencies. We do not train an
 auxiliary model to synthesize the imaginary component from the real data, proposed by
-\citet{trabelsi_deep_2017}.
+\citet{trabelsi_deep_2018}.
 
 % setup and common experiment settings
 For each dataset we conduct a set of experiments in which we try out all combinations of
@@ -1265,14 +1313,14 @@ be due to dataset augmentation and deeper model.
 % describe musicnet as in Trabelsi et al. (2017) also get some hints from thickstun_learning_2017
 We use MusicNet \citep{thickstun_learning_2017}, an audio dataset of $330$ annotated
 musical compositions, to investigate compressibility of the $1d$ VGG-like $\cplx$-convent
-proposed by \citet{trabelsi_deep_2017}. Similarly to the study, we downsample the audio
+proposed by \citet{trabelsi_deep_2018}. Similarly to the study, we downsample the audio
 from 44.1kHz to 11kHz, retain only $84$ out of $128$ labels, and hold-out the same validation
 and test compositions, on which we score the models with the pooled average precision.
 Each epoch lasts for $1000$ random mini-batches of the remaining $321$ pieces. The input
 features are $\cplx$-valued Fourier transformed windows of $4096$ samples from each waveform.
 The label vectors are taken from annotations at the middle of the window.
 
-Experiments with the uncompressed model aimed at replicating the result of \citet{trabelsi_deep_2017}
+Experiments with the uncompressed model aimed at replicating the result of \citet{trabelsi_deep_2018}
 have shown that early stopping almost always terminates much sooner, than $200$ epochs used
 in their study: within the first $10-20$ epochs with the validation performance peaking at
 $10-15$ epochs and steadily declining afterwards.
@@ -1282,7 +1330,7 @@ early stopping activated only during the ``fine-tune'' stage. To keep the learni
 consistent, we scale the learning rate of $10^{-3}$ after $5$, $10$, and $20$-th epoch by
 $\tfrac1{10}$, $\tfrac1{20}$ and $\tfrac1{100}$, respectively.
 
-We deviate from the set-up used by \citet{trabelsi_deep_2017} by clipping $\ell_2$ norm of the
+We deviate from the set-up used by \citet{trabelsi_deep_2018} by clipping $\ell_2$ norm of the
 gradients to $0.05$ and shifting the low frequencies of the input to the centre to maintain
 spatial locality for convolutions.
 
@@ -1292,7 +1340,7 @@ and vary $
 $ for $k=1, 2, 3$, while keeping $\tau$ at $-\tfrac12$. The performance is measured after
 ``dense'' stage, before the beginning and upon termination of fine-tuning.
 %
-Additionally, we test the model of \citet{trabelsi_deep_2017}, in which we purposefully
+Additionally, we test the model of \citet{trabelsi_deep_2018}, in which we purposefully
 halve the receptive field of the first convolution from $6$ to $3$ (denoted by suffix $k_3$).
 The motivation is to test if the handicap introduced by the forced compression of the most
 upstream layer can be alleviated by non-uniform compression, induced by variational dropout.
@@ -1316,7 +1364,7 @@ Figure~\ref{fig:musicnet__trade-off} shows the resulting performance-compression
 ARD slightly outperforms VD in terms of performance, but both deliver similar compression
 rates. The trade-off demonstrates that with the proposed $\cplx$-valued variational dropout
 methods (sec.~\ref{sec:c_variational_dropout}) and post-sparsification fine-tuning it is
-possible to achieve average precision level comparable to the result of \citet{trabelsi_deep_2017}
+possible to achieve average precision level comparable to the result of \citet{trabelsi_deep_2018}
 with a model compressed $50\times$-$200\times$. Furthermore, the $k_3$ model, compressed
 $110 \times$ with $\cplx$ VD, outperforms its uncompressed baseline, but yields lower
 performance than the full model.
@@ -1401,7 +1449,7 @@ Bayesian networks. To validate the proposed technique we have conducted a large 
 study of complex-valued networks with simple architectures in image recognition tasks to
 assess the feasible performance-compression trade-off. At the cost of marginally lower performance,
 we have achieved $50-100\times$ compression of the state-of-the-art deep $\cplx$-valued network
-of \citet{trabelsi_deep_2017} on the MusicNet.
+of \citet{trabelsi_deep_2018} on the MusicNet.
 
 The results of this study have direct implications for real-time signal processing with
 embedded deep learning applications both in terms of lower storage requirements and higher
@@ -2175,7 +2223,7 @@ $.
 Natural identification of $\cplx$ with $\real\times \real$, storing the real and imaginary
 parts in interleaved format, emulation of $\cplx$-algebra using $\real$-valued arithmetic,
 and Wirtinger calculus make it possible to reuse $\real$ back-propagation and existing
-auto-differentiation frameworks \citep{trabelsi_deep_2017}.
+auto-differentiation frameworks \citep{trabelsi_deep_2018}.
 
 % section wirtinger_calculus (end)
 
