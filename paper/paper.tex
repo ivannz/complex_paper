@@ -1,4 +1,4 @@
-\documentclass[a4paper,10pt,twocolumn]{article}
+\documentclass{article}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -16,12 +16,19 @@
 
 \graphicspath{{../assets/}}
 
-\usepackage{subcaption}
+\usepackage{subfigure}
 
 \usepackage{booktabs}
 
-\title{Bayesian Sparsification Methods for Deep Complex-valued Networks}
-\author{Ivan Nazarov, and Evgeny Burnaev}
+\usepackage{microtype}
+\usepackage{hyperref}
+
+\usepackage[accepted]{icml2020/icml2020}
+
+% \title{Bayesian Sparsification Methods for Deep Complex-valued Networks}
+% \author{Ivan Nazarov, and Evgeny Burnaev}
+
+\icmltitlerunning{Bayesian Sparsification of Deep $\mathbb{C}$-valued networks}
 
 %% notation
 \newcommand{\real}{\mathbb{R}}
@@ -35,21 +42,30 @@
 \renewcommand{\vec}[1]{\overrightarrow{#1}}
 \newcommand{\diag}[1]{\mathrm{diag}{#1}}
 
-%% drafting macro
-\newcommand{\important}[1]{\textbf{\!\colorbox{red}{#1}\!}}
-\newcommand{\attn}[2]{\textbf{\color{red} #2~\textsuperscript{\textit{[#1]}}}}
-\newcommand{\verify}[1]{\textit{\!\colorbox{red}{#1}\!}}
-\newcommand{\rewrite}[1]{\attn{rewrite}{#1}}
-\newcommand{\todo}[1]{{\color{blue} [TODO]} \important{#1}}
-
-%% red-highlight missing citations
-\usepackage{etoolbox}
-\makeatletter
-\patchcmd{\@citex}{\bfseries ?}{\colorbox{red}{\bfseries ?}}{}{}
-\makeatother
-
 \begin{document}
-\maketitle
+\twocolumn[
+\icmltitle{Bayesian Sparsification of Deep $\mathbb{C}$-valued Networks}
+
+\icmlsetsymbol{equal}{*}
+
+\begin{icmlauthorlist}
+  \icmlauthor{Ivan Nazarov}{sk}
+  \icmlauthor{Evgeny Burnaev}{sk}
+\end{icmlauthorlist}
+
+\icmlaffiliation{sk}{
+  Centre for Data Intensive Sciecne and Engineering,
+  Skolkovo Insitiute of Science and Technology, Msocow, Russia
+}
+\icmlcorrespondingauthor{Ivan Nazarov}{ivan.nazarov@skolkovotech.ru}
+
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{complex-valued neural networks, Variational Dropout, network compression}
+
+\vskip 0.3in
+]
+\printAffiliationsAndNotice{}  % leave blank if no need to mention equal contribution
+% \printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
 
 \begin{abstract}
 With continual miniaturization ever more applications of deep learning can be found
@@ -1207,12 +1223,12 @@ of compression-accuracy pairs.
 % a couple of plots from MNIST and Fashion-MNIST
 \begin{figure}[!t]
   \centering
-  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
+  \begin{subfigure}  % [b]{1.\columnwidth}  % imcl2019-style swears at this
     \centering
     \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__VD__mnist__fft__-0.5.pdf}
   \end{subfigure} \\%
   % \hfill
-  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
+  \begin{subfigure}  % [b]{1.\columnwidth}  % imcl2019-style swears at this
     \centering
     \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__VD__mnist__fft__-0.5.pdf}
   \end{subfigure}
@@ -1225,12 +1241,12 @@ of compression-accuracy pairs.
 
 \begin{figure}[!t]
   \centering
-  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
+  \begin{subfigure}  % [b]{1.\columnwidth}  % imcl2019-style swears at this
     \centering
     \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__ARD__mnist__raw__-0.5.pdf}
   \end{subfigure} \\%
   % \hfill
-  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
+  \begin{subfigure}  % [b]{1.\columnwidth}  % imcl2019-style swears at this
     \centering
     \includegraphics[width=\columnwidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__mnist__raw__-0.5.pdf}
   \end{subfigure}
@@ -1313,10 +1329,8 @@ a $32\times 32$ patch from the $40\times 40$ intermediate image.
 % compare compressed cplx-vgg against real-vgg
 \begin{figure}[!t]
   \centering
-  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
-    % \includegraphics[width=\columnwidth]{figure__cifar__trade-off/legacy__augmentedcifar10__raw__-0.5.pdf}
-    \includegraphics[width=\columnwidth]{figure__cifar__trade-off/appendix__augmentedcifar10__raw__-0.5.pdf}
-  \end{subfigure}
+  % \includegraphics[width=\columnwidth]{figure__cifar__trade-off/legacy__augmentedcifar10__raw__-0.5.pdf}
+  \includegraphics[width=\columnwidth]{figure__cifar__trade-off/appendix__augmentedcifar10__raw__-0.5.pdf}
   \caption{%
     The compression-accuracy profile for the $\real$ and $\cplx$ VGG16.
   }
@@ -1393,10 +1407,7 @@ significant superiority of one method over another.  % it should've been ARD
 
 \begin{figure}[!t]
   \centering
-  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
-    \centering
-    \includegraphics[width=\columnwidth]{figure__musicnet__trade-off/paper__musicnetram__fft__-0.5.pdf}
-  \end{subfigure}
+  \includegraphics[width=\columnwidth]{figure__musicnet__trade-off/paper__musicnetram__fft__-0.5.pdf}
   \caption{%
     Performance-compression curve for \textbf{\color{blue} VD}, \textbf{\color{orange} ARD},
     and the ${\color{gray} k_3}$ version compressed with VD.
@@ -1468,10 +1479,7 @@ less training epochs before early stopping terminates the process.
 
 \begin{figure}[!t]
   \centering
-  \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
-    \centering
-    \includegraphics[width=\columnwidth]{figure__fine-tune_fx__early.pdf}
-  \end{subfigure}
+  \includegraphics[width=\columnwidth]{figure__fine-tune_fx__early.pdf}
   \caption{%
     Early stopping epoch at fine-tuning stage.
   }
@@ -1586,22 +1594,22 @@ double the number of parameters against $\cplx$ for Fourier input features on fi
 
 \begin{figure}[b]
   \centering
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
     % used in main text
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__ARD__emnist_letters__fft__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__ARD__emnist_letters__fft__-0.5.pdf}
   \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__ARD__kmnist__fft__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__ARD__kmnist__fft__-0.5.pdf}
   \end{subfigure} \\ %
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__ARD__fashionmnist__fft__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__ARD__fashionmnist__fft__-0.5.pdf}
   \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__ARD__mnist__fft__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__ARD__mnist__fft__-0.5.pdf}
   \end{subfigure}
   \caption{%
     The trade-off of ARD method for $\real$ and $\cplx$ models using Fourier features.
@@ -1611,22 +1619,22 @@ double the number of parameters against $\cplx$ for Fourier input features on fi
 
 \begin{figure}[b]
   \centering
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
     % used in main text
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__VD__emnist_letters__fft__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__VD__emnist_letters__fft__-0.5.pdf}
   \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__VD__kmnist__fft__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__VD__kmnist__fft__-0.5.pdf}
   \end{subfigure} \\ %
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__VD__fashionmnist__fft__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__VD__fashionmnist__fft__-0.5.pdf}
   \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__VD__mnist__fft__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__VD__mnist__fft__-0.5.pdf}
   \end{subfigure}
   \caption{%
     The trade-off of VD method for $\real$ and $\cplx$ models using Fourier features.
@@ -1636,22 +1644,22 @@ double the number of parameters against $\cplx$ for Fourier input features on fi
 
 \begin{figure}[b]
   \centering
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
     % used in main text
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__ARD__emnist_letters__raw__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__ARD__emnist_letters__raw__-0.5.pdf}
   \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__ARD__kmnist__raw__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__ARD__kmnist__raw__-0.5.pdf}
   \end{subfigure} \\%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__ARD__fashionmnist__raw__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__ARD__fashionmnist__raw__-0.5.pdf}
   \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__ARD__mnist__raw__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__ARD__mnist__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
     The trade-off of ARD method for $\real$ and $\cplx$ models using raw features.
@@ -1661,22 +1669,22 @@ double the number of parameters against $\cplx$ for Fourier input features on fi
 
 \begin{figure}[b]
   \centering
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
     % used in main text
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__VD__emnist_letters__raw__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__VD__emnist_letters__raw__-0.5.pdf}
   \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__VD__kmnist__raw__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__VD__kmnist__raw__-0.5.pdf}
   \end{subfigure} \\%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__VD__fashionmnist__raw__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__VD__fashionmnist__raw__-0.5.pdf}
   \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__VD__mnist__raw__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__VD__mnist__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
     The trade-off of VD method for $\real$ and $\cplx$ models using raw features.
@@ -1686,21 +1694,21 @@ double the number of parameters against $\cplx$ for Fourier input features on fi
 
 \begin{figure}[b]
   \centering
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__emnist_letters__fft__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__emnist_letters__fft__-0.5.pdf}
   \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__kmnist__fft__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__kmnist__fft__-0.5.pdf}
   \end{subfigure} \\ %
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__fashionmnist__fft__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__fashionmnist__fft__-0.5.pdf}
   \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__mnist__fft__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__mnist__fft__-0.5.pdf}
   \end{subfigure}
   \caption{%
     The trade-off of ARD method for $2\real$ and $\cplx$ models using Fourier features.
@@ -1710,21 +1718,21 @@ double the number of parameters against $\cplx$ for Fourier input features on fi
 
 \begin{figure}[b]
   \centering
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__emnist_letters__fft__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__emnist_letters__fft__-0.5.pdf}
   \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__kmnist__fft__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__kmnist__fft__-0.5.pdf}
   \end{subfigure} \\ %
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__fashionmnist__fft__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__fashionmnist__fft__-0.5.pdf}
   \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__mnist__fft__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__mnist__fft__-0.5.pdf}
   \end{subfigure}
   \caption{%
     The trade-off of VD method for $2\real$ and $\cplx$ models using Fourier features.
@@ -1734,21 +1742,21 @@ double the number of parameters against $\cplx$ for Fourier input features on fi
 
 \begin{figure}[b]
   \centering
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__emnist_letters__raw__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__emnist_letters__raw__-0.5.pdf}
   \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__kmnist__raw__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__kmnist__raw__-0.5.pdf}
   \end{subfigure} \\%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__fashionmnist__raw__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__fashionmnist__raw__-0.5.pdf}
   \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__mnist__raw__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__cmp__ARD__mnist__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
     The trade-off of ARD method for $\real$ and $\tfrac12\cplx$ models using raw features.
@@ -1758,74 +1766,26 @@ double the number of parameters against $\cplx$ for Fourier input features on fi
 
 \begin{figure}[b]
   \centering
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__emnist_letters__raw__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__emnist_letters__raw__-0.5.pdf}
   \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__kmnist__raw__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__kmnist__raw__-0.5.pdf}
   \end{subfigure} \\%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__fashionmnist__raw__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__fashionmnist__raw__-0.5.pdf}
   \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
+  \begin{subfigure}  % [b]{0.5\columnwidth}
     \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__mnist__raw__-0.5.pdf}
+    \includegraphics[width=0.47\linewidth]{figure__mnist-like__trade-off/appendix__cmp__VD__mnist__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
     The trade-off of VD method for $\real$ and $\tfrac12\cplx$ models using raw features.
   }
   \label{fig:appendix__cmp__mnist-like__trade-off__VD__raw}
-\end{figure}
-
-\begin{figure}[b]
-  \centering
-  \begin{subfigure}[b]{0.5\columnwidth}
-    \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/legacy__VD__emnist_letters__fft__-0.5.pdf}
-  \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
-    \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/legacy__VD__kmnist__fft__-0.5.pdf}
-  \end{subfigure} \\%
-  \begin{subfigure}[b]{0.5\columnwidth}
-    \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/legacy__VD__fashionmnist__fft__-0.5.pdf}
-  \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
-    \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/legacy__VD__mnist__fft__-0.5.pdf}
-  \end{subfigure}
-  \caption{%
-    The trade-off of VD method for $\real$ and $\cplx$ models using Fourier features (main text).
-  }
-  \label{fig:paper__mnist-like__trade-off__VD__fft}
-\end{figure}
-
-\begin{figure}[b]
-  \centering
-  \begin{subfigure}[b]{0.5\columnwidth}
-    \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/legacy__VD__emnist_letters__raw__-0.5.pdf}
-  \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
-    \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/legacy__VD__kmnist__raw__-0.5.pdf}
-  \end{subfigure} \\%
-  \begin{subfigure}[b]{0.5\columnwidth}
-    \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/legacy__VD__fashionmnist__raw__-0.5.pdf}
-  \end{subfigure}%
-  \begin{subfigure}[b]{0.5\columnwidth}
-    \centering
-    \includegraphics[width=\linewidth]{figure__mnist-like__trade-off/legacy__VD__mnist__raw__-0.5.pdf}
-  \end{subfigure}
-  \caption{%
-    The trade-off of VD method for $\real$ and $\cplx$ models using raw features (main text).
-  }
-  \label{fig:paper__mnist-like__trade-off__VD__raw}
 \end{figure}
 
 % \clearpage
