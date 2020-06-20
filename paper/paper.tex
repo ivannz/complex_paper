@@ -158,14 +158,16 @@ performance of various $\cplx$-networks proposed in prior work, and discuss the 
 
 % section introduction (end)
 
-
 \section{Variational Dropout} % (fold)
 \label{sec:variational_dropout}
 
+\subsection{Variational Inference} % (fold)
+\label{sub:variational_inference}
+
 % overview
 In broad terms Bayesian Inference is a principled framework of reasoning about uncertainty
-and a tool to update prior beliefs about model's parameters in accordance with evidence or
-empirical data into a posterior distribution. The posterior is useful for inference
+and a tool to update prior beliefs about model's parameters in accordance with evidence
+or empirical data into a posterior distribution. The posterior is useful for inference
 regarding unobserved data, predictive statistics, parameter confidence regions, and
 model's uncertainty.
 % intuitive definition of  of model given data is the same as probability of data under hypothesis (model)
@@ -174,41 +176,41 @@ model's uncertainty.
 % SGVB -- \citep{kingma_auto-encoding_2014} differentiable MCMC estimator of the evidence lower bound for SVI
 
 For an observed dataset $
-  D = (z_i)_{i=1}^N
-$ with parametric statistical model (likelihood) $
+  D = (x_i)_{i=1}^N
+$ and statistical model $
   p(D \mid \omega)
-    = \prod_i \log p(z_i \mid \omega)
+    = \prod_i \log p(x_i \mid \omega)
     % $D$ conditional independence given parameters $\omega$
-$ the Bayes rule $
+$ with parameters $\omega$ the Bayes rule transforms prior hypotheses $\pi(\omega)$
+about the unknown distribution of model's parameters into the posterior distribution: $
   p(\omega \mid D) = \tfrac{p(D \mid \omega) \pi(\omega)}{p(D)}
-$ transforms prior hypotheses $\pi(\omega)$ about the unknown distribution of model's
-parameters $\omega$ into the posterior distribution $p(\omega \mid D)$.
+$.
 %
 % In general the marginal likelihood of the dataset is intractable $
 %   p(D) = \mathbb{E}_{\pi(\omega)} p(D \mid \omega)
 % $.
 Save for the relatively simple set-ups, either the posterior distribution itself or the
 mathematical expectations it is involved in are analytically intractable or impractical
-to compute numerically. Thus, Variational Inference (VI), an approximate inference method
-proposed by \citet{jordan_introduction_1999}, is used to find an approximation within
-a parametric distribution family with densities $q_\theta(\omega)$, that is closest
-in terms of Kullback-Leibler (KL) divergence to the true posterior distribution, $
+to compute numerically. Variational Inference (VI), proposed by \citet{jordan_introduction_1999},
+can be used in such cases to make approximate inference. The approach finds an approximation
+within some distribution family $q_\theta(\omega)$, which is closest to the true posterior
+distribution in terms of Kullback-Leibler divergence: $
   KL(q_\theta(\omega) \| p(\omega \mid D))
     % = \int \frac{dQ}{dP} \log{\frac{dQ}{dP}} P(d\omega)
     % = \int \frac{q(\omega)}{p(\omega)} \log{\frac{q(\omega)}{p(\omega)}} p(\omega) d\omega
     % = \mathbb{E}_{\omega \sim q}
     %   \log\frac{q(\omega)}{p(\omega)}
-    = \mathbb{E}_{\omega \sim q}
+    = \mathbb{E}_{\omega \sim q_\theta}
       \log \tfrac{q_\theta(\omega)}{p(\omega \mid D)}
-$. The approximation family is chosen so that the expectations become tractable.
+$. % The approximation family is chosen so that the expectations become tractable.
 %
-\citet{jordan_introduction_1999} showed that this problem is equivalent to \emph{maximizing}
-the \emph{Evidence Lower Bound} (ELBO)
+\citet{jordan_introduction_1999} show that this problem is equivalent to variational
+\emph{maximization} of the \emph{Evidence Lower Bound} (ELBO)
 \begin{equation}  \label{eq:elbo_general}
-  \mathcal{L}(\theta; \phi, \lambda)
+  \mathcal{L}(\theta; \lambda)
     = - KL(q_{\theta} \| \pi_{\lambda})
       + \sum_{i=1}^N \mathbb{E}_{\omega \sim q_{\theta}}
-        \log p_{\phi}(z_i \mid \omega)
+        \log p(x_i \mid \omega)
       % \mathbb{E}_{\omega \sim q_{\theta}}
         % \log\frac{q_\theta(\omega)}{\pi_{\lambda}(\omega)}
   % = \mathbb{E}_{\omega \sim q_{\theta}}
@@ -216,35 +218,71 @@ the \emph{Evidence Lower Bound} (ELBO)
   %   + \mathbb{H}(q_{\theta})
   \,,
 \end{equation}
-where $\lambda$ and $\phi$ parameterize the prior and the likelihood, respectively.
+where the variational parameters $\theta$ and $\lambda$ parameterize the approximation
+and the prior, respectively.
 %
-It is possible to use other objectives, besides \eqref{eq:elbo_general}, provided $
-  p(\omega \mid D)
-$ is evaluated only through $\log p(D \mid \omega)$ and $\log \pi(\omega)$,
-\citep{ranganath_operator_2018}.
+Kullback-Leibler and, by proxy, ELBO are standard objectives in VI, however it is possible
+to use other objectives, provided the true posterior $p(\omega \mid D)$ is evaluated only
+through $\log p(D \mid \omega)$ and $\log \pi(\omega)$, \citep{ranganath_operator_2018}.
 
+% speed, scale, variance, family of suitable Var approximations
+In subsequent years several improvements to Variational Inference approach were introduced.
 To make VI able to handle large-scale datasets \citet{hoffman_stochastic_2013} proposed
-\emph{Stochastic Variational Inference}, which uses stochastic gradient optimization over
-mini-batches from $D$ to solve \eqref{eq:elbo_general} with exponential families of
-distributions. To allow for efficient inference with non-conjugate distributions
-in large-scale setting \citet{titsias_doubly_2014} proposed \emph{Doubly Stochastic
-Variational Bayes} that uses unbiased Monte-Carlo estimate of the gradient of ELBO
-and requires that $q_\theta$ can be efficiently sampled from and have tractable
-$\nabla_\theta \log q_\theta(\omega)$.
-%
-Independently, \citet{kingma_auto-encoding_2014} proposed \emph{Stochastic Gradient
-Variational Bayes} estimator for ELBO and its gradient \eqref{eq:elbo_general} with
-respect to parameters via an unbiased differentiable Monte-Carlo estimator, provided
-the density $q_\theta(\omega)$ is amenable to the \emph{reparameterization trick},
-i.e. $
-  \omega \sim q_{\theta}
-$ is equivalent in distribution to $
-  \omega = g(\varepsilon; \theta)
-$ for some non-parametric random variable $
-    \varepsilon \sim p_\varepsilon
-$ and $g(\varepsilon; \theta)$ differentiable with respect to $\theta$.
+\emph{Stochastic Variational Inference}, which uses stochastic gradient optimization of
+\eqref{eq:elbo_general} based on inexpensive noisy unbiased gradient estimates of ELBO
+computed on random mini-batches from the dataset. \citet{titsias_doubly_2014} translated
+dependence on $\theta$ from $q_{\theta}$ to the functions inside the expectations of ELBO
+and propose \emph{Doubly Stochastic Variational Inference}, which computes unbiased gradient
+estimator based on both dataset subsampling and random draws from variational distribution
+$q_{\theta}$. Note, that the KL divergence term can replaced by its unbiased differentiable
+finite-sample estimator without forfeiting convergence of (doubly) SVI.
 
-% HERE
+% The variance of the stochastic gradient directly affects convergence of SVI. 
+Independently, \citet{kingma_auto-encoding_2014} proposed \emph{Stochastic Gradient
+Variational Bayes}, which is an alternative efficient doubly stochastic estimator
+applicable to models with parameters $\omega$ that are continuous random variables
+amenable to the \emph{reparameterization trick}, i.e. $
+  \omega \sim q_{\theta}(\omega)
+$ is equivalent in distribution to $
+  \omega = g_{\theta}(\varepsilon)
+$ for some non-parametric random variable $
+  \varepsilon \sim p(\varepsilon)
+$ and $
+  g(\varepsilon; \theta)
+$ differentiable with respect to $\theta$. The estimator of \eqref{eq:elbo_general}
+for $L$ reparameterized draws per datapoint in mini-batch of size $M$, is given by
+\begin{equation}  \label{eq:sgvb_estimator}
+  \widetilde{\mathcal{L}}(\theta; \lambda)
+    = - KL(q_{\theta} \| \pi_{\lambda})
+      % + \frac{N}{\lvert B \rvert} \sum_{i\in B}
+        % \log p(x_i \mid \omega_i)b
+      + \frac{N}{M L} \sum_{k,l}
+        \log p(x_{i_k} \mid g(\varepsilon_{lk}; \theta))
+      % + \frac{N}{M L} \sum_{k=1}^M \sum_{l=1}^L
+      %   \log p(x_{i_k} \mid g(\varepsilon_{lk}; \theta))
+        % \log p(D \mid \omega_{l})
+        %   \Big\vert_{\omega_{l} = g(\varepsilon_{l}; \theta)}
+      % =
+      % - KL(q_{\theta} \| \pi)
+      % + N \mathbb{E}_{B \sim \{D\}_M \otimes q_\theta^M}
+        % \hat{\mathbb{E}}_{x,\omega \sim B}
+          % \log p(x \mid \omega)
+    \,,
+\end{equation}
+where $(x_{i_k})_{k=1}^M$ is a random mini-batch from $D$ and $
+  (\varepsilon_{lk})_{l=1}^L
+$ are $M$ independent iid samples from $p_\varepsilon$. \citet{figurnov_implicit_2019}
+extended the scope of the reparameterization gradients to include continuous distributions
+such as Gamma and von Mises. To handle the case of non-reparameterizable $\omega$ in
+doubly stochastic VI, e.g. discrete random parameters, \citet{titsias_local_2015} proposed
+\emph{local expectation gradients}, which is a version of REINFORCE gradient estimator
+\citep{williams_simple_1992} with variance reduced by careful use of dependence
+structures in the model.
+% (reparameterization trick, pathwise gradient) $q_{\theta}(d\omega)$ is a push-forward
+% of $p(d\varepsilon)$ by a differentiable map $g(\varepsilon; \theta)$.
+% % http://stillbreeze.github.io/REINFORCE-vs-Reparameterization-trick/#fn:1
+% rao-blackwellization (http://pyro.ai/examples/svi_part_iii.html)
+
 % The Local Reparameterization Trick reduces the variance of SGVB
 % even further by sampling independent weight matrices for
 % each data-point inside mini-batch. So we need both original SGVB
@@ -253,41 +291,45 @@ $ and $g(\varepsilon; \theta)$ differentiable with respect to $\theta$.
 % SGVB is specifically for VAE (local latent varaibles per data-point)
 % what Kingma propose is SGVB for global shared latent varaibles aka
 % WEIGHTS!!
-The SGVB objective is
-\begin{equation}  \label{eq:sgvb_objective}
-  \widetilde{\mathcal{L}} %(\theta; \phi, \lambda)
-    = - KL(q_{\theta} \| \pi_{\lambda})
-      % + \frac{N}{\lvert B \rvert} \sum_{i\in B}
-        % \log p(z_i \mid \omega_i)b
-      + \frac1{L} \sum_{i=1}^N \sum_{l=1}^L
-        \log p_{\phi}(z_i \mid g(\varepsilon_{il}; \theta))
-        % \log p_{\phi}(D \mid \omega_{l})
-        %   \Big\vert_{\omega_{l} = g(\varepsilon_{l}; \theta)}
-      % =
-      % - KL(q_{\theta} \| \pi)
-      % + N \mathbb{E}_{B \sim \{D\}_M \otimes q_\theta^M}
-        % \hat{\mathbb{E}}_{z,\omega \sim B}
-          % \log p(z \mid \omega)
-    \,,
+In this study we use the SGVB estimator \eqref{eq:sgvb_estimator} with $L=1$ and the
+\emph{local reparameterization trick} proposed by \citet{kingma_variational_2015}. They
+argued that this gradient estimator can be made more statistically and computationally
+efficient, if the structure of the model permits translating global stochasticity of
+$\omega$ down to local intermediate states of computation.
+%
+The class of models that are allow this include non-recurrent computational graphs,
+exemplified by neural networks with parameters $\omega \sim q_\theta$. In this case
+\eqref{eq:sgvb_estimator} would require that the \emph{entire} set of network's parameters
+$\omega$ be independently drawn for each element in the mini-batch. However, noting
+that the parameters in a network naturally decompose into subsets with non-overlapping
+layer-wise effects, it is standard to assume that the approximation $
+  q_\theta(\omega)
+$ is factorized over layers. Furthermore, if $
+  \omega = W \in \mathbb{R}^{n\times m}
+$ in a linear layer $
+  y = b + W^\top x
+$ with $
+  q_\theta(W)
+    = \prod_{ij}
+      \mathcal{N}(w_{ij} \vert\, \mu_{ij}, \sigma_{ij}^2)
+$, then by virtue of $y$ being a linear transformation of $W$, we get
+\begin{equation}  \label{eq:r-gauss-trick}
+  q(y) = \prod_i \mathcal{N}\Bigl(
+        y_i \big\vert\,
+        b_i + \sum_j \mu_{ij} x_j,
+        \sum_j \sigma^2_{ij} x_j^2
+    \Bigr)
+  \,.
 \end{equation}
-where $
-  (\varepsilon_{l})_{l=1}^L
-$ is an iid sample from $p_\varepsilon$. The KL divergence term can replaced by an
-unbiased differentiable finite sample estimator if it is intractable.
+This yields outputs equivalent in distribution to sampling $W$ for each element in
+the mini-batch, which produces the SGVB estimator with smaller variance, as demonstrated
+by \citet{kingma_variational_2015}.
 
-For the purposes of this study, we follow \citet{kingma_auto-encoding_2014} and use
-\eqref{eq:sgvb_objective} with random batches of size $M$ from $D$ and $L=1$ $\varepsilon$
-samples per datapoint in the mini-batch:
-\begin{equation}  \label{eq:elbo}
-  \widetilde{\mathcal{L}} %(\theta; \phi, \lambda)
-    = - KL(q_{\theta} \| \pi_{\lambda})
-      + \frac{N}{M} \sum_{k=1}^M
-        \log p_{\phi}(z_{i_k} \mid g(\varepsilon_k; \theta))
-    \,,
-\end{equation}  % \citet{kingma_auto-encoding_2014}
-for a random subsample $(z_{i_k})_{k=1}^M$ and iid $\varepsilon_k \sim p_\varepsilon$.
+% subsection variational_inference (end)
 
-\medskip
+\subsection{Dropout} % (fold)
+\label{sub:dropout}
+
 With a special posterior approximation family and suitable prior assumptions, Variational
 Inference can be used as model regularization and sparsification technique.
 
@@ -338,7 +380,7 @@ Variational Dropout assumes fully factorized Gaussian approximate posterior $
     = \prod_j \mathcal{N}(\omega_j \vert\, \mu_j, \alpha_j \mu_j^2)
 $ and factorized log-uniform prior $\pi(\omega)$ with $
   \pi(\omega_j) \propto \lvert \omega_j \rvert^{-1}
-$. The divergence term in \eqref{eq:elbo} unravels into the following sum:
+$. The divergence term in \eqref{eq:sgvb_estimator} unravels into the following sum:
 \begin{equation}  \label{eq:improper-kl-div-real}
   KL(q_\theta \| \pi)
     \propto
@@ -380,7 +422,7 @@ method the log-uniform factor $\pi(\omega_j)$ is replaced by a proper Gaussian A
 prior $
   \mathcal{N}(\omega_j \vert\, 0, \tau^{-1}_j)
 $ with learnable precision $\tau_j > 0$, \citep{neal_bayesian_1996}. Maximizing
-\eqref{eq:elbo} over $\tau$, holding other parameters fixed, yields $
+\eqref{eq:sgvb_estimator} over $\tau$, holding other parameters fixed, yields $
   \tau^*_j = {(\mu_j^2 + \sigma^2_j)}^{-1}
 $, whence
 \begin{equation}  \label{eq:ard-kl-div-real}
@@ -405,8 +447,21 @@ $, whence
 %     \,.
 % \end{align}
 
+
+% Similar idea to \eqref{eq:r-gauss-trick} was proposed by \citet{wang_fast_2013} to speed
+% up Gaussian dropout.
+
+% , that for the case of fully factorized Gaussian
+% posterior approximations, using \eqref{eq:r-gauss-trick} decorrelates the estimators
+% \eqref{eq:sgvb_estimator} within the mini-batch and makes the gradient estimator $
+%   \nabla_\theta \tilde{\mathcal{L}}
+% $ more statistically efficient. Specifically for the problem of selecting relevant parameters
+% \citet{molchanov_variational_2017} further improve the efficiency of the estimator of the $
+%   \nabla_\mu \tilde{\mathcal{L}}
+% $ by introducing \textit{additive noise parameterization}. 
+
 Another contribution of \citep{kingma_variational_2015} is the analysis of the effects of the
-\textit{local reparameterization trick} on the variance of the gradient of \eqref{eq:elbo}.
+\textit{local reparameterization trick} on the variance of the gradient of \eqref{eq:sgvb_estimator}.
 Proposed by \citet{wang_fast_2013} to speed up Gaussian dropout, this trick translates
 uncertainty from parameters of the model to intermediate outputs within the network:
 the stochasticity of $
@@ -417,7 +472,7 @@ $ with $
 $ in a linear layer is pushed to its output $
   y = b + W^\top x
 $,
-\begin{equation}  \label{eq:r-gauss-trick}
+\begin{equation}  % \label{eq:r-gauss-trick}
   q(y) = \prod_i \mathcal{N}\Bigl(
         y_i \big\vert\,
         b_i + \sum_j \mu_{ij} x_j,
@@ -428,20 +483,22 @@ $,
 %
 \citet{kingma_variational_2015} show, that for the case of fully factorized Gaussian
 posterior approximations, using \eqref{eq:r-gauss-trick} decorrelates the estimators
-\eqref{eq:elbo} within the mini-batch and makes the gradient estimator $
+\eqref{eq:sgvb_estimator} within the mini-batch and makes the gradient estimator $
   \nabla_\theta \tilde{\mathcal{L}}
 $ more statistically efficient. Specifically for the problem of selecting relevant parameters
 \citet{molchanov_variational_2017} further improve the efficiency of the estimator of the $
   \nabla_\mu \tilde{\mathcal{L}}
 $ by introducing \textit{additive noise parameterization}. They revert the $(\mu, \alpha)$
 parameterization back to the equivalent $(\mu, \sigma^2)$, since it stabilizes gradients
-of SGVB \eqref{eq:elbo}, by rendering the gradient with respect to $\mu$ independent from
+of SGVB \eqref{eq:sgvb_estimator}, by rendering the gradient with respect to $\mu$ independent from
 the local output noise, injected by \eqref{eq:r-gauss-trick}. The relevance $\alpha$ is
 calculated using the ratio $
   \tfrac{\sigma^2}{\mu^2}
 $ when needed in the divergence term.
 
-% section bayesian_dropout (end)
+% subsection dropout (end)
+
+% section variational_dropout (end)
 
 
 \section{$\cplx$-valued networks} % (fold)
@@ -536,7 +593,7 @@ $ for some $\real$-valued non-linearity $\sigma$, possibly with learnable parame
 We propose to use fully factorized complex Gaussian posterior approximation and $\cplx$
 variant of the local reparameterization trick to extend Bayesian Dropout techniques to
 $\cplx$-valued networks. In this section we describe the approximation and derive the
-divergence penalties in \eqref{eq:elbo}. Similarly to $\real$-valued Variational Dropout,
+divergence penalties in \eqref{eq:sgvb_estimator}. Similarly to $\real$-valued Variational Dropout,
 the proposed $\cplx$-valued extension can be straightforwardly enhanced to provide
 structured sparsity.
 
@@ -756,7 +813,7 @@ to be zero.
 
 For a fully factorized approximation $q(\omega)$ and factorized prior belief $
   \pi(\omega) = \prod_{ij} \pi(\omega_{ij})
-$, the divergence term in ELBO \eqref{eq:elbo} is
+$, the divergence term in ELBO \eqref{eq:sgvb_estimator} is
 \begin{equation}  \label{eq:elbo-general-kl-div}
   KL(q \| \pi)
     % = \mathbb{E}_{\oemga \sim q(\oemga)} \log \tfrac{q(\oemga)}{\pi(\oemga)}
@@ -902,10 +959,10 @@ the divergence that depend on the parameters are given by
 We set $\beta = 2$ to make the divergence term depend only on $\alpha$ and add $\gamma$
 so that the right-hand side is nonnegative \citep[eq.(84)]{lapidoth_capacity_2003}.
 %
-Since $\mathop{Ei}(x)$ has simple analytic derivative and \eqref{eq:elbo} depends additively
+Since $\mathop{Ei}(x)$ has simple analytic derivative and \eqref{eq:sgvb_estimator} depends additively
 on \eqref{eq:c-vd-kl-div}, it is possible to back-propagate through the divergence without
 forward evaluation, which speeds up gradient updates.
-% Gradient-based optimiziation of \eqref{eq:elbo} usually does not use the value of the objective. 
+% Gradient-based optimiziation of \eqref{eq:sgvb_estimator} usually does not use the value of the objective. 
 % In stochastic gradient methods are concerned more with the gradient, induced by the objective
 % function, rather than its value.
 
@@ -949,8 +1006,8 @@ $. The per element divergence term in \eqref{eq:elbo-general-kl-div} is
 %   + \tau \Re \tr{\Gamma} + \tau \mu^\hop \mu
 %   \,. $$
 %
-In Empirical Bayes the prior adapts to the observed data, i.e. \eqref{eq:elbo} is optimized
-w.r.t. $\tau$ of each weight's prior. Since divergence sits in \eqref{eq:elbo} with negative
+In Empirical Bayes the prior adapts to the observed data, i.e. \eqref{eq:sgvb_estimator} is optimized
+w.r.t. $\tau$ of each weight's prior. Since divergence sits in \eqref{eq:sgvb_estimator} with negative
 sign, optimal $
   \tau^\ast = (\sigma^2 + \lvert \mu \rvert^2)^{-1}
 $ is found by minimizing \eqref{eq:emp-bayes-kl-div}, which gives
@@ -1056,20 +1113,20 @@ shift and scaling in $\real$- and $\cplx$-valued batch normalization layers.
 % The training consists of three successive stages: ``dense'' $\to$ ``sparsify'' $\to$ ``fine-tune''.
 
 At the \textit{``dense''} stage every network is fit ``as-is'', retaining its original
-non-Bayesian architecture, and using only the likelihood term from \eqref{eq:elbo} without
+non-Bayesian architecture, and using only the likelihood term from \eqref{eq:sgvb_estimator} without
 variational dropout.
 
 During the \textit{``sparsify''} stage we make every layer Bayesian and apply $\cplx$-variational
 dropout sec.~\ref{ssub:vd_prior} (or sec.~\ref{ssub:ard_prior}) or its $\real$ counterpart.
 We inject a coefficient $
   C \in (0, 1]
-$ at the KL divergence term in \eqref{eq:elbo} to study the attainable sparsity levels:
+$ at the KL divergence term in \eqref{eq:sgvb_estimator} to study the attainable sparsity levels:
 \begin{equation}  \label{eq:elbo_with_coef}
   - \frac{C}N KL(q_{\theta} \| \pi_{\lambda})
   + \frac1{M} \sum_{k=1}^M
       \log p_{\phi}(z_{i_k} \mid g(\varepsilon_k; \theta))
   \,.
-  \tag{\ref{eq:elbo}'}
+  \tag{\ref{eq:sgvb_estimator}'}
 \end{equation}
 By varying $C$ we adjust the importance of the sparsifying prior in learning $q_\theta(W)$,
 meaning that higher value yields more irrelevant parameters during inference and makes
