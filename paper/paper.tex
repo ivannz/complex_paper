@@ -288,8 +288,8 @@ structures in the model.
 % each data-point inside mini-batch. So we need both original SGVB
 % (per sample randomness) and local reparameterization (that is an
 % efficient and less noisy equivalent to per-sample weight sampling)
-% SGVB is specifically for VAE (local latent varaibles per data-point)
-% what Kingma propose is SGVB for global shared latent varaibles aka
+% SGVB is specifically for VAE (local latent variables per data-point)
+% what Kingma propose is SGVB for global shared latent variables aka
 % WEIGHTS!!
 In this study we use the SGVB estimator \eqref{eq:sgvb_estimator} with $L=1$ and the
 \emph{local reparameterization trick} proposed by \citet{kingma_variational_2015}. They
@@ -324,28 +324,32 @@ $, then by virtue of $y$ being a linear transformation of $W$, we get
 This yields outputs equivalent in distribution to sampling $W$ for each element in
 the mini-batch, which produces the SGVB estimator with smaller variance, as demonstrated
 by \citet{kingma_variational_2015}.
+% Similar idea to \eqref{eq:r-gauss-trick} was proposed by \citet{wang_fast_2013} to speed
+% up Gaussian dropout.
 
 % subsection variational_inference (end)
 
 \subsection{Dropout} % (fold)
 \label{sub:dropout}
 
-With a special posterior approximation family and suitable prior assumptions, Variational
-Inference can be used as model regularization and sparsification technique.
+With a special posterior approximation family $q_\theta$ and suitable prior $\pi$,
+Variational Inference can be used as model regularization and sparsification technique.
 
 % on dropout
-Dropout \citep{hinton_improving_2012} prevents overfitting by injecting multiplicative
-binary noise into layer's weights, which breaks up co-adaptations that could occur
-during training. \citet{wang_fast_2013} argue that the overall effect of binary dropout
-on the intermediate outputs via the Central Limit Theorem can be approximated by a Gaussian
-with weight-input dependent mean and variance. \citet{srivastava_dropout:_2014} propose
-using independent $\mathcal{N}(1,1)$ noise, arguing that higher entropy of a Gaussian has
-better regularizing effect. In a recent study concerning multitask learning
-\citet{cheung_superposition_2019} have shown the possibility of storing task-specific
-parameters in non-destructive superposition within a single network. In particular, their
-argument implies that if the single task setting is viewed as multitask learning with
-replicated task, then by sampling uncorrelated binary masks Dropout acts as a superposition
-method, utilizing the learning capacity of the network better.
+Dropout, proposed by \citet{hinton_improving_2012}, prevents overfitting by injecting
+multiplicative binary noise into layer's weights, which breaks up co-adaptations that
+could occur during training. \citet{wang_fast_2013} argued that the overall effect of
+binary dropout on the intermediate outputs can be approximated by a Gaussian with weight-input
+dependent mean and variance via the Central Limit Theorem. \citet{srivastava_dropout:_2014}
+proposed using independent $\mathcal{N}(1, 1)$ multiplicative noise, arguing that higher
+entropy of a Gaussian has better regularizing effect. \citet{gal_dropout_2016} showed
+that Dropout is a Bayesian approximation method with close ties to deep Gaussian Processes
+that yields inexpensive model uncertainty estimates. In a study concerning multitask learning
+\citet{cheung_superposition_2019} demonstrated the possibility of storing task-specific
+parameters in non-destructive superposition within a single network. Regarding Dropout
+their argument implies that if the single task setting is viewed as multitask learning
+with replicated task, then by sampling uncorrelated binary masks Dropout acts as a
+superposition method, utilizing the learning capacity of the network better.
 % many identical copies of the same task; \cite[Appendix A.1]{cheung_superposition_2019}
 % (fast dropout gauss-approx) wang-manning.tex
 % (gauss dropout) srivastava-et-al.tex
@@ -353,17 +357,16 @@ method, utilizing the learning capacity of the network better.
 % VD is a Bayesian perspective on dropout regularization \citep{hinton_improving_2012} offered
 % by \citet{kingma_variational_2015} and repurposed for sparsification by \citet{molchanov_variational_2017}.
 %
-Dropout can be viewed as a Bayesian model averaging method, where models share parameters
-and are weighted equally. Thus, \citet{kingma_variational_2015} consider Dropout, DropConnect
-\citep{wan_regularization_2013}, and Gaussian dropout \citep{wang_fast_2013} through the
-lens of Bayesian Inference methods and propose \textit{Variational Dropout}. They argue that
-the multiplicative noise introduced by these methods induces a distribution equivalent to
-a fully factorized variational posterior of the form $
+\citet{kingma_variational_2015} provided a unifying perspective on Dropout, DropConnect
+\citep{wan_regularization_2013}, and Gaussian dropout \citep{wang_fast_2013} through
+the lens of Variational Inference methods and propose \emph{Variational Dropout}. They
+argued that the multiplicative noise introduced by Dropout methods induces a distribution
+equivalent to a fully factorized variational posterior of the form $
   q_\theta(\omega) = \prod_j q_{\theta}(\omega_j)
 $, where $q_{\theta}(\omega_j)$ is $\omega_j = \mu_j \xi_j$ with $
   \xi_j \sim p_\theta(\xi_j)
 $ iid from some $p_\theta(\xi)$.
-
+%
 % Binary dropout with rate $p \in (0, 1)$ uses $
 %   p_\xi
 %     = \mathcal{B}\bigl(
@@ -378,56 +381,69 @@ $ iid from some $p_\theta(\xi)$.
 Variational Dropout assumes fully factorized Gaussian approximate posterior $
   q_\theta(\omega)
     = \prod_j \mathcal{N}(\omega_j \vert\, \mu_j, \alpha_j \mu_j^2)
-$ and factorized log-uniform prior $\pi(\omega)$ with $
+$ and factorized scale invariant log-uniform prior $\pi(\omega)$ with $
   \pi(\omega_j) \propto \lvert \omega_j \rvert^{-1}
-$. The divergence term in \eqref{eq:sgvb_estimator} unravels into the following sum:
+$. \citet{molchanov_variational_2017} noticed that $\alpha_j$ reflect the relevance of the
+parameter $\omega_j$ it is associated to by being the ratio of its squared mean to its
+effective variance. Based on this observation they proposed \emph{Sparse Variational Dropout},
+a modification that enables automatic model sparsification by optimizing $\alpha_j$ for each
+individual parameter. \citet{louizos_bayesian_2017} extended the idea to structured sparsity
+by considering hierarchical prior and variational approximation. They grouped the parameters
+$\omega_j$ and coupled them within each one through a shared latent variable, which on the
+whole enabled pruning entire input features in each layer.
+% {louizos_bayesian_2017} eq. (11) variance -> gaussian entropy -> informative bits
+%
+
+Simultaneously \citet{molchanov_variational_2017} proposed to use \emph{Additive Noise
+Parameterization} in the factorized Gaussian $q_\theta(\omega)$ in conjunction with the
+Local Reparameterization Trick. They reverted the $(\mu, \alpha)$ parameterization back
+to the equivalent $(\mu, \sigma^2)$, arguing that it reduces the variance of the SGVB
+\eqref{eq:sgvb_estimator}, by rendering the gradient with respect to $\mu_{ij}$ independent
+from the local output noise, injected by \eqref{eq:r-gauss-trick}. This improvement is
+especially important for model pruning, since $\mu_{ij}$ of relevant parameters are used
+as point estimates of their values.
+
+Due to factorization alternative parameterization, the term $KL(q_\theta \| \pi)$ in
+\eqref{eq:sgvb_estimator} of Sparse VD unravels into $
+  \sum_j K(\tfrac{\sigma^2_{j}}{\mu_{j}^2})
+$ with
 \begin{equation}  \label{eq:improper-kl-div-real}
-  KL(q_\theta \| \pi)
-    \propto
-      \frac12 \sum_j \mathbb{E}_{\varepsilon \sim \mathcal{N}(0, 1)}
-        \log{\Bigl\lvert \tfrac1{\sqrt{\alpha_j}} + \varepsilon \Bigr\rvert^2}
+  K(\alpha)
+    \propto \frac12 \mathbb{E}_{\varepsilon \sim \mathcal{N}(0, 1)}
+        \log{\Bigl\lvert \tfrac1{\sqrt{\alpha}} + \varepsilon \Bigr\rvert^2}
       % \frac12 \mathbb{E}_{\varepsilon \sim \mathcal{N}(0, 1)}
       %   \log{\bigl\lvert 1 + \sqrt{\alpha} \varepsilon \bigr\rvert^2}
       % - \frac12 \log{\alpha}
   \,.
 \end{equation}
-\citet{kingma_variational_2015} approximate this expression by a non-linear polynomial
-regression over $\alpha \in (0, 1)$. \citet{molchanov_variational_2017} refine the
-approximation by using a nonlinear regression based on sigmoid and soft-plus.
+\citet{kingma_variational_2015} approximated $K(\alpha)$ over $\alpha \in (0, 1)$ by
+a non-linear polynomial, and later \citet{molchanov_variational_2017} refined the
+approximation of \eqref{eq:improper-kl-div-real} by a nonlinear regression based on
+sigmoid and soft-plus.
 % see p.6 sec 3.4 of kingma_variational_2015
 In appendix~\ref{sec:real-chisq-grad} we verify the value and the derivative of their
-approximation against the Monte-Carlo estimate of \eqref{eq:improper-kl-div-real} for $\alpha$
-varying over a fine logarithmic grid and the gradient of \eqref{eq:improper-kl-div-real},
+approximation against the Monte-Carlo estimate of \eqref{eq:improper-kl-div-real} for
+$\alpha$ varying over a fine logarithmic grid and the gradient of \eqref{eq:improper-kl-div-real},
 for which we obtain an exact expression.
 % (!) good for SGVB: gradient-based methods require unbiased gradient estimates
 % (in) it is in poor taste to brag about this beign the first time anyone has derived a
 % derivative of an intractable function.
 
-The key role in the factorization is played by $\alpha_j$, which reflects the relevance
-of the parameter $\omega_j$ it is associated to, by being the ratio of its squared mean
-to its variance. Thus, \citet{molchanov_variational_2017} focus on the model sparsification
-capabilities of Variational Dropout, optimizing $\alpha_j$ for each individual parameter,
-or across groups of parameters for structured sparsity.
-%
-\citet{louizos_bayesian_2017} consider hierarchical prior and approximation, which couples
-the parameters $\omega_j$ within a group $J$ through shared scaling $z_J$ and enables
-pruning entire input features in each layer.
-% {louizos_bayesian_2017} eq. (11) variance -> gaussian entropy -> informative bits 
-%
-\citet{kharitonov_variational_2018}
-address theoretical issues with improper priors and propose a method based on \textit{
-Automatic Relevance Determination} procedure, which falls under \textit{Empirical Bayes}
-approach that fits a prior distribution while performing Variational Inference. In this
-method the log-uniform factor $\pi(\omega_j)$ is replaced by a proper Gaussian ARD
-prior $
-  \mathcal{N}(\omega_j \vert\, 0, \tau^{-1}_j)
-$ with learnable precision $\tau_j > 0$, \citep{neal_bayesian_1996}. Maximizing
-\eqref{eq:sgvb_estimator} over $\tau$, holding other parameters fixed, yields $
+\citet{kharitonov_variational_2018} addressed theoretical issues with improper prior
+$\pi$, emphasized by \citet{hron_variational_2018}, and proposed Sparse VD based on
+\textit{Automatic Relevance Determination} procedure. ARD replaces $\pi(\omega_j)$ by
+a proper Gaussian ARD prior $
+  \pi_\lambda(\omega_j) = \mathcal{N}(\omega_j \vert\, 0, \tau_j^{-1})
+$ with learnable precision $\tau_j > 0$ \citep{neal_bayesian_1996}, thereby recasting
+the VD as the \textit{Empirical Bayes} approach, which performs Bayesian Inference over
+$\omega$, but uses Maximum Likelihood point-estimates for the hyper-parameters $\lambda$,
+\citep{mackay_bayesian_1994}. Maximizing \eqref{eq:sgvb_estimator} over $\tau$, holding
+other parameters fixed, yields $
   \tau^*_j = {(\mu_j^2 + \sigma^2_j)}^{-1}
 $, whence
 \begin{equation}  \label{eq:ard-kl-div-real}
-  KL(q_\theta \| \pi)
-    = \frac12 \sum_j \log{\bigl(1 + \tfrac1{\alpha_j} \bigr)}
+  K(\alpha)
+    = \frac12 \sum_j \log{\bigl(1 + \tfrac1{\alpha} \bigr)}
     \,.
 \end{equation}
 % \begin{align}
@@ -446,55 +462,6 @@ $, whence
 %       \prod_{j\in J} \mathcal{N}(\omega_j \vert \mu_j s_J, \sigma_j^2 s_J^2)
 %     \,.
 % \end{align}
-
-
-% Similar idea to \eqref{eq:r-gauss-trick} was proposed by \citet{wang_fast_2013} to speed
-% up Gaussian dropout.
-
-% , that for the case of fully factorized Gaussian
-% posterior approximations, using \eqref{eq:r-gauss-trick} decorrelates the estimators
-% \eqref{eq:sgvb_estimator} within the mini-batch and makes the gradient estimator $
-%   \nabla_\theta \tilde{\mathcal{L}}
-% $ more statistically efficient. Specifically for the problem of selecting relevant parameters
-% \citet{molchanov_variational_2017} further improve the efficiency of the estimator of the $
-%   \nabla_\mu \tilde{\mathcal{L}}
-% $ by introducing \textit{additive noise parameterization}. 
-
-Another contribution of \citep{kingma_variational_2015} is the analysis of the effects of the
-\textit{local reparameterization trick} on the variance of the gradient of \eqref{eq:sgvb_estimator}.
-Proposed by \citet{wang_fast_2013} to speed up Gaussian dropout, this trick translates
-uncertainty from parameters of the model to intermediate outputs within the network:
-the stochasticity of $
-  W \in \mathbb{R}^{n\times m}
-$ with $
-  q(W) = \prod_{ij}
-    \mathcal{N}(w_{ij}\vert\, \mu_{ij}, \alpha_{ij} \mu_{ij}^2)
-$ in a linear layer is pushed to its output $
-  y = b + W^\top x
-$,
-\begin{equation}  % \label{eq:r-gauss-trick}
-  q(y) = \prod_i \mathcal{N}\Bigl(
-        y_i \big\vert\,
-        b_i + \sum_j \mu_{ij} x_j,
-        \sum_j \alpha_{ij} \mu_{ij}^2 x_j^2
-    \Bigr)
-  \,.
-\end{equation}
-%
-\citet{kingma_variational_2015} show, that for the case of fully factorized Gaussian
-posterior approximations, using \eqref{eq:r-gauss-trick} decorrelates the estimators
-\eqref{eq:sgvb_estimator} within the mini-batch and makes the gradient estimator $
-  \nabla_\theta \tilde{\mathcal{L}}
-$ more statistically efficient. Specifically for the problem of selecting relevant parameters
-\citet{molchanov_variational_2017} further improve the efficiency of the estimator of the $
-  \nabla_\mu \tilde{\mathcal{L}}
-$ by introducing \textit{additive noise parameterization}. They revert the $(\mu, \alpha)$
-parameterization back to the equivalent $(\mu, \sigma^2)$, since it stabilizes gradients
-of SGVB \eqref{eq:sgvb_estimator}, by rendering the gradient with respect to $\mu$ independent from
-the local output noise, injected by \eqref{eq:r-gauss-trick}. The relevance $\alpha$ is
-calculated using the ratio $
-  \tfrac{\sigma^2}{\mu^2}
-$ when needed in the divergence term.
 
 % subsection dropout (end)
 
