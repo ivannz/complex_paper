@@ -436,7 +436,7 @@ other parameters fixed, yields $
 $, whence
 \begin{equation}  \label{eq:ard-kl-div-real}
   K(\alpha)
-    = \frac12 \sum_j \log{\bigl(1 + \tfrac1{\alpha} \bigr)}
+    = \frac12 \log{\bigl(1 + \tfrac1{\alpha} \bigr)}
     \,.
 \end{equation}
 % \begin{align}
@@ -1566,263 +1566,160 @@ the results presented in this paper.
 \section{Gradient of the KL-divergence in $\real$ case} % (fold)
 \label{sec:real-chisq-grad}  % gradient_of_the_kl_divergence_in_R_case
 
-In this section we derive the exact gradient of \eqref{eq:improper-kl-div-real}. Even
-though, ultimately, the divergence involves a hypergeometric function, and its gradient
-requires evaluating the Gauss error function, the analysis provides independent verification
-of the approximation, proposed by \citet{molchanov_variational_2017}. The logic of the
-derivation follows \citet{lapidoth_capacity_2003}.
+In this appendix we study the approximation proposed by \citet{molchanov_variational_2017}
+for the KL divergence term \eqref{eq:improper-kl-div-real}. We show empirically that
+the gradient feedback provided by the approximation is sufficiently close to $
+  \tfrac{d}{d\log \alpha} K(\alpha)
+$, making it a viable alternative to exact gradients, computed in \citet{hron_variational_2018}.
+% The derivation in this section different from \citet{lapidoth_capacity_2003}.
+% The results are identical: they use DCT to establish interchangeability of limits
+% (sum-integral-derivative), whilst we allude to calculus theorems on differentiation
+% and integration of power series within the radius of their convergence (which are
+% essentially corollaries to the DCT).
+
 % \citet{pav_moments_2015} correctly notice that \cite[p. 2466]{lapidoth_capacity_2003} has a missing $\log{2}$ term.
 
 For $(z_i)_{i=1}^m \sim \mathcal{N}(0, 1)$ iid and $
   (\mu_i)_{i=1}^m \in \mathbb{R}
-$, the random variable $W = \sum_i (\mu_i + z_i)^2$ is noncentral $\chi^2$ with shape $m$
-and noncentrality parameter $\lambda = \sum_i \mu_i^2$, i.e. $W\sim \chi^2_m(\lambda)$.
-Its density is
-\begin{equation}  \label{eq:nonchisq-density}
-  f_W(x)
-    % = e^{- \tfrac\lambda2} \sum_{n \geq 0} \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
-    %   \tfrac{
-    %     x^{n + \tfrac{m}2 - 1} e^{-\tfrac{x}2}
-    %   }{
-    %     2^{n + \tfrac{m}2} \Gamma(n + \tfrac{m}2)
-    %   }
-    % = e^{- \tfrac\lambda2} \sum_{n \geq 0} \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
-    %     \tfrac{
-    %         \bigl(\tfrac{x}2\bigr)^{n + \tfrac{m}2 - 1} e^{-\tfrac{x}2}
-    %     }{
-    %         2 \Gamma(n + \tfrac{m}2)
-    %     }
-    = \frac12 e^{- \tfrac{x + \lambda}2} \bigl(\tfrac{x}2\bigr)^{\tfrac{m}2 - 1}
-      \sum_{n \geq 0} \frac{
-        \bigl(\tfrac{x \lambda}4\bigr)^n
-      }{
-        n! \Gamma(n + \tfrac{m}2)
-      }
-    % = \frac12 e^{- \tfrac{x + \lambda}2}
-    % \bigl(\tfrac{x}\lambda\bigr)^{\tfrac{m}4 - \tfrac12}
-    % \bigl(\tfrac{x \lambda}4\bigr)^{\tfrac{m}4 - \tfrac12}
-    % \sum_{n \geq 0} \tfrac{
-    %         \bigl(\tfrac{x \lambda}4\bigr)^n
-    %     }{
-    %         n! \Gamma(n + \tfrac{m}2)
-    %     }
-    % = \frac12 e^{- \tfrac{x + \lambda}2}
-    % \bigl(\tfrac{x}\lambda\bigr)^{\tfrac{m}4 - \tfrac12}
-    % \bigl(\tfrac{\sqrt{x \lambda}}2\bigr)^{\tfrac{m}2 - 1}
-    % \sum_{n \geq 0} \tfrac{
-    %         \bigl(\tfrac{x \lambda}4\bigr)^n
-    %     }{
-    %         n! \Gamma(n + \tfrac{m}2)
-    %     }
-    % = \frac12 e^{- \tfrac{x + \lambda}2}
-    % \bigl(\tfrac{x}\lambda\bigr)^{\tfrac{m - 2}4}
-    % I_{\bigl(\tfrac{m}2 - 1\bigr)}(\sqrt{x \lambda})
+$, the random variable $W = \sum_i (\mu_i + z_i)^2$ has non-central $\chi^2$ distribution
+with shape $m$ and non-centrality parameter $\lambda = \sum_i \mu_i^2$, i.e. $
+  W\sim \chi^2_m(\lambda)
+$. The divergence \eqref{eq:improper-kl-div-real} has the form
+\begin{equation}  \label{eq:kl-div-appendix}
+  K(\alpha)
+    \propto \frac12 \mathbb{E}_{
+        W\sim \chi^2_1\bigl(\tfrac1{\alpha}\bigr)
+      } \log W
+    \tag{\ref{eq:improper-kl-div-real}'}
+  \,,
+\end{equation}
+$W$ can alternatively be represented as a Poisson mixture of ordinary $\chi^2$
+distributions: if $Z_{\mid J} \sim \chi^2_{k + 2J}$ for $
+  J \sim \mathcal{P}ois(\tfrac{\lambda}2)
+$ then $W \sim Z$. Therefore, expanding the conditional expectation gives
+\begin{equation}  \label{eq:cond_exp_expansion}
+  \mathbb{E}_{W\sim \chi^2_k(\lambda)} \log W
+    = \mathbb{E}\Bigl(
+        \mathbb{E} \bigl( \log W \mid J)
+      \Bigr)
+    = \mathbb{E}_{J\sim {\mathcal{P}ois}(\tfrac\lambda2)}
+      \Bigl(
+        \mathbb{E}_{W\sim \chi^2_{m + 2 J}} \log W
+      \Bigr)
     \,.
 \end{equation}
-% where $I_k$ is the modified Bessel function of the first kind
-% $$
-% I_k(s)
-%   = \Bigl(\frac{s}2\Bigr)^k
-%       \sum_{n \geq 0} \tfrac{
-%           \bigl( \tfrac{s}2 \bigr)^{2n}
-%       }{n! \Gamma(n + k + 1)}
-%   \,. $$
-By integrating the power series \eqref{eq:nonchisq-density} with substitution $x \to 2u$,
-the expectation $
-  \mathbb{E}_{W\sim \chi^2_m(\lambda)} \log W
-$, needed in \eqref{eq:improper-kl-div-real}, equals
-\begin{multline}  \label{eq:exp-log-chisq-proof}
-    % &= \int_0^\infty f_W(x) \log x dx
-    % \notag \\
-    % &\frac12 e^{- \tfrac\lambda2}
-    % \int_0^\infty \sum_{n \geq 0} \biggl(
-    %     \frac{
-    %       e^{- \tfrac{x}2} \bigl(\tfrac\lambda2\bigr)^n
-    %     }{
-    %       n! \Gamma(n + \tfrac{m}2)
-    %     }
-    %     \bigl(\tfrac{x}2\bigr)^{n + \tfrac{m}2 - 1}
-    % \biggr) \log{(x)} dx
-    % = [\text{ absolute summability and Fubini, or any other conv. thm for integrals of nonnegative integrals}]
-    % = e^{- \tfrac\lambda2} \sum_{n \geq 0}
-    %     \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
-    %     \tfrac1{\Gamma(n + \tfrac{m}2)}
-    % \int_0^\infty
-    %     e^{- \tfrac{x}2} \bigl(\tfrac{x}2\bigr)^{n + \tfrac{m}2 - 1}
-    %     (\log2 + \log \tfrac{x}2) \tfrac{dx}2
-    % = [u = \tfrac{x}2]
-    % \notag \\
-    e^{- \tfrac\lambda2} \sum_{n \geq 0}
-        \frac{\bigl(\tfrac\lambda2\bigr)^n}{
-          n! \Gamma(n + \tfrac{m}2)
-        }
-    \int_0^\infty
-        e^{- u} u^{n + \tfrac{m}2 - 1}
-        \log{(2 u)} du
-    % = [\text{definitions:} \Gamma, \psi]
-    % = e^{- \tfrac\lambda2} \sum_{n \geq 0}
-    %     \tfrac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
-    % (\psi(n + \tfrac{m}2) + \log2)
-    % \notag
-    \\
-    = \log{2}
-    + e^{- \tfrac\lambda2} \sum_{n \geq 0}
-        \frac{\bigl(\tfrac\lambda2\bigr)^n}{n!}
-        \psi(n + \tfrac{m}2)
-    \,,
-\end{multline}
-where $\psi(x)$ is the digamma function, i.e.
-\begin{equation}  \label{eq:digamma}
-  \psi(x)
-    % = \frac{d}{dx} \log \Gamma(x)
-    = \frac1{\Gamma(x)}
-      \int_0^\infty
-        u^{x-1} e^{-u} \log{u}
-      \, du
+Since $\chi^2_\nu$ is Gamma distribution $\Gamma(\tfrac\nu2, \tfrac12)$, its logarithmic
+moment $
+  \mathbb{E}_{W\sim \chi^2_\nu} \log W
+$ is $
+  \psi\bigl(\tfrac\nu{2}\bigr) - \log \tfrac12
+$, where $\psi(x)$ is the digamma function. Hence
+\begin{equation}  \label{eq:exp_digamma}
+  \mathbb{E}_{W\sim \chi^2_k(\lambda)} \log W
+    = \log2 + \mathbb{E}_{J\sim {\mathcal{P}ois}(\tfrac\lambda2)}
+      \psi\bigl(\tfrac{m + 2 J}{2}\bigr)
+    % = \log2
+    % + \sum_{j\geq 0}
+    %     e^{- \tfrac{\lambda}2}
+    %     \frac{\bigl(\tfrac{\lambda}2\bigr)^j}{j!}
+    %   \psi\bigl(\tfrac{m+2J}{2}\bigr)
+    \,.
+\end{equation}
+We can use REINFORCE method to compute the derivative of \eqref{eq:exp_digamma} with respect
+to $\lambda$ \citep{williams_simple_1992}. Since Poisson $\log$-probability is $
+  \log p_\lambda(J)
+    = - \tfrac{\lambda}2
+      + J \log \tfrac{\lambda}2
+      - \log J!
+$, we get
+\begin{equation}  \label{eq:exp_reinforce}
+  \frac{d \eqref{eq:exp_digamma}}{d \lambda}
+    =
+    \mathbb{E}_{J\sim {\mathcal{P}ois}(\tfrac\lambda2)}
+      \psi\bigl(\tfrac{m + 2 J}{2}\bigr)
+      \tfrac{d}{d \lambda} \log p_\lambda(J)
+    % = \mathbb{E}_{J}
+    %   \bigl(
+    %     \tfrac2\lambda J - 1
+    %   \bigr)
+    %   \frac{\psi\bigl(\tfrac{m + 2 J}{2}\bigr)}2
+    = \frac12 g_m\bigl(\tfrac\lambda2\bigr)
     \,,
 \end{equation}
-which satisfies $
-  \psi(z+1) = \psi(z) + \tfrac1z
-$, $
-  \psi(x)\leq \log x - \tfrac1{2x}
-$, and $
-  \psi(\tfrac12) = -\gamma - 2\log 2
-$ ($\gamma$ is Euler's constant). If we put
-\begin{equation}  \label{eq:g-m-series}
+where
+\begin{equation}  \label{eq:g_m_series}
   g_m(x)
-    % alpha: e^{-x} \sum_{n=0}^{\infty} \frac{x^n}{n!} \psi(n + m / 2)
-    % = e^{-x} \sum_{n \geq 0} \frac{x^n}{n! \Gamma(n + \tfrac{m}2)}
-    %     \int_0^\infty e^{-t} t^{n + \tfrac{m}2-1} \log{t} dt
-    = e^{-x} \sum_{n \geq 0} \frac{x^n}{n!} \psi(n + \tfrac{m}2)
-    \,,
-\end{equation}
-then the desired expectation in \eqref{eq:improper-kl-div-real} equals $
-  \log{2} + g_1(\tfrac1{2\alpha})
-$.
-%
-% We can differentiate the series in $g_m(x)$, since the sum converges on $\mathbb{R}$.
-% Indeed, it is a power series featuring nonnegative coefficients, which is dominated by $
-%   \sum_{n \geq 1} \tfrac{x^n}{n!} \log{(n+\tfrac{m}2)}
-% $. By the ratio test, the dominating
-% series has infinite radius:
-% $$
-% \lim_{n\to\infty}
-%   \biggl\lvert
-%     \frac{
-%       n! x^{n+1} \log{(n + 1 + \tfrac{m}2)}
-%     }{
-%       x^n \log{(n + \tfrac{m}2)} (n+1)!
-%     }
-%   \biggr\rvert
-%   = \lim_{n\to\infty}
-%     \lvert x \rvert 
-%     \biggl\lvert
-%       \frac{
-%         \log{(n + 1 + \tfrac{m}2)}
-%       }{
-%         \log{(n + \tfrac{m}2)} (n+1)
-%       }
-%     \biggr\rvert
-%   % = \lim_{n\to\infty}
-%   %   \lvert x \rvert 
-%   %   \biggl\lvert
-%   %     \frac{
-%   %       n + \tfrac{m}2
-%   %     }{
-%   %       (n + 1 + \tfrac{m}2)((n+1) + (n + \tfrac{m}2) \log{(n + \tfrac{m}2)})
-%   %     }
-%   %   \biggr\rvert
-%   = 0 < 1
-%   \,, $$
-% since
-% $$
-% \frac{\log{(x + a + 1)}}{x \log{(x + a)}}
-%   \sim \frac{\log{(x+1)}}{(x-a) \log{x}}
-%   \sim \frac{\log{(x+1)}}{x \log{x}}
-%   \sim \frac{\tfrac1{(x+1)}}{1 + \log{x}}
-%   \to 0
-%   \,. $$
-% A theorem from calculus states, that the formal series derivative (integral)
-% coincides with the derivative (integral) of the function, corresponding to
-% the power series (everywhere on the convergence region). And the convergence
-% regions of derivative (integral) coincide with the region of the original
-% power series.
-%
-Formally differentiating the convergent power series within $g_m$ yields
-\begin{equation}  \label{eq:g-m-deriv}
-  \frac{d}{d x} g_m(x)
-    % = e^{-x} \sum_{n\geq 1} \frac{x^{n-1}}{(n-1)!} \psi(n + \tfrac{m}2) - g_m(x)
-    % = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} \psi(n + \tfrac{m}2 + 1) - g_m(x)
-    % = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} (
-    %     \psi(n + \tfrac{m}2 + 1) - \psi(n + \tfrac{m}2)
-    % )
-    % = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} \tfrac1{n + \tfrac{m}2}
-    % = e^{-x} \sum_{n\geq 0} \frac{x^n}{n!} (n + \tfrac{m}2)^{-1}
-    = x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
-        \frac{x^{n + \tfrac{m}2}}{n!} (n + \tfrac{m}2)^{-1}
+    =
+    \mathbb{E}_{J\sim {\mathcal{P}ois}(x)}
+      \bigl( \tfrac{J}x - 1 \bigr)
+      \psi\bigl(\tfrac{m + 2 J}{2}\bigr)
+    =
+    e^{- x} \sum_{j \geq 0}
+      \frac{x^j}{j!} \bigl( \tfrac{J}x - 1 \bigr)
+      \psi\bigl(\tfrac{m + 2 j}{2}\bigr)
     \,.
 \end{equation}
-From $
-    e^t  = \sum_{n\geq 0} \tfrac{t^n}{n!}
-$ on $\mathbb{R}$ and $
-  \tfrac{x^\alpha}{\alpha}
-    = \int_0^x t^{\alpha-1} dt
-$ for $\alpha\neq 0$ we get
-% by the monotone convergence theorem on ([0, x], \mathcal{B}([0, x]), dx)
-\begin{align}  \label{eq:g-m-deriv-int-2}
-  \eqref{eq:g-m-deriv}
-    % = x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
-    %     \frac{x^{n + \tfrac{m}2}}{n!} (n + \tfrac{m}2)^{-1}
-    &= x^{-\tfrac{m}2} e^{-x} \sum_{n\geq 0}
-        \frac1{n!} \int_0^x t^{n + \tfrac{m}2 - 1} dt
-    % = x^{-\tfrac{m}2} e^{-x}
-    %     \int_0^x t^{\tfrac{m}2 - 1} \sum_{n\geq 0} \frac{t^n}{n!} dt
-    \notag \\
-    &= x^{-\tfrac{m}2} e^{-x}
-        \int_0^x t^{\tfrac{m}2 - 1} e^t dt
+By manipulating the partial sums within $g_m(x)$ and making use of the property $
+  \psi(x + 1) = \psi(x) + \tfrac1x
+  % \psi(1 + J + \tfrac{m}2) = \tfrac2{m + 2J} + \psi(J + \tfrac{m}2)
+$ of the digamma funciton for $x > 0$, we get
+\begin{equation}  \label{eq:g_m_series_int}
+  g_m(x)
+    = e^{- x} \sum_{j \geq 0}
+      \frac{x^j}{j!} \frac1{j + \tfrac{m}2}
+    = e^{- x} x^{- \tfrac{m}2} \sum_{j \geq 0}
+      \frac1{j!}
+      \frac{x^{j + \tfrac{m}2}}{j + \tfrac{m}2}
+    = e^{- x} x^{- \tfrac{m}2} \sum_{j \geq 0}
+      \frac1{j!} \int_0^x t^{j + \tfrac{m}2 - 1} dt
     \,.
-\end{align}
-Substitution $u^2 = t$ on $[0, \infty]$ with $2u du = dt$ yields
-\begin{equation}  \label{eq:g-m-deriv-int-3}
-  \frac{d}{d x} g_m(x)
+\end{equation}
+Since for any $J$ the functions $
+  t \mapsto \sum_{j=0}^J \frac1{j!} t^{j + \tfrac{m}2 - 1}
+$ are positive on $(0, x)$ and upper bounded by integrable $
+  t^{\tfrac{m}2 - 1} e^t
+$, which turns out to be the limit of the partial sums, the Dominated Convergence
+theorem implies
+\begin{equation}  \label{eq:g_m_integral}
+  g_m(x)
+    = e^{- x} x^{- \tfrac{m}2}
+      \int_0^x \sum_{j \geq 0}
+        \frac1{j!} t^{j + \tfrac{m}2 - 1} dt
+    = e^{- x} x^{- \tfrac{m}2}
+      \int_0^x e^t t^{(\tfrac{m}2 - 1)} dt
+    \,.
+\end{equation}
+Substituting $u^2 = t$ on $[0, \infty]$ with $2u du = dt$ and letting $
+  F_m
+  % \colon \mathbb{R} \to \mathbb{R}
+  \colon x \mapsto e^{-x^2} \int_0^x u^{m - 1} e^{u^2} du
+$ yields
+\begin{equation}  \label{eq:g_m_integral-sub}
+  \frac{d \eqref{eq:exp_digamma}}{d \lambda}
+    = \frac12 g_m\bigl(\tfrac\lambda2\bigr)
     % = x^{-\tfrac{m}2} e^{-x}
     %     \int_0^x t^{\tfrac{m}2 - 1} e^t dt
-    = 2 x^{-\tfrac{m}2} e^{-x}
-        \int_0^{\sqrt{x}} u^{m - 1} e^{u^2} du
+    = e^{-x}
+      x^{-\tfrac{m}2}
+      \int_0^{\sqrt{x}} u^{m - 1} e^{u^2} du
+        \bigg\vert_{x=\tfrac\lambda2}
+    % = e^{-x}
+    %   \frac1{\sqrt{x}}
+    %   \int_0^{\sqrt{x}} e^{u^2} du
+    %     \bigg\vert_{x=\tfrac\lambda2}
+    = \Bigl(\sqrt{\tfrac2\lambda}\Bigr)^m F\Bigl(\sqrt{\tfrac\lambda2}\Bigr)
     \,.
 \end{equation}
-In particular, the derivative of \eqref{eq:g-m-series} for $m=1$ is
-\begin{equation}  \label{eq:g-m-deriv-one}
-  \frac{d}{d x} g_1(x)
-    = 2 \frac{F(\sqrt{x})}{\sqrt{x}}
-    \,,
-\end{equation}
-using Dawson's integral $
-  F
-  % \colon \mathbb{R} \to \mathbb{R}
-  \colon x \mapsto e^{-x^2} \int_0^x e^{u^2} du
-$.
-%
-Hence, the derivative of the expectation in \eqref{eq:improper-kl-div-real} with respect
-to $\alpha$ is
-$$
-\frac{d}{d \alpha} g_1(\tfrac1{2\alpha})
-  = -\frac1{2 \alpha^2} g_1'(\tfrac1{2\alpha})
-  % = -\frac1{2 \alpha^2} 2 \tfrac{F(\sqrt{\tfrac1{2\alpha}})}{\sqrt{\tfrac1{2\alpha}}}
-  % = -\frac1{2 \alpha^2} 2 \tfrac{F(\tfrac1{\sqrt{2\alpha}})}{\tfrac1{\sqrt{2\alpha}}}
-  = -\frac1{\alpha} \sqrt{\frac2{\alpha}} F(\tfrac1{\sqrt{2\alpha}})
-  \,. $$
-Finally, since $\alpha$ is nonnegative, it is typically parameterized via its logarithm.
-The gradient of \eqref{eq:improper-kl-div-real} w.r.t $\log \alpha$ is
+Since $\alpha$ is non-negative, it is typically parameterized via its logarithm, whence
+the derivative of \eqref{eq:kl-div-appendix} with respect to $\log\alpha$ follows from
+\eqref{eq:g_m_integral-sub} for $m=1$ and $\lambda = \tfrac1\alpha$:
 \begin{equation}  \label{eq:real-kl-div-deriv-log}
-  \frac{d \eqref{eq:improper-kl-div-real}}{d\log \alpha}
-  % \frac{d}{d\log \alpha}
-  %   \frac12 \mathbb{E}_{z \sim \mathcal{N}(0,1)}
-  %     \log \lvert z + \tfrac1{\sqrt{\alpha}} \rvert^2
-    % = \frac12 \frac{d\alpha}{d\log \alpha}
-    %   \frac{d}{d\alpha} \bigl(\mathbb{E}\cdots \bigr)
-    % = - \frac\alpha2 \tfrac1{\alpha}
-    %   \sqrt{\tfrac2{\alpha}} F(\tfrac1{\sqrt{2\alpha}})
+  \frac{d K(\alpha)}{d\log \alpha}
+    % = \tfrac12 \sqrt{\tfrac2\lambda} F\Bigl(\sqrt{\tfrac\lambda2}\Bigr)
+    % for \lambda = \tfrac1\alpha
+    %   \tfrac{d\lambda}{d\alpha} = - \alpha^{-2}
+    %   \tfrac{d\alpha}{d\log \alpha} = \alpha
+    % = - \alpha \frac1{\alpha\sqrt{2\alpha}} F\Bigl(\tfrac1{\sqrt{2\alpha}}\Bigr)
     = - \frac1{\sqrt{2\alpha}} F\bigl(\tfrac1{\sqrt{2\alpha}}\bigr)
     \,.
 \end{equation}
@@ -1855,10 +1752,20 @@ approximation is given in \eqref{eq:improper-kl-div-real-approx}.
 The numerically estimated derivative of the penalty term with respect to $\log \alpha$ using
 forward differences seems to be following \eqref{eq:real-kl-div-deriv-log} very closely (up to
 sampling error), see fig.~\ref{fig:molchanov-derivative-replica}. The derivative of
-\eqref{eq:improper-kl-div-real-approx} with respect to $\log \alpha$ appears to be very close
-to \eqref{eq:real-kl-div-deriv-log}. We compute a similar Monte-Carlo estimate for
-$\cplx$ variational dropout KL divergence term in \eqref{eq:c-vd-kl-div} with $\beta = 2$,
-fit the best approximation \eqref{eq:improper-kl-div-real-approx}, and compare the derivatives.
+\eqref{eq:improper-kl-div-real-approx} with respect to $\log \alpha$ appears to be very
+close to \eqref{eq:real-kl-div-deriv-log}. For sake of completeness, we compute a similar
+Monte-Carlo estimate for $\cplx$ variational dropout KL divergence term in \eqref{eq:c-vd-kl-div}
+with $\beta = 2$, fit the best approximation \eqref{eq:improper-kl-div-real-approx}, and
+compare it against the exact $\log \alpha$ derivative $
+  \frac{d \eqref{eq:c-vd-kl-div}}{d\log \alpha}
+    % = \frac{d \alpha}{d\log \alpha} \frac{d}{d\alpha} \bigl(
+    %   \log \tfrac1\alpha - \mathop{Ei}\bigl(-\tfrac1\alpha\bigr)
+    % = \alpha \bigl(
+    %   - \tfrac1\alpha
+    %   - \tfrac{e^x}{x} \bigg\vert_{x=-\tfrac1\alpha} \alpha^{-2}
+    % \bigr)
+    = e^{-\tfrac1\alpha} - 1
+$.
 
 \begin{figure}[!t]
   \centering
