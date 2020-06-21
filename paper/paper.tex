@@ -474,9 +474,91 @@ $, whence
 \section{$\cplx$-valued networks} % (fold)
 \label{sec:c_valued_networks}
 
+% implementation
+$\cplx$-valued neural networks are networks that rely on the arithmetic in the complex
+domain. To achieve this implementations of $\cplx$VNN use the geometric (planar) representation
+of a complex number as paired \emph{real} and \emph{imaginary} values, $\cplx \simeq \real^2$,
+ensuring that the resulting $\real$-valued computational graph respects $\cplx$-arithmetic.
+For example, $
+  f\colon \cplx^n \to \cplx^m
+$ is identified with a real vector-valued function $
+  F\colon \real^{2 m} \to \real^{2 m}
+$ defined via $
+  F(u, v) = (\Re f(u + \iu v), \Im f(u + \iu v))
+$, $\Re$ and $\Im$ denoting the real and imaginary parts, respectively. When $f$ is
+a $\cplx$-valued linear transformation, the computations are ``wired'' so that
+\begin{equation}  \label{eq:cplx-lin-op}
+  % F\colon
+  %   (u, v)
+  %     \mapsto \Bigl(
+  %       P u - Q v,
+  %       P v + Q u
+  %     \Bigr)
+  F(u, v)
+    =
+    \begin{pmatrix}
+      P u - Q v \\
+      P v + Q u
+    \end{pmatrix}
+    = \begin{pmatrix}
+      P & - Q \\ Q & P
+    \end{pmatrix} \begin{pmatrix}
+      u \\ v
+    \end{pmatrix}
+    \,,
+\end{equation}
+with $
+  P, Q \colon \real^{n} \to \real^{m}
+$ given by $P = \Re f$ and $Q = \Im f$ restricted to $\real^{n}$.
+% The downside is that, for instance, one $\cplx$-valued convolution requires up to
+% four $\real$-valued convolution operations.
+%
+Nonlinearities in $\cplx$VNN can be hyperbolic functions or maps that operate on
+$\cplx$ numbers in planar form, $
+  z \mapsto \sigma(\Re{z}) + \iu \sigma(\Im{z}) % split
+$, or polar form $
+  % z \mapsto \sigma(\lvert z\rvert, \arg{\!(z)})
+  r e^{\iu \phi} \mapsto \sigma(r, \phi)
+$.
+% \citep{savitha_2011,hirose_generalization_2012,arjovsky_unitary_2016,guberman_complex_2016}
+
+This $\cplx \simeq \real^2$ identification allows straightforward retrofitting of $\cplx$VNN
+into existing $\real$-valued auto-differentiation frameworks for deep learning. This
+act is backed by Wirtinger ($\cplx\real$) calculus, which enables generalized treatment
+of functions of complex argument, by regarding $z$ and $\conj{z}$ as independent variables
+and defining derivatives with respect to them through partial derivatives with respect
+to real and imaginary parts of each argument. These definitions simplify manual calculations
+of $\cplx$ derivatives and satisfy the product and chain rules, respect complex conjugation
+and linearity for $\cplx \to \cplx$ maps. $\cplx\real$ calculus was used to define $\cplx$
+version of back-propagation, \citep{benvenuto_complex_1992,guberman_complex_2016}. However,
+since auto-differentiation frameworks can algorithmically handle computational graphs
+of arbitrary complexity, explicit use of Wirtinger derivatives is not required, especially
+considering the fact that the direction of the steepest ascent of a $\cplx\to \real$
+function is given by complex conjugate gradient $\nabla_{\conj{z}}$, which coincides
+with the classical gradient of the same function viewed as $\real^2 \to \real$,
+(see appendix~\ref{sub:wirtinger_calculus}).
+%
+% in natively $\cplx$-valued backprop it would be necessary to modify the existing sgd
+% to explicitly use $\nabla_{\conj{z}} f(z)$, while no such modification is necessary
+% in re-im. If some inner activation of a $\cplx$VNN is holomorphic, i.e. satisfies
+% Cauchy-Riemann conditions, then that particular step of in the chain rule that is
+% backprop can be simplified by assuming one piece of the tracked gradient to be exact
+% zero. But other wise it is necessary to track both $\partial_{\conj{z}}$ and $\partial_{z}$.
+%
+% Training a $\cplx$VNN involves optimizing a real-valued objective with respect to
+% complex valued arguments.
+%
+% The computed gradients are theoretically justified
+% - CR dictates the it is necessary to track both $z$ and $\conj{z}$ derivatives
+% - the direction of largest increase in f: C-R is given by the gradient with
+% respect to the conjugate, which coincides in the re-im representation with 
+% the ordinary gradient wrt u and v
+% - the Chain Rule in CR holds and when a holomorphic C-C function is backproped
+% the autodiff just wastes cycles on computing its conj-derivative (rather than assuming
+% it to be zero)
+
 % Although $\cplx$-valued dense layers and back-propagation have been around since early
 % 1990-s, one of the earliest accounts
-
 Development of deep $\cplx$-valued networks has been active. \citet{haensch_complex-valued_2010}
 put forward $\cplx$-valued convolutional networks, \citet{guberman_complex_2016} and
 \citet{popa_complex-valued_2017} developed modifications of pooling, \citet{arjovsky_unitary_2016}
@@ -489,70 +571,14 @@ proposed $\cplx$-valued self-attention and complex transformer architecture. It 
 noting that \citet{gaudet_deep_2018} generalized $\cplx$VNN further to deep quaternion-valued
 networks, and \citet{vecchi_compressing_2020} studied sparsity inducing regularizers for
 them.
+% complex-valued distributions \citep{pav_moments_2015,taubock_complex-valued_2012},
+% and \citep{karseras_caution:_2014}
 
-% Nonlinearities used in $\cplx$VNN are of two classes: split that operate on equivalent
-% planar or polar representations of $\cplx$, of full which consider the complex number
-% as a whole. Split planar $
-%   z \mapsto g(\Re{z}) + \iu g(\Im{z}) % split
-% $, \citep{benvenuto_complex_1992,hirose_generalization_2012,haensch_complex-valued_2010},
-% or polar $
-%   z \mapsto g(\lvert z\rvert) e^{\iu \arg{\!(z)}}
-% $, \citep{wolter_complex_2018,arjovsky_unitary_2016}. Full trigonometric, holomorphic, 
-% % \citet{hirose_generalization_2012} polar (tanh)
-% % \citet{savitha_2011} trig (sinh)
-% % \citet{arjovsky_unitary_2016} polar (modReLU)
-% % \citet{guberman_complex_2016} polar (zRelU)
-% % \citet{wolter_complex_2018} gating for $\cplx$-RNN
+% This is too abrupt: first intro into what Cplx- valued nets are, then the representation 
+% and how it dictates the architecture, and ultimately bioils down to representation
+% u(x, y) + j v(x, y) as a R2->R2 map.
 
-% % complex-valued distributions \citep{pav_moments_2015,taubock_complex-valued_2012},
-% % and \citep{karseras_caution:_2014}
-
-Complex-valued networks are, in general, non-holomorphic, i.e. not $\cplx$-differentiable, which is
-exacerbated by the loss being real-valued. Indeed a $\cplx$-differentiable real-valued function is
-necessarily trivial by Cauchy-Riemann conditions. This issue is dealt with by employing Wirtinger,
-or $\cplx\real$ calculus, which generalizes holomorphic calculus to non-holomorphic functions
-of $\cplx$-argument \citep{adali_complex-valued_2011,boeddeker_computation_2019}. It satisfies
-the product and chain rules, respects complex conjugation and linearity, but most importantly the
-$\cplx\real$-differential of a function on $\cplx$ coincides with its classical differential as
-a function on $\real^2$. Essentially, it allows straightforward retrofiting of $\cplx$-valued
-networks into existing $\real$ deep learning auto-differentiation frameworks. It was considered
-as a basis for $\cplx$ version of back-propagation by \citet{benvenuto_complex_1992}, (see
-appendix~\ref{sub:wirtinger_calculus}).
 % \todo{read on holomorphic nets}
-
-More recently general development of $\cplx$-valued networks has been continued by
-\citet{trabelsi_deep_2018}, who outline the essential building blocks for deep $\cplx$-valued
-networks and describe suitable representation and operations, including convolutional and
-dense layers, $\cplx$-valued activations, complex batch-normalization and weight initialization.
-Their approach coupled with $\cplx\real$ calculus for backprop transforms a $\cplx$-valued
-network into an intricately connected $\real$-valued computational graph, constructed
-to respects $\cplx$-arithmetic.
-%
-In particular, natural identification of $\cplx$ and $\real^2$ implies that dense linear
-layers $
-  L \colon \cplx^m \to \cplx^n
-$ act upon their inputs as follows:
-\begin{equation}  \label{eq:cplx-lin-op}
-  {(\real^n)}^{2}
-    \to {(\real^m)}^{2}
-    \colon (u, v)
-      \mapsto \Bigl(
-        P u - Q v,
-        P v + Q u
-      \Bigr)
-    \,,
-\end{equation}
-where $
-  P, Q \colon \real^{n} \to \real^{m}
-$ are unique operators such that $L = P + j Q$. A $\cplx$-convolutional layer with kernel
-$W$ can be implemented as two $\real$-convolutions with kernels $\Re{W}$ and $\Im{W}$ using
-\eqref{eq:cplx-lin-op}. Activations include trigonometric functions and representation-dependent
-non-linearities \citep{hirose_complex-valued_2009}: polar (phase-amplitude) $
-  z \mapsto \sigma(\lvert z \rvert) e^{j \arg z}
-$ or planar (real-imaginary) $
-  z \mapsto \sigma(\Re z) + j \sigma(\Im z)
-$ for some $\real$-valued non-linearity $\sigma$, possibly with learnable parameters
-\citep{trabelsi_deep_2018,wolter_complex_2018}.
 
 % section c_valued_networks (end)
 
