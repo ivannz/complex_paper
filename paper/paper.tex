@@ -525,16 +525,18 @@ $.
 This $\cplx \simeq \real^2$ identification allows straightforward retrofitting of $\cplx$VNN
 into existing $\real$-valued auto-differentiation frameworks for deep learning. This
 act is backed by Wirtinger ($\cplx\real$) calculus, which enables generalized treatment
-of functions of complex argument, by regarding $z$ and $\conj{z}$ as independent variables
-and defining derivatives with respect to them through partial derivatives with respect
-to real and imaginary parts of each argument. These definitions simplify manual calculations
-of $\cplx$ derivatives and satisfy the product and chain rules, respect complex conjugation
-and linearity for $\cplx \to \cplx$ maps. $\cplx\real$ calculus was used to define $\cplx$
-version of back-propagation, \citep{benvenuto_complex_1992,guberman_complex_2016}. However,
-since auto-differentiation frameworks can algorithmically handle computational graphs
-of arbitrary complexity, explicit use of Wirtinger derivatives is not required, especially
-considering the fact that the direction of the steepest ascent of a $\cplx\to \real$
-function is given by complex conjugate gradient $\nabla_{\conj{z}}$, which coincides
+of functions of complex argument, by regarding $z$ and its \emph{complex conjugate}
+$\conj{z}$ as independent variables and defining derivatives with respect to them through
+partial derivatives with respect to real and imaginary parts. These definitions simplify
+manual calculations of $\cplx$ derivatives and satisfy the product and chain rules, respect
+complex conjugation and linearity for $\cplx \to \cplx$ maps. $\cplx\real$ calculus was
+used to define $\cplx$ version of back-propagation,
+\citep{benvenuto_complex_1992,guberman_complex_2016}.
+However, since auto-differentiation frameworks can algorithmically handle computational
+graphs of arbitrary complexity, explicit use of Wirtinger derivatives is not required,
+especially considering the fact that the direction of the steepest ascent of a $
+  \cplx \to \real
+$ function is given by complex conjugate gradient $\nabla_{\conj{z}}$, which coincides
 with the classical gradient of the same function viewed as $\real^2 \to \real$,
 (see appendix~\ref{sub:wirtinger_calculus}).
 %
