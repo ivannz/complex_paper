@@ -861,10 +861,10 @@ $ property \eqref{eq:cn-affine} implies $
 $, whence the expectation in brackets is given by
 \begin{equation}  \label{eq:expect-improper-term-cplx}
   % \mathbb{E}_{\omega \sim q(\omega)} \log \lvert \omega \rvert^2
-  %   % = \mathbb{E}_{\varepsilon \sim \mathcal{N}^{\cplx}(\varepsilon \vert 1, \alpha, 0)}
+  %   % = \mathbb{E}_{\varepsilon \sim \mathcal{CN}(\varepsilon \vert 1, \alpha, 0)}
   %   %   \log \lvert \mu \varepsilon \rvert^2
   %   % = \log \lvert \mu \rvert^2
-  %   %   + \mathbb{E}_{\varepsilon \sim \mathcal{N}^{\cplx}(\varepsilon \vert 1, \alpha, 0)}
+  %   %   + \mathbb{E}_{\varepsilon \sim \mathcal{CN}(\varepsilon \vert 1, \alpha, 0)}
   %   %       \log \lvert \varepsilon \rvert^2
   %   =
     \log \alpha \lvert \mu \rvert^2
@@ -938,7 +938,7 @@ the divergence that depend on the parameters are given by
     \propto
     %   - \log \lvert \det{(\pi e \sigma^2)} \rvert
     %   + \tfrac{\beta}2 \log \alpha \lvert \mu \rvert^2
-    %   + \tfrac{\beta}2 \mathbb{E}_{\varepsilon \sim \mathcal{N}^{\cplx}(\varepsilon \vert 0, 1, 0)}
+    %   + \tfrac{\beta}2 \mathbb{E}_{\varepsilon \sim \mathcal{CN}(\varepsilon \vert 0, 1, 0)}
     %       \log{\bigl\lvert \tfrac1{\sqrt{\alpha}} + \varepsilon \bigr\rvert^2}
     % =
     %   - \log{\sigma^2}  % - \log{\pi e}
@@ -2102,7 +2102,7 @@ If we assume a mean field $\cplx$-Gaussian approximate posterior for $
 $, then
 \begin{equation}  \label{eq:c-gauss-vi-general-vec}
   \vec{W}
-    \sim \mathcal{N}^{\cplx}_{nm} \bigl(
+    \sim \mathcal{C}\mathcal{N}_{nm} \bigl(
       \vec{\mu}, \diag{\vec{\Sigma}}, \diag{\vec{C}}
     \bigr)
   \,,
@@ -2133,7 +2133,7 @@ Since \eqref{eq:cn-gauss-lrt-cov} and \eqref{eq:cn-gauss-lrt-rel} are diagonal, 
 are independent whence \eqref{eq:cn-affine} implies
 \begin{equation}  \label{eq:cplx-gauss-trick-appendix}
   y_i
-    \sim \mathcal{N}^{\cplx}
+    \sim \mathcal{CN}
       \bigl(
         e_i^\top \mu x + b_i,
         \, \sum_{j=1}^m \Sigma_{ij} \lvert x_j \rvert^2,
