@@ -25,6 +25,7 @@
 %% notation
 \newcommand{\real}{\mathbb{R}}
 \newcommand{\cplx}{\mathbb{C}}
+\newcommand{\iu}{{\jmath}}
 \newcommand{\tr}[1]{\mathop{tr}{#1}}
 
 \newcommand{\hop}{{\mkern-1.5mu\dagger}}
@@ -305,7 +306,8 @@ that the parameters in a network naturally decompose into subsets with non-overl
 layer-wise effects, it is standard to assume that the approximation $
   q_\theta(\omega)
 $ is factorized over layers. Furthermore, if $
-  \omega = W \in \mathbb{R}^{n\times m}
+  % \omega =
+  W \in \mathbb{R}^{n\times m}
 $ in a linear layer $
   y = b + W^\top x
 $ with $
@@ -377,8 +379,8 @@ $ iid from some $p_\theta(\xi)$.
 % $ for $\alpha = \tfrac{p}{1-p}$.
 % This suggests making $\alpha$ a variational parameter
 % and optimizing it in \eqref{eq:elbo_general} with an appropriate penalty term. Thus,
-%
-Variational Dropout assumes fully factorized Gaussian approximate posterior $
+
+Variational Dropout uses \emph{fully factorized Gaussian} approximation $
   q_\theta(\omega)
     = \prod_j \mathcal{N}(\omega_j \vert\, \mu_j, \alpha_j \mu_j^2)
 $ and factorized scale invariant log-uniform prior $\pi(\omega)$ with $
@@ -398,13 +400,13 @@ Simultaneously \citet{molchanov_variational_2017} proposed to use \emph{Additive
 Parameterization} in the factorized Gaussian $q_\theta(\omega)$ in conjunction with the
 Local Reparameterization Trick. They reverted the $(\mu, \alpha)$ parameterization back
 to the equivalent $(\mu, \sigma^2)$, arguing that it reduces the variance of the SGVB
-\eqref{eq:sgvb_estimator}, by rendering the gradient with respect to $\mu_{ij}$ independent
+\eqref{eq:sgvb_estimator}, by rendering the gradient with respect to $\mu$ independent
 from the local output noise, injected by \eqref{eq:r-gauss-trick}. This improvement is
-especially important for model pruning, since $\mu_{ij}$ of relevant parameters are used
+especially important for model pruning, since $\mu$ of relevant parameters are used
 as point estimates of their values.
 
-Due to factorization alternative parameterization, the term $KL(q_\theta \| \pi)$ in
-\eqref{eq:sgvb_estimator} of Sparse VD unravels into $
+Due factorization assumption, the term $KL(q_\theta \| \pi)$ in \eqref{eq:sgvb_estimator}
+for Sparse VD unravels into $
   \sum_j K(\tfrac{\sigma^2_{j}}{\mu_{j}^2})
 $ with
 \begin{equation}  \label{eq:improper-kl-div-real}
@@ -430,13 +432,13 @@ for which we obtain an exact expression.
 % derivative of an intractable function.
 
 \citet{kharitonov_variational_2018} addressed theoretical issues with improper prior
-$\pi$, emphasized by \citet{hron_variational_2018}, and proposed Sparse VD based on
-\textit{Automatic Relevance Determination} procedure. ARD replaces $\pi(\omega_j)$ by
-a proper Gaussian ARD prior $
+$\pi$ in Sparse VD, emphasized by \citet{hron_variational_2018}, and proposed
+\emph{Automatic Relevance Determination} Variational Dropout, by replacing $\pi(\omega_j)$
+with a proper Gaussian prior $
   \pi_\lambda(\omega_j) = \mathcal{N}(\omega_j \vert\, 0, \tau_j^{-1})
-$ with learnable precision $\tau_j > 0$ \citep{neal_bayesian_1996}, thereby recasting
-the VD as the \textit{Empirical Bayes} approach, which performs Bayesian Inference over
-$\omega$, but uses Maximum Likelihood point-estimates for the hyper-parameters $\lambda$,
+$ with learnable precision $\tau_j > 0$ \citep{neal_bayesian_1996}. This recast the VD
+as the \emph{Empirical Bayes} approach, which performs Bayesian Inference over $\omega$,
+but uses Maximum Likelihood estimates for the hyper-parameters $\lambda$,
 \citep{mackay_bayesian_1994}. Maximizing \eqref{eq:sgvb_estimator} over $\tau$, holding
 other parameters fixed, yields $
   \tau^*_j = {(\mu_j^2 + \sigma^2_j)}^{-1}
