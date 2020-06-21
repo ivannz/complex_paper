@@ -1062,12 +1062,12 @@ be disentangled from the local output noise by additive reparameterization.
 \section{Experiments} % (fold)
 \label{sec:experiments}
 
-Source code for the experiments conducted in this study and figures is available at
-\url{https://github.com/ivannz/complex_paper/tree/v2020.3}.
+The source code for the experiments and the figures in this study is available at
+\url{https://github.com/ivannz/complex_paper/tree/v2020.6}.
 %
-Source code for a PyTorch extension which implements $\cplx$-valued Variational Dropout and
-ARD layers, and provides basic layers for $\cplx$-valued networks, including maskable
-sparsified layers, is available at
+The source code for a package based on PyTorch \citep{paszke_pytorch_2019}, which
+implements $\cplx$-valued Sparse Variational Dropout and ARD layers, and provides
+other basic layers for $\cplx$VNN, including maskable sparsified layers, is available at
 \url{https://github.com/ivannz/cplxmodule}.
 \smallskip
 
@@ -1075,11 +1075,12 @@ We study the performance-compression trade-off of the proposed Bayesian sparsifi
 method for $\cplx$-valued networks presented above on image classification and music
 annotation tasks.
 %
-Following \citet{wolter_complex_2018} and \citet{trabelsi_deep_2018}, the class logit scores
-are taken as real part of the complex-valued output of a network.
+Following \citet{wolter_complex_2018} and \citet{trabelsi_deep_2018}, the class logit
+scores are taken as real part of the complex-valued output of a network.
 %
 % image features
 Since image data is not naturally $\cplx$-valued, we preprocess it by either embedding
+% $\real \hookrightarrow \cplx$
 $\real$-data into $\cplx$ assuming $\Im z = 0$ (\texttt{raw}), or applying the two-dimensional
 Fourier Transform (\texttt{fft}), centering the lower frequencies. We do not train an
 auxiliary model to synthesize the imaginary component from the real data, proposed by
