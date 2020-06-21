@@ -398,12 +398,11 @@ whole enabled pruning entire input features in each layer.
 
 Simultaneously \citet{molchanov_variational_2017} proposed to use \emph{Additive Noise
 Parameterization} in the factorized Gaussian $q_\theta(\omega)$ in conjunction with the
-Local Reparameterization Trick. They reverted the $(\mu, \alpha)$ parameterization back
-to the equivalent $(\mu, \sigma^2)$, arguing that it reduces the variance of the SGVB
-\eqref{eq:sgvb_estimator}, by rendering the gradient with respect to $\mu$ independent
-from the local output noise, injected by \eqref{eq:r-gauss-trick}. This improvement is
-especially important for model pruning, since $\mu$ of relevant parameters are used
-as point estimates of their values.
+Local Reparameterization Trick. They reverted the $(\mu, \alpha)$ parameterization in
+$q_\theta(\omega)$ back to $(\mu, \sigma^2)$, arguing that it reduces the variance of the
+SGVB \eqref{eq:sgvb_estimator}, by rendering the gradient with respect to $\mu$ independent
+from the local noise, injected by \eqref{eq:r-gauss-trick}. This modification is important
+for pruning, since $\mu$ of relevant parameters are used as estimates of their values.
 
 Due factorization assumption, the term $KL(q_\theta \| \pi)$ in \eqref{eq:sgvb_estimator}
 for Sparse VD unravels into $
@@ -464,6 +463,8 @@ $, whence
 %       \prod_{j\in J} \mathcal{N}(\omega_j \vert \mu_j s_J, \sigma_j^2 s_J^2)
 %     \,.
 % \end{align}
+
+% practical difference between them?
 
 % subsection dropout (end)
 
