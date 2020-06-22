@@ -386,7 +386,6 @@ whole enabled pruning entire input features in each layer.
 % {louizos_bayesian_2017} eq. (11) variance -> gaussian entropy -> informative bits
 % They also proposed to estiamte bit precision for quantization based on parameter's
 % estimated uncertainty (variance or entropy).
-%
 
 Simultaneously \citet{molchanov_variational_2017} proposed to use \emph{Additive Noise
 Parameterization} in the factorized Gaussian $q_\theta(\omega)$ in conjunction with the
@@ -1017,6 +1016,8 @@ $, thereby giving
     \,.
     \tag{\ref{eq:emp-bayes-kl-div}'}
 \end{equation}
+Thus in both $\real$ and $\cplx$ cases ARD produces a tractable analytic expression for
+the KL-divergence term in \eqref{eq:sgvb_estimator}.
 
 % subsubsection empirical_bayes (end)
 
@@ -1273,6 +1274,10 @@ $\real$ networks perform and compress better than $\cplx$, due higher intrinsic 
 unchecked by $\cplx$-arithmetic constraint.
 % Convolutional network compress worse because they have less redundant parameters
 
+The overarching conclusion from the conducted experiments is that both $\cplx$-ARD and
+$\cplx$-VD methods compress similarly to each other, but for the same value of $C$ in
+\eqref{eq:elbo_with_coef} ARD yields marginally lower compression and slightly
+higher performance post fine-tuning.
 % a table for mean comparison against C and compression-performance?
 %
 % fft: $2\real$ convolutional model trade-off overall better than $\real$, dense -- on par.
@@ -1324,7 +1329,7 @@ $, compare $\real / \cplx$ VD and ARD methods and measure accuracy on CIFAR10 te
 
 % draw some conclusions
 The compression-accuracy curve in figure~\ref{fig:figure__cifar10__trade-off} shows that
-it is possible to confidently achieve $\approx100\times$ compression of a deep $\cplx$VNN
+it is possible to confidently achieve around $\times100$ compression of a deep $\cplx$VNN
 without losing accuracy, provided the network is fine-tuned after undergoing Variational
 sparsification. Regarding methods themselves, $\cplx$-VD and $\cplx$-ARD follow the same
 declining compression-accuracy pattern, but for the same setting $C$ the latter provides
@@ -1337,40 +1342,55 @@ slightly less compression with marginally better accuracy.
 \label{sub:musicnet}
 
 % describe musicnet as in Trabelsi et al. (2017) also get some hints from thickstun_learning_2017
-We use MusicNet \citep{thickstun_learning_2017}, an audio dataset of $330$ annotated
-musical compositions, to investigate compressibility of the $1d$ VGG-like $\cplx$-convent
-proposed by \citet{trabelsi_deep_2018}. Similarly to the study, we downsample the audio
-from 44.1kHz to 11kHz, retain only $84$ out of $128$ labels, and hold-out the same validation
-and test compositions, on which we score the models with the pooled average precision.
-Each epoch lasts for $1000$ random mini-batches of the remaining $321$ pieces. The input
-features are $\cplx$-valued Fourier transformed windows of $4096$ samples from each waveform.
-The label vectors are taken from annotations at the middle of the window.
 
-Experiments with the uncompressed model aimed at replicating the result of \citet{trabelsi_deep_2018}
-have shown that early stopping almost always terminates much sooner, than $200$ epochs used
-in their study: within the first $10-20$ epochs with the validation performance peaking at
+% The experimental results of the experiments in previous sections indicate that the proposed
+% $\cplx$-valued Sparse Variational Dropout achieves the goal of network compression.
+% Inspired by this we set out to investigate its effects on in the domain where it has
+% been shown that CVNN outperform rvnn.
+
+MusicNet is a dataset of $330$ classical music recordings with note annotations
+\citep{thickstun_learning_2017}. \citet{trabelsi_deep_2018} proposed a $1d$ VGG-like
+$\cplx$-valued network that surpassed a similar $\real$-valued network and achieved
+$72.9\%$ pooled \emph{Average Precision} on the music transcription task.
+%
+Recently \citet{thickstun_invariances_2018} have achieved $77.3\%$ with a four-layer
+$\real$-valued network on $\log$-spaced STFT features, and \citet{draguns_residual_2020}
+are reporting $78.0\%$ with a residual-shuffle-exchange network.
+
+% Prior experiments demonstrated that the $\cplx$-valued variational sparsification
+% what can be expected from prior research.
+In this experiment we seek to compress of the $\cplx$VNN proposed by \citet{trabelsi_deep_2018}.
+The dataset is split into the same validation and test samples and handled identically
+to their study. The input features are $\cplx$-valued Fourier transforms of $4096$-sample
+windows from each waveform, and the label vectors are taken from annotations at the middle
+of the window. Each epoch lasts for $1000$ random mini-batches of the musical pieces.
+% downsample the audio from 44.1kHz to 11kHz, retain only $84$ out of $128$ labels,
+% and hold-out the same validation and test compositions
+% 
+However, we deviate from the set-up used by \citet{trabelsi_deep_2018} by clipping $\ell_2$
+norm of the gradients to $0.05$ and shifting the low frequencies of the input to the centre
+to maintain spatial locality for convolutions.
+
+Experiments with the uncompressed model aimed at replicating the original result have
+shown that early stopping almost always terminates within the first $10-20$ epochs of
+the $200$ epochs used in their study, due to the validation performance peaking at
 $10-15$ epochs and steadily declining afterwards.
 %
-Thus we opt to use shorter stages: $12$, $32$ and $50$ epochs (sec.~\ref{sub:staging}), with
-early stopping activated only during the ``fine-tune'' stage. To keep the learning rate schedule
-consistent, we scale the learning rate of $10^{-3}$ after $5$, $10$, and $20$-th epoch by
-$\tfrac1{10}$, $\tfrac1{20}$ and $\tfrac1{100}$, respectively.
+Thus we opt to use shorter stages: $12$, $32$ and $50$ epochs (sec.~\ref{sub:staging}),
+with early stopping activated only during the ``fine-tune'' stage. To keep the learning
+rate schedule consistent, we scale the learning rate of $10^{-3}$ after $5$, $10$, and
+$20$-th epoch by $\tfrac1{10}$, $\tfrac1{20}$ and $\tfrac1{100}$, respectively.
 
-We deviate from the set-up used by \citet{trabelsi_deep_2018} by clipping $\ell_2$ norm of the
-gradients to $0.05$ and shifting the low frequencies of the input to the centre to maintain
-spatial locality for convolutions.
-
-We test complex ARD (sec.~\ref{ssub:ard_prior}) and VD (sec.~\ref{ssub:vd_prior}) methods
-and vary $
-  C \in \{\tfrac14, \tfrac12, \tfrac34, 1\} \cdot 10^{-k}
-$ for $k=1, 2, 3$, while keeping $\tau$ at $-\tfrac12$. The performance is measured after
-``pre-train'' stage, before the beginning and upon termination of fine-tuning.
+We explore the $\cplx$-VD and $\cplx$-ARD methods by varying $C$ over the grid $
+  \{\tfrac14, \tfrac12, \tfrac34, 1\} \cdot 10^{-k}
+$ with $k=1, 2, 3$, while keeping $\tau$ at $-\tfrac12$. The performance is measured after
+``pre-train'' stage, just before and upon termination of fine-tuning.
 %
 Additionally, we test the model of \citet{trabelsi_deep_2018}, in which we purposefully
 halve the receptive field of the first convolution from $6$ to $3$ (denoted by suffix $k_3$).
 The motivation is to test if the handicap introduced by the forced compression of the most
-upstream layer can be alleviated by non-uniform compression, induced by variational dropout.
-We test only complex VD in this sub-experiment, since prior results have not demonstrated
+upstream layer can be alleviated by non-uniform compression, induced by Variational Dropout.
+We test only $\cplx$-VD in this sub-experiment, since prior results have not demonstrated
 significant superiority of one method over another.  % it should've been ARD
 
 \begin{figure}[!t]
@@ -1386,14 +1406,65 @@ significant superiority of one method over another.  % it should've been ARD
   \label{fig:musicnet__trade-off}
 \end{figure}
 
-Figure~\ref{fig:musicnet__trade-off} shows the resulting performance-compression frontier.
-ARD slightly outperforms VD in terms of performance, but both deliver similar compression
-rates. The trade-off demonstrates that with the proposed $\cplx$-valued variational dropout
-methods (sec.~\ref{sec:c_variational_dropout}) and post-sparsification fine-tuning it is
-possible to achieve average precision level comparable to the result of \citet{trabelsi_deep_2018}
-with a model compressed $50\times$-$200\times$. Furthermore, the $k_3$ model, compressed
-$110 \times$ with $\cplx$ VD, outperforms its uncompressed baseline, but yields lower
-performance than the full model.
+The performance-compression frontier in figure~\ref{fig:musicnet__trade-off} shows that
+VD and ARD deliver similar compression rates, but ARD slightly outperforms in terms of
+the average precision. At $\times100$ compression level the $k_3$ model outperforms its
+uncompressed baseline, but yields lower AP score than the full model. In conjunction with
+post-pruning fine-tuning, both $\cplx$-valued variational sparsification methods achieve
+average precision level comparable to the result of \citet{trabelsi_deep_2018} with a
+network compressed $\times50$-$\times200$.
+% any coclusions related to k_3???
+
+% testing the fx of the threshold
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=1\columnwidth]{figure__musicnet__threshold__C__DeepConvNet.pdf}
+  \caption{%
+    The effect of fine-tuning on performance-compression curves for $
+      C\in \{\tfrac1{20}, \frac1{200}\}
+    $ in \eqref{eq:elbo_with_coef}.
+  }
+  \label{fig:hist__and__threshold__tradeoff}
+\end{figure}
+
+% effects of extra training epochs and the impact of tau
+We take the models compressed with $C \in \{\tfrac1{20}, \frac1{200}\}$ and re-run only
+the fine-tuning stage for various pruning thresholds $
+  \tau \in \{\tfrac{k}2\colon k=-8\cdots+8\}
+$. The performance-compression curves depicted in figure~\ref{fig:hist__and__threshold__tradeoff}
+are parameterized by decreasing $\tau$ from left to right, since models are not re-compressed
+and making $\tau$ monotonically influence the compression rate. From \eqref{eq:elbo_with_coef}
+and the relative positions of the curves it can be concluded that $C$ has a much more
+substantial impact on the compression profile of each method, than the choice of the
+pruning threshold.
+% coarser grid than in top plot in order not to wait for 20 compute days, but 9.5 on
+% 4 x Geforce 1080Ti, 256 Gb, core-i7 machine, running 4*2 experiments in parallel
+
+% takeaway: fine tune seems to improve performance for highly compressed models, but
+% within a limit. Worth a try for moderately compressed models, but willl must likely
+% overfit for undercompressed models. Varying $C$ in \eqref{eq:elbo_with_coef} affects
+% sparsity more strongly, than varying $\tau$. But this is only observational.
+
+% why is there such a dramamtic difference in impact of ``fine-tune''?
+We provide the following interpretation of the apparent contrast in performance impact
+borne by fine-tuning between less than $\times50$ and higher than $\times100$ compression
+regimes in figure~\ref{fig:musicnet__trade-off}, also observed in sec.~\ref{sub:mnist_like_datasets}.
+%
+% * early stopping kick in at around 10-20 epoch
+% * performance peaks at 10-15 epoch and then gradually declines
+The value of $C$ in \eqref{eq:elbo_with_coef} is a good proxy for the ranking of the
+final compression rate since it directly affects the feedback from sparsifying prior.
+So, during the $50$ epoch allotted for ``sparsify'' stage, low $C$ prevents the sparsity
+inducing prior from pulling the posterior sufficiently away from the likelihood-maximizing
+parameters inherited from the ``pre-train'' stage. It is reasonable, therefore, to expect
+that for undercompressed models the fine-tuning stage acts essentially as a continuation
+of pre-training. And, since we have observed that longer training invariably deteriorates
+the validation performance, the ``fine-tune'' stage should leads to overfitting for small
+$C$.
+%
+Figure~\ref{fig:musicnet__early_stopping} shows that the models, which have been
+sparsified with $C$ less than $\tfrac1{400}$ and have $50\times$ compression, need
+considerably less training epochs before early stopping terminates the process.
 
 \begin{figure}[!t]
   \centering
@@ -1407,99 +1478,34 @@ performance than the full model.
   \label{fig:musicnet__early_stopping}
 \end{figure}
 
-% why is there such a dramamtic difference in impact of ``fine-tune''?
-We provide the following interpretation of the apparent difference in performance impact
-of the ``fine-tune'' stage between less than $50\times$ and higher than $100\times$ compression
-regimes in figure~\ref{fig:musicnet__trade-off}, also observed in sec.~\ref{sub:mnist_like_datasets}.
-%
-% * early stopping kick in at around 10-20 epoch
-% * performance peaks at 10-15 epoch and then gradually declines
-The value of $C$ in \eqref{eq:elbo_with_coef} is a good proxy for the ranking of the final
-compression rate since it directly affects the feedback from sparsifying prior. So, with
-low $C$ models get less compressed during $50$ epoch allotted for ``sparsify'' stage, which
-appears to be insufficient to move model away from the parameters after the ``pre-train'' stage.
-It is reasonable therefore to expect that for undercompressed models the fine-tuning stage
-acts essentially as a continuation of the pre-training stage. Since we have observed that
-longer training invariably deteriorates the validation performance, the ``fine-tune'' stage
-leads to overfitting. Figure~\ref{fig:musicnet__early_stopping}, which shows that the models,
-which have been sparsified with $C$ less than $\tfrac1{400}$ and have $50\times$ compression,
-need considerably less training epochs before early stopping terminates the process.
-
-% testing the fx of the threshold
-\begin{figure}[!t]
-  \centering
-  \includegraphics[width=1\columnwidth]{figure__musicnet__threshold__C__DeepConvNet.pdf}
-  \caption{%
-    Effects of finetunig on performance-compression curves parameterized by $
-      \tau\in \{\tfrac{k}2\colon k=-8..+8 \}
-    $ for $
-      C\in \{\tfrac1{20}, \frac1{200}\}
-    $ in \eqref{eq:elbo_with_coef} during sparsification (sec.~\ref{sub:staging}).
-  }
-  \label{fig:hist__and__threshold__tradeoff}
-\end{figure}
-
-% effects of extra training epochs and the impact of tau
-We take the models from experiments with $C \in \{\tfrac1{20}, \frac1{200}\}$ and plot
-the compression and performance metrics before fine-tuning for various threshold levels
-on figure~\ref{fig:hist__and__threshold__tradeoff} (top). From \eqref{eq:elbo_with_coef} and
-the relative positions of the compression curves it can be concluded that $C$ has much
-more substantial impact on the sparsity and performance, than the choice of $\tau$.
-Furthermore, for $\tau > 0$ the performance quickly saturates while compression creeps
-downwards.
-%
-The bottom plot in figure~\ref{fig:hist__and__threshold__tradeoff} shows the effect of
-the ``fine-tune'' stage: for $\tau \leq -1$ it improves the test performance, while leaving
-it mostly unaffected for positive $\tau$. We attrbute this behaviour to regularization
-effect of high compression rate, which limits the capacity for overfitting by significantly
-reducing the excess degrees of freedom.
-% coarser grid than in top plot in order not to wait for 20 compute days, but 9.5 on
-% 4 x Geforce 1080Ti, 256 Gb, core-i7 machine, running 4*2 experiments in parallel
-
-% takeaway: fine tune seems to improve performance for highly compressed models, but
-% within a limit. Worth a try for moderately compressed models, but willl must likely
-% overfit for undercompressed models. Varying $C$ in \eqref{eq:elbo_with_coef} affects
-% sparsity more strongly, than varying $\tau$. But this is only observational.
-
 % subsection musicnet (end)
 
 % section experiments (end)
 
-
 \section{Conclusion} % (fold)
 \label{sec:conclusion}
 
+In this study we have presented $\cplx$-valued Variational sparsification methods to
+the ever growing set of tools for learning deep $\cplx$-valued neural networks. To
+validate the proposed $\cplx$-valued extensions of the Variational Dropout methods
+of \citet{molchanov_variational_2017} and \citet{kharitonov_variational_2018} we have
+conducted a large numerical study of $\cplx$VNN with simple architectures to assess
+the feasible performance-compression trade-off. At the cost of marginally lower performance,
+we have achieved $\times50$-$\times100$ compression of the state-of-the-art deep
+$\cplx$VNN of \citet{trabelsi_deep_2018} on the MusicNet.
 
-The overarching conclusion from the conducted experiments is that both $\cplx$-ARD and
-$\cplx$-VD methods compress similarly to each other, but for the same value of $C$ in
-\eqref{eq:elbo_with_coef} ARD yields slightly higher performance post fine-tuning at
-the cost of marginally lower compression.
-
-The results of this experiment and previous ones indicate that the $\cplx$ Variational
-Dropout offers adequate compression with controllable loss in performance in $\cplx$VNN
-and has trade-off profile similar to the $\real$ counterpart. Although ARD performs on
-par with VD, unlike it, it uses a proper prior and has a tractable analytic expression
-for the KL-divergence \eqref{eq:emp-bayes-kl-div} in both $\real$ and $\cplx$ cases.%
-%
+Analysis of experimental findings has shown that $\cplx$-VD, sec.~\ref{ssub:vd_prior},
+and $\cplx$-ARD, sec.~\ref{ssub:ard_prior} offer adequate compression with controllable
+performance degradation in $\cplx$VNN and have trade-off profile similar to their $\real$
+counterparts.
 % L0 and dropout work in the low-to-mid sparsity range, variational dropout consistently
 % ranked behind L0 on Transformer, and was bested by magnitude pruning for sparsity
 % levels of 80\% and up. Variational dropout consistently produces models on-par or better
 % than magnitude pruning on ResNet-50, and l0 fails to produce sparse models at all.
 We expect the overall conclusion of \citet{gale_state_2019} to carry over to $\cplx$VNN,
 since there is nothing fundamentally different in $\cplx$-valued versions of the methods
-they study, except for the need to operate on pairs of parameters.
-
-
-
-
-
-In this study we have extended Variational Dropout methods of \citet{kingma_variational_2015},
-\citet{molchanov_variational_2017} and \citet{kharitonov_variational_2018} to $\cplx$-valued
-Bayesian networks. To validate the proposed technique we have conducted a large numerical
-study of complex-valued networks with simple architectures in image recognition tasks to
-assess the feasible performance-compression trade-off. At the cost of marginally lower performance,
-we have achieved $50-100\times$ compression of the state-of-the-art deep $\cplx$-valued network
-of \citet{trabelsi_deep_2018} on the MusicNet.
+they study.
+%
 
 The results of this study have direct implications for real-time signal processing with
 embedded deep learning applications both in terms of lower storage requirements and higher
