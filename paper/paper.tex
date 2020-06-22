@@ -230,7 +230,7 @@ through $\log p(D \mid \omega)$ and $\log \pi(\omega)$, \citep{ranganath_operato
 In subsequent years several improvements to Variational Inference approach were introduced.
 To make VI able to handle large-scale datasets \citet{hoffman_stochastic_2013} proposed
 \emph{Stochastic Variational Inference}, which uses stochastic gradient optimization of
-\eqref{eq:elbo_general} based on inexpensive noisy unbiased gradient estimates of ELBO
+\eqref{eq:elbo_general} based on noisy unbiased gradient estimates of ELBO
 computed on random mini-batches from the dataset. \citet{titsias_doubly_2014} translated
 dependence on $\theta$ from $q_{\theta}$ to the functions inside the expectations of ELBO
 and propose \emph{Doubly Stochastic Variational Inference}, which computes unbiased gradient
@@ -251,7 +251,7 @@ $ for some non-parametric random variable $
 $ and $
   g(\varepsilon; \theta)
 $ differentiable with respect to $\theta$. The estimator of \eqref{eq:elbo_general}
-for $L$ reparameterized draws per datapoint in mini-batch of size $M$, is given by
+with $L$ reparameterized draws per element in the mini-batch of size $M$ is given by
 \begin{equation}  \label{eq:sgvb_estimator}
   \widetilde{\mathcal{L}}(\theta; \lambda)
     = - KL(q_{\theta} \| \pi_{\lambda})
@@ -270,9 +270,9 @@ for $L$ reparameterized draws per datapoint in mini-batch of size $M$, is given 
           % \log p(x \mid \omega)
     \,,
 \end{equation}
-where $(x_{i_k})_{k=1}^M$ is a random mini-batch from $D$ and $
+where $(x_{i_k})_{k=1}^M$ is a random subsample from $D$ and $
   (\varepsilon_{lk})_{l=1}^L
-$ are $M$ independent iid samples from $p_\varepsilon$. \citet{figurnov_implicit_2019}
+$ are $k=1..M$ independent iid samples from $p_\varepsilon$. \citet{figurnov_implicit_2019}
 extended the scope of the reparameterization gradients to include continuous distributions
 such as Gamma and von Mises. To handle the case of non-reparameterizable $\omega$ in
 doubly stochastic VI, e.g. discrete random parameters, \citet{titsias_local_2015} proposed
@@ -298,7 +298,7 @@ argued that this gradient estimator can be made more statistically and computati
 efficient, if the structure of the model permits translating global stochasticity of
 $\omega$ down to local intermediate states of computation.
 %
-The class of models that are allow this include non-recurrent computational graphs,
+The class of models that allow this include non-recurrent computational graphs,
 exemplified by neural networks with parameters $\omega \sim q_\theta$. In this case
 \eqref{eq:sgvb_estimator} would require that the \emph{entire} set of network's parameters
 $\omega$ be independently drawn for each element in the mini-batch. However, noting
@@ -361,7 +361,7 @@ superposition method, utilizing the learning capacity of the network better.
 %
 \citet{kingma_variational_2015} provided a unifying perspective on Dropout, DropConnect
 \citep{wan_regularization_2013}, and Gaussian dropout \citep{wang_fast_2013} through
-the lens of Variational Inference methods and propose \emph{Variational Dropout}. They
+the lens of Variational Inference and propose \emph{Variational Dropout}. They
 argued that the multiplicative noise introduced by Dropout methods induces a distribution
 equivalent to a fully factorized variational posterior of the form $
   q_\theta(\omega) = \prod_j q_{\theta}(\omega_j)
@@ -385,7 +385,7 @@ Variational Dropout uses \emph{fully factorized Gaussian} approximation $
     = \prod_j \mathcal{N}(\omega_j \vert\, \mu_j, \alpha_j \mu_j^2)
 $ and factorized scale invariant log-uniform prior $\pi(\omega)$ with $
   \pi(\omega_j) \propto \lvert \omega_j \rvert^{-1}
-$. \citet{molchanov_variational_2017} noticed that $\alpha_j$ reflect the relevance of the
+$. \citet{molchanov_variational_2017} noticed that $\alpha_j$ reflects the relevance of the
 parameter $\omega_j$ it is associated to by being the ratio of its squared mean to its
 effective variance. Based on this observation they proposed \emph{Sparse Variational Dropout},
 a modification that enables automatic model sparsification by optimizing $\alpha_j$ for each
@@ -402,7 +402,7 @@ Local Reparameterization Trick. They reverted the $(\mu, \alpha)$ parameterizati
 $q_\theta(\omega)$ back to $(\mu, \sigma^2)$, arguing that it reduces the variance of the
 SGVB \eqref{eq:sgvb_estimator}, by rendering the gradient with respect to $\mu$ independent
 from the local noise, injected by \eqref{eq:r-gauss-trick}. This modification is important
-for pruning, since $\mu$ of relevant parameters are used as estimates of their values.
+for pruning, since $\mu$ of a relevant parameter serves as the estimate of its value.
 
 Due factorization assumption, the term $KL(q_\theta \| \pi)$ in \eqref{eq:sgvb_estimator}
 for Sparse VD unravels into $
@@ -423,7 +423,7 @@ approximation of \eqref{eq:improper-kl-div-real} by weighted sum of a sigmoid an
 soft-plus term.
 % see p.6 sec 3.4 of kingma_variational_2015
 In appendix~\ref{sec:real-chisq-grad} we verify the value and the derivative of their
-approximation against the Monte-Carlo estimate of \eqref{eq:improper-kl-div-real} for
+approximation against a Monte-Carlo estimate for
 $\alpha$ varying over a fine logarithmic grid and the gradient of \eqref{eq:improper-kl-div-real},
 for which we obtain an exact expression.
 % (!) good for SGVB: gradient-based methods require unbiased gradient estimates
@@ -476,7 +476,7 @@ $, whence
 
 % implementation
 $\cplx$-valued neural networks are networks that rely on the arithmetic in the complex
-domain. To achieve this implementations of $\cplx$VNN use the geometric (planar) representation
+domain. To achieve this implementations of $\cplx$VNN use a geometric representation
 of a complex number as paired \emph{real} and \emph{imaginary} values, $\cplx \simeq \real^2$,
 ensuring that the resulting $\real$-valued computational graph respects $\cplx$-arithmetic.
 For example, $
@@ -804,10 +804,10 @@ and variance kernels with elementwise complex squares $x^2$ and amplitudes $\lve
 % flattened intput $x$
 
 For $\cplx$-Sparse Variational Dropout we propose to use fully factorized $\cplx$-Gaussian
-approximation \eqref{eq:c-gauss-vi-general} with $
-  \Sigma_{ij} = \alpha_{ij} \lvert \mu_{ij} \rvert^2
-$ and $\xi_{ij} = 0$ for weights in dense linear, convolutional and other, effectively,
-affine layers. Point estimates are used for biases.
+approximation \eqref{eq:c-gauss-vi-general} with Additive Noise Parameterization $
+  \alpha_{ij} = \tfrac{\Sigma_{ij}}{\lvert \mu_{ij} \rvert^2}
+$ and $\xi_{ij} = 0$ for weights in dense linear, convolutional and other effectively
+parameter-affine layers. Point estimates are used for biases.
 % This forces the relation coefficient in \eqref{eq:cplx-gauss-trick} to be zero. 
 
 % subsection c_gauss_and_local_rep (end)
