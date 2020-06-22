@@ -137,16 +137,6 @@ application of Bayesian Inference to $\cplx$-valued networks \citep{popa_complex
 and apparent scarcity of compression methods specific to them. We assess the performance-%
 compression trade-off of the extension by conducting a large-scale numerical study on
 image classification on MNIST-like and CIFAR10 datasets and music transcription on MusicNet.
-%
-% THIS SHOULD GO TO CONCLUSIONS!
-%
-% L0 and dropout work in the low-to-mid sparsity range, variational dropout consistently
-% ranked behind L0 on Transformer, and was bested by magnitude pruning for sparsity
-% levels of 80\% and up. Variational dropout consistently produces models on-par or better
-% than magnitude pruning on ResNet-50, and l0 fails to produce sparse models at all.
-We expect the overall conclusion of \citet{gale_state_2019} to carry over to $\cplx$VNN,
-since there is nothing fundamentally different in $\cplx$-valued versions of the methods
-they study, except for the need to operate on pairs of parameters.
 
 The paper is structured as follows. Sec.~\ref{sec:variational_dropout} reviews Variational
 Dropout, and sec.~\ref{sec:c_valued_networks} provides a brief summary of the inner
@@ -394,6 +384,8 @@ by considering hierarchical prior and variational approximation. They grouped th
 $\omega_j$ and coupled them within each one through a shared latent variable, which on the
 whole enabled pruning entire input features in each layer.
 % {louizos_bayesian_2017} eq. (11) variance -> gaussian entropy -> informative bits
+% They also proposed to estiamte bit precision for quantization based on parameter's
+% estimated uncertainty (variance or entropy).
 %
 
 Simultaneously \citet{molchanov_variational_2017} proposed to use \emph{Additive Noise
@@ -1071,102 +1063,99 @@ other basic layers for $\cplx$VNN, including maskable sparsified layers, is avai
 \url{https://github.com/ivannz/cplxmodule}.
 \smallskip
 
-We study the performance-compression trade-off of the proposed Bayesian sparsification
-method for $\cplx$-valued networks presented above on image classification and music
-annotation tasks.
+To verify the proposed $\cplx$-valued variational sparsification methods presented
+above and explore their compression-performance trade-off we carry out a numerical
+study of $\cplx$VNN for image classification and music transcription.
+
+% image features
+Since image data is not naturally $\cplx$-valued, we preprocess it using the natural
+inclusion $\real \hookrightarrow \cplx$ (\texttt{raw}, $\Im z = 0$) or applying the
+two-dimensional Fourier Transform (\texttt{fft}), centering the lower frequencies. We
+do not train an auxiliary network that synthesizes the imaginary component from $\real$
+input data \citep{trabelsi_deep_2018}.
 %
 Following \citet{wolter_complex_2018} and \citet{trabelsi_deep_2018}, the class logit
 scores are taken as real part of the complex-valued output of a network.
-%
-% image features
-Since image data is not naturally $\cplx$-valued, we preprocess it by either embedding
-% $\real \hookrightarrow \cplx$
-$\real$-data into $\cplx$ assuming $\Im z = 0$ (\texttt{raw}), or applying the two-dimensional
-Fourier Transform (\texttt{fft}), centering the lower frequencies. We do not train an
-auxiliary model to synthesize the imaginary component from the real data, proposed by
-\citet{trabelsi_deep_2018}.
 
 % setup and common experiment settings
-For each dataset we conduct a set of experiments in which we try out all combinations of
-model kinds ($\real$ or $\cplx$), sparsification methods (VD or ARD) and input features.
-Where reasonable, we also study the effects of halving ($\tfrac12\cplx$) and doubling ($2\real$)
-of the size of intermediate layers in each network \citep{monning_evaluation_2018}.
+The networks are trained in three successive stages in every experiment: the \emph{``pre-train''}
+stage for pre-training the network, the \emph{``sparsify''} stage to determine parameter
+relevance using Variational Dropout, and the \emph{``fine-tune''} to train the pruned
+network (sec.~\ref{sub:staging}). Network's parameters are initialized with values from
+the previous stage.
 %
-Each experiment is replicated \emph{five} times to take into account random initialization,
-random order of the mini-batch during SGD, stochastic outputs of the intermediate layers,
-and non-determinism of single-precision computations on GPUs.
+Networks are trained with ADAM optimizer, with the learning rate reset to $10^{-3}$ before
+each stage and global $\ell_2$-norm gradient clipping at $0.5$.
+% https://pytorch.org/docs/master/_modules/torch/nn/utils/clip_grad.html#clip_grad_norm_
 
-Each network within every experiment passes through three successive stages of training:
-pre-training (\emph{``dense''}), sparsification (\emph{``sparsify''}), and fine-tuning
-(\emph{``fine-tune''}) (sec.~\ref{sub:staging}). The parameters and optimizer state are
-passed between stages, except for last one, which inherits just the parameters.
-%
-Every experiment uses ADAM optimizer, resets the learning rate to $10^{-3}$ before each
-stage, and applies global $\ell_2$-norm gradient clipping at $0.5$.
+Each experiment is replicated \emph{five} times to account for random effects from
+initialization, stochastic gradient optimization, noisy output from intermediate layers,
+and non-determinism of computations on GPU.
+% experiments took about three weeks on 4 node GTX1080Ti GPUs in fp32
 
 % write a note on the incompressible parameters (bias, batch norm etc.)
-The compression rate is calculated based on the number of IEEE754 floating point values
-needed to store the model and equals $
+The compression rate is calculated based on the number of floating point values needed
+to store the network and equals $
   \tfrac{n_\mathtt{par}}{n_\mathtt{par} - n_\mathtt{zer}}
-$, where $n_\mathtt{zer}$ is the number of explicit zeros, $n_\mathtt{par}$ is the total
-number of floats. In particular, each parameter is counted once in a $\real$-valued network,
-but twice in a $\cplx$-network. Each model has a compression limit, determined by biases,
-shift and scaling in $\real$- and $\cplx$-valued batch normalization layers.
+$, where $n_\mathtt{zer}$ is the number of explicit zeros at the ``fine-tune'' stage
+and $n_\mathtt{par}$ is the total number of values. In a $\real$-valued network each
+parameter counts as \emph{one} value and as \emph{two} values in a $\cplx$VNN. Each
+model has a compression limit, determined by biases, shift and scaling in $\real$-
+and $\cplx$-valued batch normalization layers.
 
 \subsection{Stagewise training} % (fold)
 \label{sub:staging}
 
-% The training consists of three successive stages: ``dense'' $\to$ ``sparsify'' $\to$ ``fine-tune''.
+% The training consists of three successive stages: ``pre-train'' $\to$ ``sparsify'' $\to$ ``fine-tune''.
+At the \emph{``pre-train''} stage every network is fit ``as-is'', retaining its original
+deterministic architecture and using only the likelihood term from \eqref{eq:sgvb_estimator}.
 
-At the \emph{``dense''} stage every network is fit ``as-is'', retaining its original
-non-Bayesian architecture, and using only the likelihood term from \eqref{eq:sgvb_estimator} without
-variational dropout.
-
-During the \emph{``sparsify''} stage we make every layer Bayesian and apply $\cplx$-variational
-dropout sec.~\ref{ssub:vd_prior} (or sec.~\ref{ssub:ard_prior}) or its $\real$ counterpart.
-We inject a coefficient $
+During the \emph{``sparsify''} stage we make every layer Bayesian and apply $\cplx$-valued
+variational sparsification (sec.~\ref{ssub:vd_prior}, ~\ref{ssub:ard_prior}) or its $\real$
+counterpart. We inject a coefficient $
   C \in (0, 1]
-$ at the KL divergence term in \eqref{eq:sgvb_estimator} to study the attainable sparsity levels:
+$ at the KL divergence term in \eqref{eq:sgvb_estimator}:
 \begin{equation}  \label{eq:elbo_with_coef}
   - \frac{C}N KL(q_{\theta} \| \pi_{\lambda})
   + \frac1{M} \sum_{k=1}^M
-      \log p_{\phi}(z_{i_k} \mid g(\varepsilon_k; \theta))
+      \log p_{\phi}(x_{i_k} \mid g(\varepsilon_k; \theta))
   \,.
   \tag{\ref{eq:sgvb_estimator}'}
 \end{equation}
-By varying $C$ we adjust the importance of the sparsifying prior in learning $q_\theta(W)$,
-meaning that higher value yields more irrelevant parameters during inference and makes
-layers sparser upon termination of this stage.
+In contrast to \cite{molchanov_variational_2017}, who anneal $C$ from zero to one during
+training, we use constant $C$ and vary it between runs. This allows us to explore the
+compression-performance profile by balancing model's likelihood and posterior's penalty
+for diverging form the sparsifying prior in \eqref{eq:elbo_with_coef}. In particular,
+higher $C$ implies higher sparsity.
 % RFC: citation needed fot this "trick". Cite $\beta$-VAE maybe?
 
 % on compresssion
 Between \emph{``sparsify''} and \emph{``fine-tune''} stages we compute masks of non-zero
-weights in each layer based on the relevance scores $\alpha$ (sec.~\ref{sec:variational_dropout}).
-Since the $q_\theta$ factorizes into univariate distributions, a $\cplx$ or $\real$ parameter
-is considered non-zero if $\log \alpha \leq \tau$ for $
-  \alpha = \tfrac{\sigma^2}{\lvert\mu\rvert^2}
-$, or zero otherwise.
-
-The \emph{``fine-tune''} stage reverts the network back to non-Bayesian layers, applies
-sparsity masks to its parameters and proceeds with training the kept parameters as during
-the ``dense'' stage. Unless specified otherwise the network is initialized to the mode
-of the learnt $q_\theta(W)$.
-
+weights in each layer based on the relevance scores $\alpha$ (sec.~\ref{sub:dropout}).
+Since $q_\theta$ factorizes into univariate distributions, a $\cplx$ or $\real$ parameter
+is considered non-zero iff $\log \alpha \leq \tau$ for $
+  \alpha = \tfrac{\sigma^2}{\lvert \mu \rvert^2}
+$.
 % on chosing the threshold
-The threshold $\tau$ is picked so, that the remaining non-zero parameters are within
+The threshold $\tau$ is picked so that the remaining non-zero parameters are within
 $\delta$ relative tolerance of their mode with high probability under the approximate
-posterior. Since $q_\theta$ is fully factorized $\real$- or a proper $\cplx$-Gaussian,
-the random variable $
+posterior. For a univariate $\real$- or a circularly symmetric $\cplx$-Gaussian random
+variable $w$, $
   \tfrac{k \lvert w - \mu \rvert^2}
         {\alpha \lvert \mu \rvert^2}
 $ is $\chi^2_k$ distributed with $k=1$ ($\real$) or $2$ ($\cplx$).
 %
-For a generous tolerance $\delta = 50\%$ all values of $\log \alpha$ below $-2.5$ yield
-at least $90\%$ chance of a non-zero $\real$/$\cplx$ parameter. We pick $\tau = -\tfrac12$
-to retain parameters sufficiently concentrated around their mode, and encourage higher
-sparsity, at the same time being aware that $q_\theta$ is merely an approximation.
-In comparison, $\tau = 3$ is commonly used as the threshold
+For a tolerance $\delta = 50\%$ values $\log \alpha$ below $-2.5$ yield at least $90\%$
+chance of a non-zero $\real$/$\cplx$ parameter. We pick $\tau = -\tfrac12$ to retain
+parameters sufficiently concentrated around their mode and encourage higher sparsity,
+at the same time being aware that $q_\theta$ is merely an approximation. In comparison,
+$\tau = 3$ is commonly used as the threshold
 \citep{molchanov_variational_2017,kingma_variational_2015}.
+
+The \emph{``fine-tune''} stage reverts the network back to deterministic layers,
+initializes the parameters to the mode of $q_\theta(\omega)$ and proceeds as the
+``pre-train'' stage, except for training only the parameters specified by sparsity
+masks.
 
 % subsection fitting_and_sparsification (end)
 
@@ -1180,23 +1169,29 @@ dropout: MNIST \citep{lecun_gradient-based_1998}, KMNIST \citep{clanuwat_deep_20
 EMNIST \citep{cohen_emnist_2017} and Fashion-MNIST \citep{xiao_fashion-mnist_2017}.
 %
 % dataset size
-We deliberately use a {fixed} random subset of $10k$ images from the train split of each
-dataset to fit the networks and measure the performance with classification \emph{accuracy}
-score on the usual test split.
+We deliberately use a \emph{fixed} random subset of $10k$ images from the train split
+of each dataset to fit the networks and measure the performance with classification
+\emph{accuracy} score on the usual test split.
 % Limiting the size was done primarily to test the regularization strength of compression
 % and to facilitate quicker experiments.
 
 % model architectures
 % (fft) C - R - C / 2
 % (raw) R - C - 2 * R
-We consider two simple architectures for $\real$ and $\cplx$ networks in this experiment,
-which have been chosen for the purpose of illustrating the compression and understanding
-the effects of experiment parameters. \emph{TwoLayerDenseModel} is a wide dense ReLU
-network $784 \to 4096 \to n_\mathtt{out}$, and \emph{SimpleConvModel} is a ReLU net with
-two $2d$ $k_5 s_1$ convolutions with filters $20 \to 50$, two $k_2 s_2$ average pooling steps,
-and a dense classifier network $800 \to 500 \to n_\mathtt{out}$. The number of intermediate
-feature is as specified in $\real$ and $\cplx$ models, is halved in complex models tagged
-$\tfrac12\cplx$, and doubled in real models labelled $2\real$.
+We consider two simple architectures in this experiment, which have been chosen for
+the purpose of illustrating the compression and understanding the effects of experiment
+parameters. \emph{TwoLayerDenseModel} is a wide dense ReLU network $
+  784 \to 4096 \to n_\mathtt{out}
+$, and \emph{SimpleConvModel} is a ReLU net with two $2d$ $k_5 s_1$ convolutions with
+filters $20 \to 50$, two $k_2 s_2$ average pooling steps, and a classifier head
+$800 \to 500 \to n_\mathtt{out}$.
+%
+For each dataset we experiment with all combinations of model kinds ($\real$ or $\cplx$)
+and sparsification methods (VD or ARD). To take into account potential differences in
+capacity we consider halving or doubling the number of features in the intermediate layers
+\citep{monning_evaluation_2018}. Halved $\cplx$VNN are tagged $\tfrac12\cplx$, and
+doubled $\real$-valued networks are labelled $2\real$. For \texttt{fft} we compare
+$\{\real, \cplx, 2\real\}$ and for \texttt{raw} -- $\{\tfrac12\cplx, \real, \cplx\}$.
 
 % experiment setup
 Stages (sec.~\ref{sub:staging}) last for $40$, $75$ and $40$ epochs, respectively, in each
@@ -1205,13 +1200,12 @@ size is set to $128$ and the base learning rate ${10}^{-3}$ is reduced after the
 to ${10}^{-4}$ at every stage.
 %
 % grid specs
-We let $
+We vary $
   C \in \{
     \tfrac32 2^{-\tfrac{k}2} \colon k=2, \cdots, 38
   \}
-$ in \eqref{eq:elbo_with_coef}, test VD and ARD methods, try \texttt{raw} or \texttt{fft}
-input features, and repeat each experiment $5$ times to get a sample of compression-accuracy
-pairs.
+$ in \eqref{eq:elbo_with_coef} and repeat each experiment $5$ times to get a sample
+of compression-accuracy pairs.
 
 % a couple of plots from MNIST and Fashion-MNIST
 \begin{figure}[!t]
@@ -1252,38 +1246,38 @@ pairs.
 
 % observations
 Figures~\ref{fig:mnist-like__trade-off__fft} and~\ref{fig:mnist-like__trade-off__raw}
-depict the resulting compression-accuracy trade-off on MNIST for the simple models
-described above (other datasets are in appendix~\ref{sec:mnist_like_experiments}).
+depict the resulting compression-accuracy trade-off on MNIST for the models described
+above (see appendix~\ref{sec:mnist_like_experiments}).
 %
-The points represent the trade-off of the compressed networks after fine-tuning, while their
-tails illustrate the impact of this stage on the accuracy. Transparent horizontal bands on
-each plot represent min-max performance spread of an uncompressed network on the test split.
+Each point represents the trade-off of the compressed network after fine-tuning, while
+its tail illustrates the impact of this stage on the performance. Transparent horizontal
+bands on each plot represent min-max performance spread of the pre-trained uncompressed
+network on the test split.
 
-The overarching pattern in all experiments on MNIST-like datasets is that both ARD and VD
-compress similarly and ARD offers marginal advantage in terms of performance after fine-tuning.
-Fourier features perform marginally worse than raw image data for each model across all
-compression rates, and their trade-off for the dense network has a hat-like shape, contrasting
-the raw image features, for which the accuracy stays at one level for moderate rates,
-and then abruptly decays in high compression regime.
+% observations and conclusions
+At the same time, ``fine-tune'' stage almost always improves performance in high compression
+regime ($\times50+$ high $C$ in \eqref{eq:elbo_with_coef}), likely due to regularization from
+high sparsity.
+% On EMNIST Letters and MNIST datasets in the small compression regime the dense network
+% exhibits a trough in accuracy before fine-tuning stage.
+Fourier features catch up to the raw data in terms of performance at high compression
+rates $\times100+$ only for the \emph{TwoLayerDenseModel}.
+% spectral feature useful residual information?
+% For it the compression-performance profile exhibits a ramp-like shape, in contrast
+% to the raw features, for which the accuracy stays level for moderate rates, but then
+% abruptly drops at high rates.
+%
+Comparison of $\real$ and $\cplx$ networks with matching architecture, i.e. same effective
+layer widths in $2\real$ vs. $\cplx$ and $\real$ vs. $\tfrac12\cplx$, shows that doubled
+$\real$ networks perform and compress better than $\cplx$, due higher intrinsic redundancy
+unchecked by $\cplx$-arithmetic constraint.
+% Convolutional network compress worse because they have less redundant parameters
 
-The impact of ``fine-tune'' is mixed, and depends on the dataset and features, although it
-frequently improves accuracy in high compression $\times50+$ (high $C$ in \eqref{eq:elbo_with_coef})
-for raw image input. On EMNIST Letters and MNIST datasets in the small compression regime the
-dense network exhibits a trough in accuracy before fine-tuning stage.
-
-% conclusions
-These experiments demonstrate that $\cplx$ Variational Dropout can offer adequate compression
-without much loss in performance for $\cplx$-valued networks. Although ARD performs on par
-with VD, unlike VD, it uses a proper prior and has a tractable analytic expression for the
-KL-divergence \eqref{eq:emp-bayes-kl-div} in both $\real$ and $\cplx$ cases.
+% a table for mean comparison against C and compression-performance?
+%
 % fft: $2\real$ convolutional model trade-off overall better than $\real$, dense -- on par.
 % raw: $\cplx$ models trade-off overall better than $\tfrac12\cplx$.
-Wider $\real$ and $\cplx$ networks appear to have more favourable trade-off between
-compression and accuracy.
 % fft: any-$\real$ dense model compresses better than $\cplx$
-However, it seems that due to more intrinsic degrees of freedom, $\real$-valued models
-perform and compress better than $\cplx$, even when the former uses the same number of
-features as the latter.
 % $\cplx$-valued networks do not have as much spare capacity as $2 \real$ due to
 %  constraints imposed by multiplication in $\cplx$ numbers
 
@@ -1293,25 +1287,27 @@ features as the latter.
 \subsection{CIFAR10} % (fold)
 \label{sub:cifar10}
 
-We conduct an experiment on the CIFAR10 classification dataset \citep{krizhevsky_learning_2009}
-comprising $32\times 32$ color images of $10$ classes to study the performance-compression
-trade-off of a moderately large deep network.
+Having verified the $\cplx$ variational sparsification method on MNIST-like datasets
+and simple models, we turn to the CIFAR10 dataset comprising $32\times 32$ colour
+images of $10$ classes \citep{krizhevsky_learning_2009} and focus on the VGG16 network
+\citep{simonyan_very_2015}.
+%
 % same experimental setup as in MNIST, describe the VGG16 model and its cplx-valued modification
-The experiment is set up similarly to MNIST-like experiment, except that we train $\real$
-VGG16 network \citep{simonyan_very_2015} and its $\cplx$ variant, in which we have replaced
-$\real$-valued layers with their $\cplx$-valued counterparts. $\real$ and $\cplx$ VGG16 have
-the same feature sizes in intermediate layers.
-
+We train the VGG16 network and its $\cplx$ variant, in which we have replaced $\real$-valued
+layers with their $\cplx$-valued counterparts. We do not halve or double the features
+in any network, since the goal of this experiment is to assess the trade-off for a deep
+convolutional network.
+%
 % differences with mnist
-Unlike experiment in sec.~\ref{sub:mnist_like_datasets}, we consider the raw features only,
-use full training split, and allocate $20$, $40$, and $20$ epochs to each stage. During training
-the mini-batch of $128$ samples is randomly augmented by randomly flipping horizontally and
-cropping. Random cropping is done by zero-padding each side by four pixels and extracting a
-random $32\times 32$ patch from the $40\times 40$ intermediate image.
+Unlike experiment in sec.~\ref{sub:mnist_like_datasets}, we consider the raw features
+only, use full training split and allocate $20$, $40$, and $20$ epochs to each stage.
+During training the mini-batch of $128$ samples is augmented by random horizontal flipping
+and random cropping, which is done by zero-padding the image with four pixels and extracting
+a $32\times 32$ patch from the $40\times 40$ intermediate image.
 %
 We vary $C$ in \eqref{eq:elbo_with_coef} over $
   \{\tfrac32 2^{-\tfrac{k}2} \colon k=7, \cdots, 15\}
-$, compare VD and ARD methods, and measure accuracy on CIFAR10 test split.
+$, compare $\real / \cplx$ VD and ARD methods and measure accuracy on CIFAR10 test split.
 
 % compare compressed cplx-vgg against real-vgg
 \begin{figure}[!t]
@@ -1321,19 +1317,18 @@ $, compare VD and ARD methods, and measure accuracy on CIFAR10 test split.
     \includegraphics[width=\columnwidth]{figure__cifar__trade-off/appendix__augmentedcifar10__raw__-0.5.pdf}
   \end{subfigure}
   \caption{%
-    The compression-accuracy frontier for VGG16 ($\real$ and $\cplx$) on CIFAR10.
+    The compression-accuracy profile for the $\real$ and $\cplx$ VGG16.
   }
   \label{fig:figure__cifar10__trade-off}
 \end{figure}
 
 % draw some conclusions
-Figure~\ref{fig:figure__cifar10__trade-off} shows that, although ARD method offers slightly
-less compression, it makes up for it by marginally better accuracy post fine-tune. VGG16 and
-$\cplx$-VGG16 exhibit similar declining compression-accuracy trade-off, but due to higher
-capacity $\cplx$-valued network yields higher accuracy \citep{monning_evaluation_2018}. Unlike
-MNIST, fine-tuning stage significantly improves the test performance, which, we speculate, might
-be due to dataset augmentation and deeper model.
-% reword this sentence
+The compression-accuracy curve in figure~\ref{fig:figure__cifar10__trade-off} shows that
+it is possible to confidently achieve $\approx100\times$ compression of a deep $\cplx$VNN
+without losing accuracy, provided the network is fine-tuned after undergoing Variational
+sparsification. Regarding methods themselves, $\cplx$-VD and $\cplx$-ARD follow the same
+declining compression-accuracy pattern, but for the same setting $C$ the latter provides
+slightly less compression with marginally better accuracy.
 
 % subsection cifar10_100 (end)
 
@@ -1369,7 +1364,7 @@ We test complex ARD (sec.~\ref{ssub:ard_prior}) and VD (sec.~\ref{ssub:vd_prior}
 and vary $
   C \in \{\tfrac14, \tfrac12, \tfrac34, 1\} \cdot 10^{-k}
 $ for $k=1, 2, 3$, while keeping $\tau$ at $-\tfrac12$. The performance is measured after
-``dense'' stage, before the beginning and upon termination of fine-tuning.
+``pre-train'' stage, before the beginning and upon termination of fine-tuning.
 %
 Additionally, we test the model of \citet{trabelsi_deep_2018}, in which we purposefully
 halve the receptive field of the first convolution from $6$ to $3$ (denoted by suffix $k_3$).
@@ -1422,7 +1417,7 @@ regimes in figure~\ref{fig:musicnet__trade-off}, also observed in sec.~\ref{sub:
 The value of $C$ in \eqref{eq:elbo_with_coef} is a good proxy for the ranking of the final
 compression rate since it directly affects the feedback from sparsifying prior. So, with
 low $C$ models get less compressed during $50$ epoch allotted for ``sparsify'' stage, which
-appears to be insufficient to move model away from the parameters after the dense stage.
+appears to be insufficient to move model away from the parameters after the ``pre-train'' stage.
 It is reasonable therefore to expect that for undercompressed models the fine-tuning stage
 acts essentially as a continuation of the pre-training stage. Since we have observed that
 longer training invariably deteriorates the validation performance, the ``fine-tune'' stage
@@ -1473,6 +1468,30 @@ reducing the excess degrees of freedom.
 
 \section{Conclusion} % (fold)
 \label{sec:conclusion}
+
+
+The overarching conclusion from the conducted experiments is that both $\cplx$-ARD and
+$\cplx$-VD methods compress similarly to each other, but for the same value of $C$ in
+\eqref{eq:elbo_with_coef} ARD yields slightly higher performance post fine-tuning at
+the cost of marginally lower compression.
+
+The results of this experiment and previous ones indicate that the $\cplx$ Variational
+Dropout offers adequate compression with controllable loss in performance in $\cplx$VNN
+and has trade-off profile similar to the $\real$ counterpart. Although ARD performs on
+par with VD, unlike it, it uses a proper prior and has a tractable analytic expression
+for the KL-divergence \eqref{eq:emp-bayes-kl-div} in both $\real$ and $\cplx$ cases.%
+%
+% L0 and dropout work in the low-to-mid sparsity range, variational dropout consistently
+% ranked behind L0 on Transformer, and was bested by magnitude pruning for sparsity
+% levels of 80\% and up. Variational dropout consistently produces models on-par or better
+% than magnitude pruning on ResNet-50, and l0 fails to produce sparse models at all.
+We expect the overall conclusion of \citet{gale_state_2019} to carry over to $\cplx$VNN,
+since there is nothing fundamentally different in $\cplx$-valued versions of the methods
+they study, except for the need to operate on pairs of parameters.
+
+
+
+
 
 In this study we have extended Variational Dropout methods of \citet{kingma_variational_2015},
 \citet{molchanov_variational_2017} and \citet{kharitonov_variational_2018} to $\cplx$-valued
