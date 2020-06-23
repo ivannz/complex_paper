@@ -132,7 +132,7 @@ to be essential for superior compression.
 Sparse Variational Dropout is a Bayesian Variational Inference method with automatic
 parameter relevance determination effect. In this study we extend \emph{Sparse VD} to
 $\cplx$VNN, inspired by the results of \citet{gale_state_2019}, and motivated by seldom
-application of Bayesian Inference to $\cplx$-valued networks \citep{popa_complex-valued_2018}
+application of Bayesian Inference to $\cplx$-valued networks \citep{popa_complex-valued_2017}
 and apparent scarcity of compression methods specific to them. We assess the performance-%
 compression trade-off of the extension by conducting a large-scale numerical study on
 image classification on MNIST-like and CIFAR10 datasets and music transcription on MusicNet.
@@ -213,7 +213,7 @@ and the prior, respectively.
 %
 Kullback-Leibler and, by proxy, ELBO are standard objectives in VI, however it is possible
 to use other objectives, provided the true posterior $p(\omega \mid D)$ is evaluated only
-through $\log p(D \mid \omega)$ and $\log \pi(\omega)$, \citep{ranganath_operator_2018}.
+through $\log p(D \mid \omega)$ and $\log \pi(\omega)$, \citep{ranganath_operator_2016}.
 
 % speed, scale, variance, family of suitable Var approximations
 In subsequent years several improvements to Variational Inference approach were introduced.
@@ -261,7 +261,7 @@ with $L$ reparameterized draws per element in the mini-batch of size $M$ is give
 \end{equation}
 where $(x_{i_k})_{k=1}^M$ is a random subsample from $D$ and $
   (\varepsilon_{lk})_{l=1}^L
-$ are $k=1..M$ independent iid samples from $p_\varepsilon$. \citet{figurnov_implicit_2019}
+$ are $k=1..M$ independent iid samples from $p_\varepsilon$. \citet{figurnov_implicit_2018}
 extended the scope of the reparameterization gradients to include continuous distributions
 such as Gamma and von Mises. To handle the case of non-reparameterizable $\omega$ in
 doubly stochastic VI, e.g. discrete random parameters, \citet{titsias_local_2015} proposed
@@ -331,7 +331,7 @@ Dropout, proposed by \citet{hinton_improving_2012}, prevents overfitting by inje
 multiplicative binary noise into layer's weights, which breaks up co-adaptations that
 could occur during training. \citet{wang_fast_2013} argued that the overall effect of
 binary Dropout on the intermediate outputs can be approximated by a Gaussian with weight-input
-dependent mean and variance via the Central Limit Theorem. \citet{srivastava_dropout:_2014}
+dependent mean and variance via the Central Limit Theorem. \citet{srivastava_dropout_2014}
 proposed using independent $\mathcal{N}(1, 1)$ multiplicative noise, arguing that higher
 entropy of a Gaussian has better regularizing effect. \citet{gal_dropout_2016} showed
 that Dropout is a Bayesian approximation method with close ties to deep Gaussian Processes
