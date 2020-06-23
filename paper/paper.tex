@@ -2133,64 +2133,113 @@ double the number of parameters against $\cplx$ for Fourier input features on fi
 \section{Complex-valued local reparameterization} % (fold)
 \label{sec:complex_valued_local_reparameterization}
 
+% Why does this warrant an extra section in the appendix?
+In this section we show \eqref{eq:cplx-gauss-trick}.
+
 %notation
-By $e_i$ we denote the $i$-th real unit vector of dimensionality \emph{conforming} to the
-matrix-vector expression it is used in. Let $\vec{M}$ denote \emph{row-major} flattening
-of $M$ into a vector, i.e. in lexicographic order of its indices. $\diag{(\cdot)}$ embeds
-$\cplx^n$ into $n\times n$ diagonal matrices, and $\otimes$ denotes the Kronecker product,
-for which we note the following identities $
-  \vec{P Q R} = (P \otimes R^\top) \vec{Q}
+By $e_i\in \real \hookrightarrow \cplx$ we denote the $i$-th unit vector of dimensionality
+\emph{conforming} to the matrix-vector expression it is used in, $[M]$ denotes \emph{row-major}
+flattening of a matrix $M$ into a vector, i.e. in lexicographic order of its indices.
+Furthermore $\diag{(\cdot)}$ embeds vectors into matrices with zeros everywhere except
+the diagonal, and $\otimes$ is the Kronecker product, for which we note the following
+identities $
+  [P Q R] = (P \otimes R^\top) [Q]
+$, $
+  (P \otimes Q)^\top = (P^\top \otimes Q^\top)
 $, and $
   (P \otimes R) (C \otimes S) = P Q \otimes R S
 $ \citep{petersen_matrix_2012}.
 % It follows from the definition of the Kronecker product
 % of $P$ and $R^\top$ and the row-major order vectorization.
 
-If we assume a mean field $\cplx$-Gaussian approximate posterior for $
+If we assume a factorized $\cplx$-Gaussian approximation \eqref{eq:c-gauss-vi-general}
+for $
   W \in \cplx^{n\times m}
-$, then
+$, then $[W]$ is $\cplx$-Gaussian vector with
 \begin{equation}  \label{eq:c-gauss-vi-general-vec}
-  \vec{W}
+  [W]
     \sim \mathcal{C}\mathcal{N}_{nm} \bigl(
-      \vec{\mu}, \diag{\vec{\Sigma}}, \diag{\vec{C}}
+      [\mu], \diag{[\Sigma]}, \diag{[C]}
     \bigr)
   \,,
 \end{equation}
-where mean, \emph{variance} and relation are given by matrices $
-  \mu, \Sigma, C \in \cplx^{n\times m}
-$ with $\Sigma_{ij} \geq 0$, and $
+where with $C_{ij} = \Sigma_{ij} \xi_{ij}$, $\Sigma_{ij} \geq 0$, and $
   \lvert C_{ij} \rvert^2 \leq \Sigma_{ij}
-$. For any $x \in \cplx^m$ and $b\in \cplx^n$ $
+$. Then for any $x \in \cplx^m$ and $b\in \cplx^n$ we have $
   y = W x + b
-    = (I_n \otimes x^\top) \vec{W} + b
+    = (I_n \otimes x^\top) [W] + b
 $, whence the covariance and relation matrices of $y$ are
-\begin{align}
-  (I \otimes x^\top) \diag{\vec{\Sigma}} \conj{(I \otimes x^\top)^\top}
-    % = \sum_{ij} (I \otimes x^\top) e_i \otimes e_j
-    %   \Sigma_{ij} (e_i \otimes e_j)^\top (I \otimes x^\top)^{\hop}
-    % = \sum_{ij} (e_i \otimes x^\top e_j)
-    %   \Sigma_{ij} (e_i \otimes x^\top e_j)^{\hop}
-    % = \sum_{ij} (e_i \otimes x_j) \Sigma_{ij} (e_i^\top \otimes \conj{x}_j)
-    & = \sum_{i=1}^n (e_i e_i^\top) \sum_{j=1}^m \Sigma_{ij} x_j \conj{x}_j
+\begin{eqnarray}
+  \bigl(I_n \otimes x^\top\bigr)
+    \diag{[\Sigma]}
+  \conj{\bigl(I_n \otimes x^\top\bigr)^\top}
+    &=& \sum_{ij}
+      \bigl(I_n \otimes x^\top\bigr)
+      \biggl(
+        (e_i \otimes e_j)
+          \Sigma_{ij}
+        (e_i \otimes e_j)^\top
+      \biggr)
+      \conj{\bigl(I_n \otimes x^\top\bigr)^\top}
+    \notag \\
+    &=& \sum_{ij}
+      \bigl(e_i \otimes x^\top e_j \bigr)
+        \Sigma_{ij}
+      \conj{\bigl(e_i \otimes x^\top e_j \bigr)^\top}
+    \notag \\
+    % &=& \sum_{ij}
+    %     \Sigma_{ij}
+    %   \bigl(e_i e_i^\top \otimes (x^\top e_j) \conj{(x^\top e_j)^\top} \bigr)
+    % \notag \\
+    % &=& \sum_{i} (e_i e_i^\top) \sum_{j}
+    %     \Sigma_{ij} (x^\top e_j)(e_j^\top \conj{x})
+    % \notag \\
+    &=&
+    %   \sum_{i} (e_i e_i^\top) \sum_{j}
+    %     \Sigma_{ij} (x_j \conj{x_j})
+    % =
+      \sum_{i=1}^n (e_i e_i^\top)
+        \biggl\{
+          \sum_{j=1}^m \Sigma_{ij} \lvert x_j \rvert^2
+        \biggr\}
     \,,  \label{eq:cn-gauss-lrt-cov} \\
-  (I \otimes x^\top) \diag{\vec{C}} (I \otimes x^\top)^\top
-    % = \sum_{ij} (e_i \otimes x_j) C_{ij} (e_i \otimes x_j)^\top
-    & = \sum_{i=1}^n (e_i e_i^\top) \sum_{j=1}^m C_{ij} x_j^2
+  \bigl(I_n \otimes x^\top\bigr)
+    \diag{[C]}
+  \bigl(I_n \otimes x^\top\bigr)^\top
+    &=& \sum_{ij}
+      \bigl(I_n \otimes x^\top\bigr)
+      \biggl(
+        (e_i \otimes e_j)
+          C_{ij}
+        (e_i \otimes e_j)^\top
+      \biggr)
+      \bigl(I_n \otimes x^\top\bigr)^\top
+    \notag \\
+    % &=& \sum_{ij}
+    %   \bigl(e_i \otimes x^\top e_j \bigr)
+    %     C_{ij}
+    %   \bigl(e_i \otimes x^\top e_j \bigr)^\top
+    % \notag \\
+    % &=& \sum_{ij}
+    %     C_{ij}
+    %   \bigl(e_i e_i^\top \otimes (x^\top e_j) (x^\top e_j)^\top \bigr)
+    % \notag \\
+    % &=& \sum_{i} (e_i e_i^\top) \sum_{j}
+    %     C_{ij} (x^\top e_j)(e_j^\top x)
+    % \notag \\
+    &=&
+    %   \sum_{i} (e_i e_i^\top) \sum_{j}
+    %     C_{ij} (x_j x_j)
+    % =
+      \sum_{i=1}^n (e_i e_i^\top)
+        \biggl\{
+          \sum_{j=1}^m C_{ij} x_j^2
+        \biggr\}
     \,.  \label{eq:cn-gauss-lrt-rel}
-\end{align}
-Since \eqref{eq:cn-gauss-lrt-cov} and \eqref{eq:cn-gauss-lrt-rel} are diagonal, $(y_i)_{i=1}^n$
-are independent whence \eqref{eq:cn-affine} implies
-\begin{equation}  \label{eq:cplx-gauss-trick-appendix}
-  y_i
-    \sim \mathcal{CN}
-      \bigl(
-        e_i^\top \mu x + b_i,
-        \, \sum_{j=1}^m \Sigma_{ij} \lvert x_j \rvert^2,
-        \, \sum_{j=1}^m C_{ij} x_j^2
-      \bigr)
-    \,.
-\end{equation}
-Hence \eqref{eq:cplx-gauss-trick} follows.
+\end{eqnarray}
+Since \eqref{eq:cn-gauss-lrt-cov} and \eqref{eq:cn-gauss-lrt-rel} are diagonal, the
+vector $y$ has independent univariate $\cplx$-Gaussian components, whence
+\eqref{eq:cplx-gauss-trick} follows.
 
 % section complex_valued_local_reparameterization (end)
 
