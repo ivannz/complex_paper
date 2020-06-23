@@ -64,20 +64,6 @@
 	pages = {442--450}
 }
 
-@article{yang_complex_2019,
-	title = {Complex {Transformer}: {A} {Framework} for {Modeling} {Complex}-{Valued} {Sequence}},
-	shorttitle = {Complex {Transformer}},
-	url = {http://arxiv.org/abs/1910.10202},
-	abstract = {While deep learning has received a surge of interest in a variety of fields in recent years, major deep learning models barely use complex numbers. However, speech, signal and audio data are naturally complex-valued after Fourier Transform, and studies have shown a potentially richer representation of complex nets. In this paper, we propose a Complex Transformer, which incorporates the transformer model as a backbone for sequence modeling; we also develop attention and encoder-decoder network operating for complex input. The model achieves state-of-the-art performance on the MusicNet dataset and an In-phase Quadrature (IQ) signal dataset.},
-	urldate = {2019-11-04},
-	journal = {arXiv:1910.10202 [cs, eess, stat]},
-	author = {Yang, Muqiao and Ma, Martin Q. and Li, Dongyu and Tsai, Yao-Hung Hubert and Salakhutdinov, Ruslan},
-	month = oct,
-	year = {2019},
-	note = {arXiv: 1910.10202},
-	keywords = {Computer Science - Machine Learning, Computer Science - Sound, Electrical Engineering and Systems Science - Audio and Speech Processing, Statistics - Machine Learning}
-}
-
 @article{benvenuto_complex_1992,
 	title = {On the complex backpropagation algorithm},
 	volume = {40},
@@ -91,19 +77,6 @@
 	year = {1992},
 	keywords = {Backpropagation algorithms, coefficients updating, complex activation functions, complex backpropagation algorithm, complex signals, Equations, mean-square-error criterion, Multi-layer neural network, Multilayer perceptrons, neural nets, neural network, Neural networks, Neurons, Nonlinear filters, recursive algorithm, signal processing, Signal processing, Signal processing algorithms, Wiener filter},
 	pages = {967--969}
-}
-
-@inproceedings{wang_fast_2013,
-	title = {Fast dropout training},
-	url = {http://proceedings.mlr.press/v28/wang13a.html},
-	abstract = {Preventing feature co-adaptation by encouraging independent contributions from different features often improves classification and regression performance.  Dropout training (Hinton et al., 2012) d...},
-	language = {en},
-	urldate = {2019-11-05},
-	booktitle = {International {Conference} on {Machine} {Learning}},
-	author = {Wang, Sida and Manning, Christopher},
-	month = feb,
-	year = {2013},
-	pages = {118--126}
 }
 
 @inproceedings{wan_regularization_2013,
@@ -130,19 +103,6 @@
 	year = {2012},
 	note = {arXiv: 1207.0580},
 	keywords = {Computer Science - Computer Vision and Pattern Recognition, Computer Science - Machine Learning, Computer Science - Neural and Evolutionary Computing}
-}
-
-@article{cheung_superposition_2019,
-	title = {Superposition of many models into one},
-	url = {http://arxiv.org/abs/1902.05522},
-	abstract = {We present a method for storing multiple models within a single set of parameters. Models can coexist in superposition and still be retrieved individually. In experiments with neural networks, we show that a surprisingly large number of models can be effectively stored within a single parameter instance. Furthermore, each of these models can undergo thousands of training steps without significantly interfering with other models within the superposition. This approach may be viewed as the online complement of compression: rather than reducing the size of a network after training, we make use of the unrealized capacity of a network during training.},
-	urldate = {2019-11-21},
-	journal = {arXiv:1902.05522 [cs]},
-	author = {Cheung, Brian and Terekhov, Alex and Chen, Yubei and Agrawal, Pulkit and Olshausen, Bruno},
-	month = jun,
-	year = {2019},
-	note = {arXiv: 1902.05522},
-	keywords = {Computer Science - Artificial Intelligence, Computer Science - Machine Learning, Computer Science - Neural and Evolutionary Computing}
 }
 
 @inproceedings{wolter_complex_2018,
@@ -861,4 +821,45 @@ Section: Machine Learning},
 	note = {arXiv: 1708.07747},
 	keywords = {Computer Science - Computer Vision and Pattern Recognition, Computer Science - Machine Learning, Statistics - Machine Learning},
 	annote = {Comment: Dataset is freely available at https://github.com/zalandoresearch/fashion-mnist Benchmark is available at http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/}
+}
+
+@incollection{cheung_superposition_2019,
+	title = {Superposition of many models into one},
+	url = {http://papers.nips.cc/paper/9269-superposition-of-many-models-into-one.pdf},
+	urldate = {2020-06-23},
+	booktitle = {Advances in {Neural} {Information} {Processing} {Systems} 32},
+	publisher = {Curran Associates, Inc.},
+	author = {Cheung, Brian and Terekhov, Alexander and Chen, Yubei and Agrawal, Pulkit and Olshausen, Bruno},
+	editor = {Wallach, H. and Larochelle, H. and Beygelzimer, A. and Alché-Buc, F. d{\textbackslash}textquotesingle and Fox, E. and Garnett, R.},
+	year = {2019},
+	pages = {10868--10877}
+}
+
+@inproceedings{yang_complex_2020,
+	title = {Complex {Transformer}: {A} {Framework} for {Modeling} {Complex}-{Valued} {Sequence}},
+	shorttitle = {Complex {Transformer}},
+	doi = {10.1109/ICASSP40776.2020.9054008},
+	abstract = {While deep learning has received a surge of interest in a variety of fields in recent years, major deep learning models barely use complex numbers. However, speech, signal and audio data are naturally complex-valued after Fourier Transform, and studies have shown a potentially richer representation of complex nets. In this paper, we propose a Complex Transformer, which incorporates the transformer model as a backbone for sequence modeling; we also develop attention and encoder-decoder network operating for complex input. The model achieves state-of-the-art performance on the MusicNet dataset and an In-phase Quadrature (IQ) signal dataset. The GitHub implementation to reproduce the experimental results is available at https://github.com/muqiaoy/dl\_signal.},
+	booktitle = {{ICASSP} 2020 - 2020 {IEEE} {International} {Conference} on {Acoustics}, {Speech} and {Signal} {Processing} ({ICASSP})},
+	author = {Yang, Muqiao and Ma, Martin Q. and Li, Dongyu and Tsai, Yao-Hung Hubert and Salakhutdinov, Ruslan},
+	month = may,
+	year = {2020},
+	note = {ISSN: 2379-190X},
+	keywords = {complex-valued deep neural network, Deep learning, sequence modeling, transformer network},
+	pages = {4232--4236}
+}
+
+@inproceedings{wang_fast_2013,
+	title = {Fast dropout training},
+	url = {http://proceedings.mlr.press/v28/wang13a.html},
+	abstract = {Preventing feature co-adaptation by encouraging independent contributions from different features often improves classification and regression performance.  Dropout training (Hinton et al., 2012) d...},
+	language = {en},
+	urldate = {2020-06-23},
+	booktitle = {International {Conference} on {Machine} {Learning}},
+	author = {Wang, Sida and Manning, Christopher},
+	month = feb,
+	year = {2013},
+	note = {ISSN: 1938-7228
+Section: Machine Learning},
+	pages = {118--126}
 }
