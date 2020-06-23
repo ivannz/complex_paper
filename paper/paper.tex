@@ -145,7 +145,7 @@ The paper is structured as follows. Sec.~\ref{sec:variational_dropout} reviews V
 Dropout, and sec.~\ref{sec:c_valued_networks} provides a brief summary of the inner
 workings of complex-valued networks. The main contribution of this study is presented
 in sec.~\ref{sec:c_variational_dropout}, where we provide the details of $\cplx$-valued
-variational sparsification method. In sec.~\ref{sec:experiments} we estimate the compression
+variational sparsification methods. In sec.~\ref{sec:experiments} we estimate the compression
 and performance trade-off on shallow and deep $\cplx$-valued networks, and discuss the
 outcomes.
 
@@ -326,8 +326,8 @@ by \citet{kingma_variational_2015}.
 \subsection{Dropout} % (fold)
 \label{sub:dropout}
 
-With a special posterior approximation family $q_\theta$ and suitable prior $\pi$,
-Variational Inference can be used as model regularization and sparsification technique.
+Variational Inference can be used as model regularization and sparsification method
+for certain posterior approximation $q_\theta$ and prior $\pi$.
 
 % on dropout
 Dropout, proposed by \citet{hinton_improving_2012}, prevents overfitting by injecting
@@ -1108,9 +1108,9 @@ and $\cplx$-valued batch normalization layers.
 At the \emph{``pre-train''} stage every network is fit ``as-is'' using deterministic layers
 and only the likelihood term from \eqref{eq:sgvb_estimator}.
 
-During the \emph{``sparsify''} stage we make every layer stochastic and apply $\cplx$-valued
-variational sparsification (sec.~\ref{ssub:vd_prior}, ~\ref{ssub:ard_prior}) or its $\real$
-counterpart. We inject a coefficient $
+During the \emph{``sparsify''} stage we make every layer stochastic and apply variational
+sparsification (sec.~\ref{ssub:vd_prior}, ~\ref{ssub:ard_prior}, or their $\real$ versions).
+We inject a coefficient $
   C \in (0, 1]
 $ at the KL divergence term in \eqref{eq:sgvb_estimator}:
 \begin{equation}  \label{eq:elbo_with_coef}
@@ -1304,14 +1304,11 @@ convolutional network.
 %
 % differences with mnist
 Unlike experiment in sec.~\ref{sub:mnist_like_datasets}, we consider the raw features
-only, use full training split and allocate $20$, $40$, and $20$ epochs to each stage.
+only, use full training split, measure accuracy on the usual test split, and allocate
+$20$, $40$, and $20$ epochs to each stage.
 During training every mini-batch of $128$ samples is augmented by random horizontal flipping
 and random cropping, which is done by zero-padding the image with four pixels and extracting
 a $32\times 32$ patch from the $40\times 40$ intermediate image.
-%
-We vary $C$ in \eqref{eq:elbo_with_coef} over $
-  \{\tfrac32 2^{-\tfrac{k}2} \colon k=7, \cdots, 15\}
-$, compare $\real / \cplx$ VD and ARD methods and measure accuracy on the usual test split.
 
 % compare compressed cplx-vgg against real-vgg
 \begin{figure}[!t]
@@ -1327,7 +1324,8 @@ $, compare $\real / \cplx$ VD and ARD methods and measure accuracy on the usual 
 \end{figure}
 
 % draw some conclusions
-The compression-accuracy curve in figure~\ref{fig:figure__cifar10__trade-off} shows that
+The compression-accuracy curve in figure~\ref{fig:figure__cifar10__trade-off}, constructed
+for $C = \tfrac32 2^{-\tfrac{k}2}$ with $k=7, \cdots, 15$, shows that
 it is possible to confidently achieve around $\times100$ compression of a deep $\cplx$VNN
 without losing accuracy, provided the network is fine-tuned after undergoing Variational
 sparsification. Regarding methods themselves, $\cplx$-VD and $\cplx$-ARD follow the same
@@ -1509,7 +1507,7 @@ Furthermore our findings indicate that between each other under similar circumst
 the methods yield comparable compression and performance results, which echoes earlier
 results by \citet{kharitonov_variational_2018}.
 
-The results of this study have direct implications for embedded deep learning applications
+This study has direct implications for embedded deep learning applications
 both in terms of lower storage requirements and higher throughput stemming from fewer
 floating point multiplications due to sparsity, despite somewhat higher arithmetic
 complexity of $\cplx$-valued networks.
@@ -1544,8 +1542,8 @@ The source code for the experiments and the figures in this study is available a
 % Typically, this will include thanks to reviewers who gave useful comments, to colleagues
 % who contributed to the ideas, and to funding agencies and corporate sponsors that provided
 % financial support.
-We would like to thank the anonymous reviewers for their useful comments, and Evgenii
-Egorov, Ruslan Kostoev (ADASE) and Danila Doroshin (Huawei) for fruitfull discussions.
+We would like to thank the anonymous reviewers, Evgenii Egorov, Ruslan Kostoev (ADASE)
+and Danila Doroshin (Huawei) for their useful comments.
 % We thank Skoltech CDISE HPC Zhores cluster staff for providing computational infrastructure.
 The authors acknowledge the use of the Skoltech CDISE HPC cluster ``Zhores'' for obtaining
 the results presented in this paper.
