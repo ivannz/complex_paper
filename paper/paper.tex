@@ -2300,42 +2300,6 @@ $.
 
 % section real-chisq-grad (end)
 
-\section{$\cplx$-Linear operator representation} % (fold)
-\label{sec:c-linear_operator_representation}
-
-% proof that such operators exist and are unique (well this is an obvious statement)
-Consider $L \colon \cplx^m \to \cplx^n$ -- linear in $\cplx$. Then $
-  L(u + jv) = L u + \iu L v
-$ for any $u, v \in \real^m$, which implies that the effect of $L$ as $\cplx$-linear
-operator is determined by its restriction onto $\real^n$. Let $
-  F = L\vert_{\real^m}
-  \colon \real^m \to \cplx^n
-$ and observe that $F_r = \Re \circ F$ and $F_i = \Im \circ F$ are $\real$-linear operators
-such that $F = F_r + \iu F_i$ (pointwise). Indeed,
-$$
-  F_r(a + \lambda b)
-  % = \Re F(a + \lambda b)
-  = \Re L(a + \lambda b)
-  % = \Re \bigl( L a + \lambda L b \bigr)
-  = \Re L a + \lambda \Re L b
-  % = \Re F a + \lambda \Re F b
-  = F_r a + \lambda F_r b
-  \,. $$
-Therefore for any $\cplx$-linear operator $L$ there are $\real$-linear operators $U, V$
-such that
-$$
-L z 
-  = (U + \iu V) (\Re z + \iu \Im z)
-  % = (U + \iu V) \Re z + \iu (U + \iu V) \Im z
-  % = U \Re z + \iu V \Re z + \iu \bigl(U \Im z + \iu V \Im z \bigr)
-  = U \Re z - V \Im z + \iu \bigl( V \Re z + U \Im z \bigr)
-  % = (U + \iu V) z
-  \,. $$
-Uniqueness of these operators follows, if this decomposition is applied to any $z$ with
-$\Im z = 0$.
-
-% section c-linear_operator_representation (end)
-
 % section appendix (end)
 
 \end{document}
