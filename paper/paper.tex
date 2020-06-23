@@ -8,6 +8,7 @@
 
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{cancel}
 
 \usepackage{xcolor}
 \usepackage{graphicx, url}
@@ -1851,7 +1852,7 @@ fit the best approximation \eqref{eq:improper-kl-div-real-approx}, and compare t
 \begin{figure}[!t]
   \centering
   \includegraphics[width=\columnwidth]{grad_log.pdf}
-  \caption{$\tfrac{d f(\alpha)}{d \log{\alpha}}$ of the approximation
+  \caption{$\tfrac{d K(\alpha)}{d \log{\alpha}}$ of the approximation
   \eqref{eq:improper-kl-div-real-approx}, MC estimate of \eqref{eq:improper-kl-div-real},
   and the exact derivative using \eqref{eq:real-kl-div-deriv-log}.}
   \label{fig:molchanov-derivative-replica}
@@ -2249,64 +2250,119 @@ vector $y$ has independent univariate $\cplx$-Gaussian components, whence
 % essential intro into Wirtinger calculus (CR)
 % https://math.stackexchange.com/a/444493
 Wirtinger ($\cplx\real$) calculus relies on the natural identification of $\cplx$ with $
-  \real \times \real
+  \real^2
 $, and regards $
   f\colon \cplx \to \cplx
-$ as an equivalent in algebraic sense function $F\colon \real^2 \to \cplx$ defined $
-  f(z) = f(u + jv) = F(u, v)
-$. Within this framework the differential of $f$ at $z = u + jv \in \cplx$ is
-$$
-df(z)
-  = \frac{\partial f}{\partial z} dz
-    + \frac{\partial f}{\partial \conj{z}} d\conj{z}
-   % = \frac12\bigl(
-   %    \frac{\partial}{\partial u}
-   %    - j \frac{\partial}{\partial v}
-   % \bigr) F (du - j dv)
-   % + \frac12\bigl(
-   %    \frac{\partial}{\partial u}
-   %    + j \frac{\partial}{\partial v}
-   % \bigr) F (du - j dv)
-   % = \frac12 \bigl(
-   %    \frac{\partial F}{\partial u} du - j \frac{\partial F}{\partial v} du
-   %    + j \frac{\partial F}{\partial u} dv + \frac{\partial F}{\partial v} dv
-   % \bigr)
-   % + \frac12 \bigl(
-   %    \frac{\partial F}{\partial u} du + j \frac{\partial F}{\partial v} du
-   %    - j \frac{\partial F}{\partial u} dv + \frac{\partial F}{\partial v} dv
-   % \bigr)
-   = \frac{\partial F}{\partial u} du
-     + \frac{\partial F}{\partial v} dv
-   = dF(u, v)
-  \,, $$
-with formally defined derivatives $
+$ as an algebraically equivalent function $F\colon \real^2 \to \cplx$ defined $
+  f(z) = f(u + \iu v) = F(u, v)
+$. It enables general treatment of functions of vector $\cplx$-argument that possess partial
+derivatives with respect to real and imaginary parts, yet do are not required to satisfy
+Cauchy-Riemann conditions. In $\cplx\real$ calculus the complex argument $z$ and its
+conjugate $\conj{z}$ act as independent variables and $f(z)$ is treated as $f(z, \conj{z})$
+by way of geometric transformations $z = u + \iu v$ and $\conj{z} = u - \iu v$.
+
+Wirtinger partial derivative operators are formally defined as $
   \tfrac{\partial}{\partial z}
     = \tfrac12 \bigl(
       \tfrac{\partial}{\partial u}
-      - j \tfrac{\partial}{\partial v}
+      - \iu \tfrac{\partial}{\partial v}
     \bigr)
 $ and $
   \tfrac{\partial}{\partial \conj{z}}
     = \tfrac12 \bigl(
       \tfrac{\partial}{\partial u}
-      + j \tfrac{\partial}{\partial v}
+      + \iu \tfrac{\partial}{\partial v}
     \bigr)
-$, and differentials $dz = du + j dv$ and $d\conj{z} = du - j dv$. This implies that the
-complex argument and its conjugate are treated as independent variables. Cauchy-Riemann
-conditions $
-  -j \tfrac{\partial F}{\partial v} = \tfrac{\partial F}{\partial u}
-$ can be expressed as $
-  \tfrac{\partial f}{\partial \conj{z}} = 0
-$ in this notation. Thus $\cplx\real$ calculus subsumes the usual $\cplx$-calculus on
-holomorphic functions, when $f(z)$, regarded as $f(z, \conj{z})$, is constant with respect
-to $\conj{z}$. The usual rules of calculus, like chain and product rules, follow directly
+$ and differentials are $dz = du + \iu dv$ and $d\conj{z} = du - \iu dv$. In this paradigm
+The usual rules of calculus, like chain and product rules, follow directly
 from the definition of the operators, e.g.
-$$
-  \frac{\partial (f\circ g)}{\partial z}
+\begin{equation}
+    \frac{\partial (f\circ g)}{\partial z}
     = \frac{\partial f(g(z))}{\partial g} \frac{\partial g(z)}{\partial z}
     + \frac{\partial f(g(z))}{\partial \conj{g}} \frac{\partial \conj{g(z)}}{\partial z}
     % = \nabla G \nabla F
-  \,. $$
+  \,.  \notag
+\end{equation}
+The total differential of $f$ at $z = u + \iu v \in \cplx$ is
+\begin{eqnarray}  
+df(z)
+  &=& \frac{\partial f}{\partial z} dz
+    + \frac{\partial f}{\partial \conj{z}} d\conj{z}
+  \notag \\
+  % &=& \frac12\biggl(
+  %    \frac{\partial F}{\partial u}
+  %    - \iu \frac{\partial F}{\partial v}
+  % \biggr) (du + \iu dv)
+  % + \frac12\biggl(
+  %    \frac{\partial F}{\partial u}
+  %    + \iu \frac{\partial F}{\partial v}
+  % \biggr) (du - \iu dv)
+  % \notag \\
+  &=& \frac12 \biggl(
+     \frac{\partial F}{\partial u} du
+     - \cancel{\iu \frac{\partial F}{\partial v} du}
+     + \cancel{\iu \frac{\partial F}{\partial u} dv}
+     + \frac{\partial F}{\partial v} dv
+  \biggr)
+  + \frac12 \biggl(
+     \frac{\partial F}{\partial u} du
+     + \cancel{\iu \frac{\partial F}{\partial v} du}
+     - \cancel{\iu \frac{\partial F}{\partial u} dv}
+     + \frac{\partial F}{\partial v} dv
+  \biggr)
+  \notag \\
+  % &=& \frac{\partial F}{\partial u} du
+  %    + \frac{\partial F}{\partial v} dv
+  % \notag \\
+  &=& dF(u, v)
+  \,,  \notag
+\end{eqnarray}
+% \begin{eqnarray}
+%   d(f\circ g)
+%     &=&
+%       \frac{\partial f(g(z))}{\partial g}
+%       dg
+%     + \frac{\partial f(g(z))}{\partial \conj{g}}
+%       d\conj{g}
+%     \notag \\
+%     &=&
+%       \frac{\partial f(g(z))}{\partial g}
+%       \biggl\{
+%         \frac{\partial g}{\partial z}
+%         dz
+%       + \frac{\partial g}{\partial \conj{z}}
+%         d\conj{z}
+%       \biggr\}
+%     + \frac{\partial f(g(z))}{\partial \conj{g}}
+%       \biggl\{
+%         \frac{\partial \conj{g}}{\partial z}
+%         dz
+%       + \frac{\partial \conj{g}}{\partial \conj{z}}
+%         d\conj{z}
+%       \biggr\}
+%     \notag \\
+%     &=&
+%         \frac{\partial f(g(z))}{\partial g} \frac{\partial g}{\partial z}
+%         dz
+%       + \frac{\partial f(g(z))}{\partial g} \frac{\partial g}{\partial \conj{z}}
+%         d\conj{z}
+%       + \frac{\partial f(g(z))}{\partial \conj{g}} \frac{\partial \conj{g}}{\partial z}
+%         dz
+%       + \frac{\partial f(g(z))}{\partial \conj{g}} \frac{\partial \conj{g}}{\partial \conj{z}}
+%         d\conj{z}
+%     \notag \\
+%     &=&
+%       \biggl\{
+%         \frac{\partial f(g(z))}{\partial g} \frac{\partial g}{\partial z}
+%         + \frac{\partial f(g(z))}{\partial \conj{g}} \conj{\frac{\partial g}{\partial \conj{z}}}
+%       \biggr\} dz
+%       + \biggl\{
+%         \frac{\partial f(g(z))}{\partial g} \frac{\partial g}{\partial \conj{z}}
+%         + \frac{\partial f(g(z))}{\partial \conj{g}} \conj{\frac{\partial g}{\partial z}}
+%       \biggr\}
+%         d\conj{z}
+%     \,.
+% \end{eqnarray}
 % Show that $dh(z) = df(g(z)) dg(z)$.
 % $h(z) = f(g(z)) = F(G_r(u, v), G_i(u, v)) = H(u, v)$
 % $$
@@ -2320,38 +2376,50 @@ $$
 %   = df(\Re g(z) + j\Im g(z)) d g(z)
 %   = df(g(z)) d g(z)
 %   \,. $$
+At the same time the Cauchy-Riemann conditions $
+  -\iu \tfrac{\partial F}{\partial v} = \tfrac{\partial F}{\partial u}
+$ can be expressed as $
+  \tfrac{\partial f}{\partial \conj{z}} = 0
+$. Thus $\cplx\real$ calculus subsumes the usual $\cplx$-calculus of holomorphic functions,
+since $f(z) = f(z, \conj{z})$ is constant with respect to $\conj{z}$ in the latter. 
 
-In machine learning tasks the target objective is typically empirical risk, which has to
-be real-valued to be minimized. Nevertheless, the expression of the $\cplx\real$ gradient
-is compatible with what is expected, when $f$ is treated like a $\real^2$ function. For a
-real-valued $f\colon \cplx \to \real$ we have $\conj{f} = f$, which implies $
+In optimization-related tasks the objective is $
+  f\colon \cplx\to \real
+$, meaning that if it were to satisfy the Cauchy-Riemann conditions, then it necessarily
+should have been constant. Nevertheless, the expression of the $\cplx\real$ gradient is
+compatible with what is expected, when $f$ is treated like a $\real^2$ function. For such
+$f$ we have $\conj{f} = f$, which implies $
   \tfrac{\partial f}{\partial \conj{z}}
     = \tfrac{\partial \conj{f}}{\partial \conj{z}}
     = \conj{\tfrac{\partial f}{\partial z}}
 $, whence
-$$
-df
-  = \tfrac{\partial f}{\partial z} dz
-    + \tfrac{\partial f}{\partial \conj{z}} d\conj{z}
-  % = \conj{\tfrac{\partial \conj{f}}{\partial \conj{z}}} dz
-  % + \conj{\conj{\tfrac{\partial f}{\partial \conj{z}}} dz}
-  = 2 \Re \Bigl(
-    \conj{\tfrac{\partial f}{\partial \conj{z}}} dz
-  \Bigr)
-  = 2 \Re \bigl(
-    \tfrac{\partial f}{\partial z} dz
-  \bigr)
-  \,. $$
-Thus, the gradient of $f$ at $z$ is given by $
-  \nabla_z f(z)
+\begin{equation*}
+  df
+    = \tfrac{\partial f}{\partial z} dz
+      + \tfrac{\partial f}{\partial \conj{z}} d\conj{z}
+    % = \tfrac{\partial f}{\partial z} dz
+    %   + \conj{\tfrac{\partial f}{\partial z}} d\conj{z}
+    = \tfrac{\partial f}{\partial z} dz
+      + \conj{\tfrac{\partial f}{\partial z} dz}
+    % = 2 \Re
+    %   \Bigl(
+    %     \conj{\tfrac{\partial f}{\partial \conj{z}}} dz
+    %   \Bigr)
+    = 2 \Re
+      \bigl(
+        \tfrac{\partial f}{\partial z} dz
+      \bigr)
+    \,.
+\end{equation*}
+Therefore the gradient the direction of greatest ascent of $f$ at $z$ is given by $
+  \nabla_{\conj{z}} f(z)
+    = \conj{\tfrac{\partial f}{\partial z}}
     = \tfrac{\partial F}{\partial u}
-      + j \tfrac{\partial F}{\partial v}
+    + \iu \tfrac{\partial F}{\partial v}
 $.
-
-Natural identification of $\cplx$ with $\real\times \real$, storing the real and imaginary
-parts in interleaved format, emulation of $\cplx$-algebra using $\real$-valued arithmetic,
-and Wirtinger calculus make it possible to reuse $\real$ back-propagation and existing
-auto-differentiation frameworks \citep{trabelsi_deep_2018}.
+Natural identification $\cplx \simeq \real^2$, backed by Wirtinger calculus, and emulation
+of $\cplx$-arithmetic in computational graphs with $\real$-valued operations makes it
+possible to reuse $\real$ back-propagation and existing auto-differentiation frameworks.
 
 % section wirtinger_calculus (end)
 
@@ -2360,13 +2428,13 @@ auto-differentiation frameworks \citep{trabelsi_deep_2018}.
 
 % proof that such operators exist and are unique (well this is an obvious statement)
 Consider $L \colon \cplx^m \to \cplx^n$ -- linear in $\cplx$. Then $
-  L(u + jv) = L u + j L v
+  L(u + jv) = L u + \iu L v
 $ for any $u, v \in \real^m$, which implies that the effect of $L$ as $\cplx$-linear
 operator is determined by its restriction onto $\real^n$. Let $
   F = L\vert_{\real^m}
   \colon \real^m \to \cplx^n
 $ and observe that $F_r = \Re \circ F$ and $F_i = \Im \circ F$ are $\real$-linear operators
-such that $F = F_r + j F_i$ (pointwise). Indeed,
+such that $F = F_r + \iu F_i$ (pointwise). Indeed,
 $$
   F_r(a + \lambda b)
   % = \Re F(a + \lambda b)
@@ -2380,11 +2448,11 @@ Therefore for any $\cplx$-linear operator $L$ there are $\real$-linear operators
 such that
 $$
 L z 
-  = (U + j V) (\Re z + j \Im z)
-  % = (U + j V) \Re z + j (U + j V) \Im z
-  % = U \Re z + j V \Re z + j \bigl(U \Im z + j V \Im z \bigr)
-  = U \Re z - V \Im z + j \bigl( V \Re z + U \Im z \bigr)
-  % = (U + j V) z
+  = (U + \iu V) (\Re z + \iu \Im z)
+  % = (U + \iu V) \Re z + \iu (U + \iu V) \Im z
+  % = U \Re z + \iu V \Re z + \iu \bigl(U \Im z + \iu V \Im z \bigr)
+  = U \Re z - V \Im z + \iu \bigl( V \Re z + U \Im z \bigr)
+  % = (U + \iu V) z
   \,. $$
 Uniqueness of these operators follows, if this decomposition is applied to any $z$ with
 $\Im z = 0$.
