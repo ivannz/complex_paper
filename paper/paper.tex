@@ -28,7 +28,6 @@
 \newcommand{\iu}{{\jmath}}
 \newcommand{\tr}[1]{\mathop{tr}{#1}}
 
-\newcommand{\hop}{{\mkern-1.5mu\dagger}}
 \newcommand{\conj}[1]{\overline{#1}}
 
 % \renewcommand{\top}{{\mkern-1.5mu\intercal}}
@@ -748,7 +747,7 @@ $\cplx$-Gaussianity is preserved under linear transformations, i.e. for $
 $ and $b \in \cplx^{n}$
 \begin{equation}  \label{eq:cn-affine}
   b + A z \sim \mathcal{C}\mathcal{N}_n\bigl(
-      b + A\mu, A \Gamma A^{\hop}, A C A^\top
+      b + A\mu, A \Gamma \conj{A^\top}, A C A^\top
     \bigr)
   \,.
 \end{equation}
@@ -1349,7 +1348,9 @@ slightly less compression with marginally better accuracy.
 % been shown that CVNN outperform rvnn.
 
 MusicNet is a dataset of $330$ classical music recordings with note annotations
-\citep{thickstun_learning_2017}. \citet{trabelsi_deep_2018} proposed a $1d$ VGG-like
+\citep{thickstun_learning_2017}.
+% too abrupt
+\citet{trabelsi_deep_2018} proposed a $1d$ VGG-like
 $\cplx$-valued network that surpassed a similar $\real$-valued network and achieved
 $72.9\%$ pooled \emph{Average Precision} on the music transcription task.
 %
@@ -2142,7 +2143,7 @@ $. For any $x \in \cplx^m$ and $b\in \cplx^n$ $
     = (I_n \otimes x^\top) \vec{W} + b
 $, whence the covariance and relation matrices of $y$ are
 \begin{align}
-  (I \otimes x^\top) \diag{\vec{\Sigma}} (I \otimes x^\top)^{\hop}
+  (I \otimes x^\top) \diag{\vec{\Sigma}} \conj{(I \otimes x^\top)^\top}
     % = \sum_{ij} (I \otimes x^\top) e_i \otimes e_j
     %   \Sigma_{ij} (e_i \otimes e_j)^\top (I \otimes x^\top)^{\hop}
     % = \sum_{ij} (e_i \otimes x^\top e_j)
