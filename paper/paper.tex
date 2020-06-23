@@ -53,9 +53,9 @@
 
 \begin{abstract}
 With continual miniaturization ever more applications of deep learning can be found
-in embedded systems, where it is common to encounter data with natural complex domain
-representation. To this end we extend Sparse Variational Dropout to complex-valued neural
-networks and verify the proposed Bayesian technique by conducting a large numerical
+in embedded systems, where it is common to encounter data with natural representation
+in the complex domain. To this end we extend Sparse Variational Dropout to complex-valued
+neural networks and verify the proposed Bayesian technique by conducting a large numerical
 study of the performance-compression trade-off of $\cplx$-valued networks on two tasks:
 image recognition on MNIST-like and CIFAR10 datasets and music transcription on MusicNet.
 We replicate the state-of-the-art result by \citet{trabelsi_deep_2018} on MusicNet with
@@ -82,11 +82,11 @@ relevant.
 Complex-valued nature of the data in acoustic and radio signal processing has been
 the main driver behind the adoption of $\cplx$-valued neural networks ($\cplx$VNN).
 \citet{hirose_complex-valued_2009} argues that the combined phase-magnitude effect of
-$\cplx$-valued transformations reduces removes the excess degrees of freedom, that cause
-degenerate transformation in $\real$-valued networks with twice the feature dimensions.
+$\cplx$-valued transformations removes the excess degrees of freedom, that cause
+degenerate transformations in $\real$-valued networks with twice the feature dimensions.
 Their study demonstrates superiority of $\cplx$VNN in landmine detection using ground
 penetrating radar imaging. Other examples, where $\cplx$-valued networks have outperformed
-$\real$-valued networks include magnetic resonance \citep{hui_mri_1995,wang_deepcomplexmri_2020}
+$\real$-valued networks, include magnetic resonance \citep{hui_mri_1995,wang_deepcomplexmri_2020}
 and radar imaging \citep{haensch_complex-valued_2010,zhang_complex-valued_2017}, music
 transcription and spectral speech modelling \citep{wisdom_full-capacity_2016,trabelsi_deep_2018},
 and wireless signal classification \citep{yang_complex_2019}. \citet{tarver_design_2019}
@@ -99,10 +99,8 @@ and for stabilizing back-propagation in RNN \citep{wisdom_full-capacity_2016}.
 % motivation and other methods
 Despite promising results for embedded signal processing applications, $\cplx$-valued
 networks remain a niche in deep learning, and as such little attention has been paid
-to compression methods specific to $\cplx$VNN. \citet{wu_compressing_2019} adapt $k$-means
-quantization to $\cplx \simeq \real^2$ parameters and successfully compress $\cplx$VNN
-with the ``prune-quantize-code'' procedure of \citet{han_deep_2016}.
-
+to compression methods specific to $\cplx$VNN.
+%
 Yet there is an abundance of research related to real-valued network compression, and
 many results can be applied to $\cplx$VNN. Methods such as knowledge distillation
 \citep{hinton_distilling_2015}, which trains a small network to replicate a large
@@ -110,13 +108,18 @@ well-trained teacher, low-rank matrix \citep{denton_exploiting_2014} and tensor 
 \citep{novikov_tensorizing_2015}, or magnitude-based parameter pruning \citep{zhu_prune_2018}
 can be adapted to $\cplx$VNN without modifications. Parameter quantization and conversion
 from floating to fixed point arithmetic \citep{courbariaux_training_2015,uhlich_mixed_2020},
-appear to be readily applicable as well. \citet{louizos_learning_2018} propose probabilistic
-$\ell_0$ regularization through multiplicative $[0, 1]$-valued stochastic masks with
-distribution having an atom at $0$, yet differentiable via the reparameterization trick
-\citep{kingma_auto-encoding_2014}. By sharing a single mask value within a group of
-parameters their approach can be adapted to $\cplx$ parameters. However, methods such
-as Hessian-based parameter pruning \citep{lecun_optimal_1990} or Sparse Variational Dropout
-\citep{molchanov_variational_2017} require additional considerations.
+appear to be readily applicable as well. For example, \citet{wu_compressing_2019} adapt
+$k$-means quantization to $\cplx \simeq \real^2$ parameters and successfully compress
+$\cplx$VNN with the ``prune-quantize-code'' procedure of \citet{han_deep_2016}.
+
+Other methods cannot be translated to $\cplx$VNN this straightforwardly. Probabilistic
+$\ell_0$ regularization of \citet{louizos_learning_2018} prune networks using multiplicative
+$[0, 1]$-valued stochastic masks with distributions having an atom at $0$, yet differentiable
+via the reparameterization trick \citep{kingma_auto-encoding_2014}. By sharing a single mask
+value within a group of parameters their approach can be adapted to $\cplx$ parameters.
+However, methods such as Hessian-based parameter pruning \citep{lecun_optimal_1990}
+or Sparse Variational Dropout \citep{molchanov_variational_2017} require additional
+considerations.
 % the more explicitly zero parameters there is, the less computations is needed.
 
 % segue into why we chose sparse VD rather than anything else
@@ -140,12 +143,11 @@ image classification on MNIST-like and CIFAR10 datasets and music transcription 
 
 The paper is structured as follows. Sec.~\ref{sec:variational_dropout} reviews Variational
 Dropout, and sec.~\ref{sec:c_valued_networks} provides a brief summary of the inner
-working of complex-valued networks. The main contribution of this study is presented in
-sec.~\ref{sec:c_variational_dropout}, where we outline the details of different variational
-approximations and priors and derive the penalty terms in the evidence lower bound.
-In sec.~\ref{sec:experiments} we evaluate the sparsification rate, compare the resulting
-performance of various $\cplx$-networks proposed in prior work, and discuss the outcomes.
-
+workings of complex-valued networks. The main contribution of this study is presented
+in sec.~\ref{sec:c_variational_dropout}, where we provide the details of $\cplx$-valued
+variational sparsification method. In sec.~\ref{sec:experiments} we estimate the compression
+and performance trade-off on shallow and deep $\cplx$-valued networks, and discuss the
+outcomes.
 
 % section introduction (end)
 
@@ -170,7 +172,7 @@ For an observed dataset $
   D = (x_i)_{i=1}^N
 $ and statistical model $
   p(D \mid \omega)
-    = \prod_i \log p(x_i \mid \omega)
+    = \prod_i p(x_i \mid \omega)
     % $D$ conditional independence given parameters $\omega$
 $ with parameters $\omega$ the Bayes rule transforms prior hypotheses $\pi(\omega)$
 about the unknown distribution of model's parameters into the posterior distribution: $
@@ -289,11 +291,11 @@ efficient, if the structure of the model permits translating global stochasticit
 $\omega$ down to local intermediate states of computation.
 %
 The class of models that allow this include non-recurrent computational graphs,
-exemplified by neural networks with parameters $\omega \sim q_\theta$. In this case
+exemplified by neural networks with parameters $\omega \sim q_\theta$. In their case,
 \eqref{eq:sgvb_estimator} would require that the \emph{entire} set of network's parameters
-$\omega$ be independently drawn for each element in the mini-batch. However, noting
-that the parameters in a network naturally decompose into subsets with non-overlapping
-layer-wise effects, it is standard to assume that the approximation $
+$\omega$ be independently drawn for each element in the mini-batch. Since that the
+parameters in a network naturally split into subsets with non-overlapping layer-wise
+effects, it is standard to assume that the approximation $
   q_\theta(\omega)
 $ is factorized over layers. Furthermore, if $
   % \omega =
@@ -408,15 +410,14 @@ $ with
       % - \frac12 \log{\alpha}
   \,.
 \end{equation}
-\citet{kingma_variational_2015} approximated $K(\alpha)$ over $\alpha \in (0, 1)$ by
-a polynomial with $\log$-term, and later \citet{molchanov_variational_2017} refined the
-approximation of \eqref{eq:improper-kl-div-real} by weighted sum of a sigmoid and a
+\citet{kingma_variational_2015} approximated $K(\alpha)$ over $\alpha \in (0, 1)$ by a
+polynomial with a logarithmic term, and later \citet{molchanov_variational_2017} refined
+the approximation of \eqref{eq:improper-kl-div-real} by weighted sum of a sigmoid and a
 soft-plus term.
 % see p.6 sec 3.4 of kingma_variational_2015
 In appendix~\ref{sec:real-chisq-grad} we verify the value and the derivative of their
-approximation against a Monte-Carlo estimate for
-$\alpha$ varying over a fine logarithmic grid and the gradient of \eqref{eq:improper-kl-div-real},
-for which we obtain an exact expression.
+approximation against a Monte-Carlo estimate for $\alpha$ varying over a fine logarithmic
+grid and the exact expression for gradient of \eqref{eq:improper-kl-div-real}.
 % (!) good for SGVB: gradient-based methods require unbiased gradient estimates
 % (in) it is in poor taste to brag about this beign the first time anyone has derived a
 % derivative of an intractable function.
@@ -467,7 +468,7 @@ $, whence
 
 % implementation
 $\cplx$-valued neural networks are networks that rely on the arithmetic in the complex
-domain. To achieve this implementations of $\cplx$VNN use a geometric representation
+domain. To achieve this implementations of $\cplx$VNN use the geometric representation
 of a complex number as paired \emph{real} and \emph{imaginary} values, $\cplx \simeq \real^2$,
 ensuring that the resulting $\real$-valued computational graph respects $\cplx$-arithmetic.
 For example, $
@@ -517,12 +518,11 @@ This $\cplx \simeq \real^2$ identification allows straightforward retrofitting o
 into existing $\real$-valued auto-differentiation frameworks for deep learning. This
 act is backed by Wirtinger ($\cplx\real$) calculus, which enables generalized treatment
 of functions of complex argument, by regarding $z$ and its \emph{complex conjugate}
-$\conj{z}$ as independent variables and defining derivatives with respect to them through
-partial derivatives with respect to real and imaginary parts. These definitions simplify
-manual calculations of $\cplx$ derivatives and satisfy the product and chain rules, respect
-complex conjugation and linearity for $\cplx \to \cplx$ maps. $\cplx\real$ calculus was
-used to define $\cplx$ version of back-propagation,
-\citep{benvenuto_complex_1992,guberman_complex_2016}.
+$\conj{z}$ as independent variables and defining derivative operators with respect to
+them through partial derivatives with respect to real and imaginary parts. These definitions
+simplify manual analysis of $\cplx$ derivatives and satisfy the product and chain rules, respect
+complex conjugation and linearity for $\cplx \to \cplx$ maps, and such were used to define
+$\cplx$ version of back-propagation, \citep{benvenuto_complex_1992,guberman_complex_2016}.
 However, since auto-differentiation frameworks can algorithmically handle computational
 graphs of arbitrary complexity, explicit use of Wirtinger derivatives is not required,
 especially considering the fact that the direction of the steepest ascent of a $
@@ -559,7 +559,7 @@ and \citet{wisdom_full-capacity_2016} proposed $\cplx$-valued RNNs with unitary 
 transition matrices, and \citet{danihelka_associative_2016} developed $\cplx$-valued
 holographic representations for LSTMs. More recently \citet{trabelsi_deep_2018} proposed
 $\cplx$-valued batch-normalization and weight initialization, \citet{wolter_complex_2018}
-investigated different $\cplx$-valued gating mechanisms for RNNs, \citet{yang_complex_2019}
+investigated different $\cplx$-valued gating mechanisms for RNNs, and \citet{yang_complex_2019}
 proposed $\cplx$-valued self-attention and complex transformer architecture. It merits
 noting that \citet{gaudet_deep_2018} generalized $\cplx$VNN further to deep quaternion-valued
 networks, and \citet{vecchi_compressing_2020} studied sparsity inducing regularizers for
@@ -579,9 +579,9 @@ them.
 \section{$\cplx$-Variational Dropout} % (fold)
 \label{sec:c_variational_dropout}
 
-Below we develop Sparse Variational Dropout for $\cplx$VNN by using fully factorized
-complex Gaussian posterior approximation, outline the $\cplx$ version of the local
-reparameterization trick and derive the divergence penalties in \eqref{eq:sgvb_estimator}.
+In this section we develop Sparse Variational Dropout for $\cplx$VNN by using a fully
+factorized complex Gaussian posterior approximation. We outline the $\cplx$ version of
+the local reparameterization trick and derive the divergence penalties in \eqref{eq:sgvb_estimator}.
 The proposed $\cplx$-valued extension can readily be a part of a hierarchical variational
 approximation for structured sparsity \citep{louizos_bayesian_2017}.
 
@@ -623,8 +623,8 @@ Matrices $\Gamma$ and $C$ are given by $
   \mathbb{E} (z - \mu)\conj{(z - \mu)^\top}
 $ and $
   \mathbb{E} (z - \mu)(z - \mu)^{\top}
-$, respectively, and $z$ is a \emph{circularly symmetric} $\cplx$-Gaussian vector
-if $z$ and $\conj{z}$ are uncorrelated, i.e. $C = 0$.
+$, respectively, and the random vector $z$ is a \emph{circularly symmetric} $\cplx$-Gaussian
+vector if $z$ and $\conj{z}$ are uncorrelated, i.e. $C = 0$.
 %
 The entropy of $z$ terms of $\Gamma$ and $C$ is
 \begin{eqnarray} \label{eq:c-gauss-entropy}
@@ -779,26 +779,31 @@ is independent univariate $\cplx$-Gaussian
     \,.
 \end{equation}
 This is the $\cplx$-Gaussian version of the local reparameterization trick \eqref{eq:r-gauss-trick}.
-It requires three operations $b + \mu x$, $\Sigma \lvert x \rvert^2$ and $C x^2$ for
-$C_{ij} = \Sigma_{ij} \xi_{ij}$ with the complex modulus and square applied elementwise,
-and can be applied to any layer, the output of which depends linearly on its parameters,
-such as convolutional, affine, and bilinear transformations ($
+It requires three matrix-vector operations: $\cplx$-valued $b + \mu x$ and $C x^2$,
+and $\real$-valued $
+  \Sigma \lvert x \rvert^2
+$, where $C_{ij} = \Sigma_{ij} \xi_{ij}$ and the complex modulus and square are applied
+elementwise. \eqref{sub:c_gauss_and_local_rep} can be applied to any layer, the output
+of which depends linearly on its parameters, such as convolutional, affine, and bilinear
+transformations ($
   (x, z) \mapsto b_j + x^\top W^{(j)} z
-$). Similar to $\real$ case, $\cplx$ convolutions draw independent realizations of $W$
+$). Similar to the $\real$ case, $\cplx$ convolutions draw independent realizations of $W$
 for each spatial patch in the input \citep{molchanov_variational_2017}. This provides
 faster computations and better statistical efficiency of the SGVB gradient estimator
 by eliminating correlation from overlapping patches \citep{kingma_variational_2015} and
-allowing \eqref{eq:cplx-gauss-trick} to leverage $\cplx$ convolutions of the relation
-and variance kernels with elementwise complex squares $x^2$ and amplitudes $\lvert x \rvert^2$.
+allowing \eqref{eq:cplx-gauss-trick} to efficiently leverage $\cplx$ convolutions of
+the relation and variance kernels with elementwise complex squares $x^2$ and amplitudes
+$\lvert x \rvert^2$.
 % Weight sharing is essentially pushed to shared variational parameters $\theta$ in the approximation $q_\theta$.
 % A convolution is a matrix product of $W$, unrolled into a toeplitz matrix, and im-to-col
 % flattened intput $x$
 
 For $\cplx$-Sparse Variational Dropout we propose to use fully factorized $\cplx$-Gaussian
-approximation \eqref{eq:c-gauss-vi-general} with additive noise parameterization $
+approximation \eqref{eq:c-gauss-vi-general} with $\xi_{ij} = 0$ and additive noise
+parameterization ($
   \alpha_{ij} = \tfrac{\Sigma_{ij}}{\lvert \mu_{ij} \rvert^2}
-$ and $\xi_{ij} = 0$ for weights in dense linear, convolutional and other effectively
-parameter-affine layers. Point estimates are used for biases.
+$) for weights in dense linear, convolutional and other effectively parameter-affine
+layers. Point estimates are used for biases.
 % This forces the relation coefficient in \eqref{eq:cplx-gauss-trick} to be zero. 
 
 % subsection c_gauss_and_local_rep (end)
@@ -820,7 +825,7 @@ $, the divergence term in ELBO \eqref{eq:sgvb_estimator} is
         + \mathbb{E}_{q(\omega_{ij})} \log{\pi(\omega_{ij})}
     \,.
 \end{equation}
-We consider two fully factorized priors: an improper prior resembling VD and $\cplx$-Gaussian
+We consider two fully factorized priors: an improper prior, resembling VD, and $\cplx$-Gaussian
 ARD prior. We omit subscripts ${ij}$ for brevity in this section.
 
 \subsubsection{VD prior} % (fold)
@@ -1024,13 +1029,13 @@ the KL-divergence term in \eqref{eq:sgvb_estimator}.
 \subsubsection{$\cplx$-Variational Dropout via $\real$-scaling} % (fold)
 \label{ssub:real_scaling_dropout}
 
-Consider the following parameterization of $W$: $
+We consider the following parameterization of $W$: $
   W_{ij} = \mu_{ij} \varepsilon_{ij}
 $, $\varepsilon_{ij} \in \real$ with $
   \varepsilon_{ij} \sim \mathcal{N}(1, \alpha_{ij})
 $, yet $\mu \in \cplx^{n \times m}$. This case corresponds to inference regarding
 multiplicative noise $\varepsilon$ rather than the parameters themselves. Under
-this parameterization $q(W)$ is effectively factorized degenerate $\cplx$-Gaussian
+this parameterization $q(W_{ij})$ is effectively degenerate univariate $\cplx$-Gaussian
 \eqref{eq:c-gauss-vi-general} with $
   \Sigma_{ij} = \alpha_{ij} \lvert \mu_{ij} \rvert^2
 $ and $
@@ -1094,6 +1099,7 @@ and $n_\mathtt{par}$ is the total number of values. In a $\real$-valued network 
 parameter counts as \emph{one} value and as \emph{two} values in a $\cplx$VNN. Each
 model has a compression limit, determined by biases, shift and scaling in $\real$-
 and $\cplx$-valued batch normalization layers.
+% variace parameters in q_\theta are completely ignored.
 
 \subsection{Stagewise training} % (fold)
 \label{sub:staging}
@@ -1146,8 +1152,8 @@ $\tau = 3$ is commonly used as the threshold
 
 The \emph{``fine-tune''} stage reverts the network back to deterministic layers,
 initializes the parameters to the mode of $q_\theta(\omega)$ and proceeds as the
-``pre-train'' stage, except for training only the parameters specified by sparsity
-masks.
+``pre-train'' stage, except for training only those parameters, which are specified
+by sparsity masks.
 
 % subsection fitting_and_sparsification (end)
 
@@ -1161,7 +1167,7 @@ Variational Dropout: MNIST \citep{lecun_gradient-based_1998}, KMNIST \citep{clan
 EMNIST \citep{cohen_emnist_2017} and Fashion-MNIST \citep{xiao_fashion-mnist_2017}.
 %
 % dataset size
-We deliberately use a \emph{fixed} random subset of $10$ thousand images from the train
+We deliberately use a \emph{fixed} random subset of \emph{ten thousand} images from the train
 split of each dataset to fit the networks and measure the performance with classification
 \emph{accuracy} score on the usual test split.
 % Limiting the size was done primarily to test the regularization strength of compression
@@ -1239,14 +1245,29 @@ of compression-accuracy pairs.
 % observations
 Figures~\ref{fig:mnist-like__trade-off__fft} and~\ref{fig:mnist-like__trade-off__raw}
 depict the resulting compression-accuracy trade-off on MNIST for the models described
-above (see appendix~\ref{sec:mnist_like_experiments}).
+above.
 %
 Each point represents the trade-off of the compressed network after fine-tuning, while
 its tail illustrates the impact of this stage on the performance. Transparent horizontal
 bands on each plot represent min-max performance spread of the pre-trained uncompressed
 network on the test split.
+%
+Results for other MNIST-like dataset are presented appendix~\ref{sec:mnist_like_experiments}.
 
 % observations and conclusions
+The overarching conclusion from the conducted experiments is that both $\cplx$-ARD and
+$\cplx$-VD methods compress similarly to each other, but for the same value of $C$ in
+\eqref{eq:elbo_with_coef} ARD yields marginally lower compression and slightly higher
+performance post fine-tuning. For each fixed $C$ the compression rates after ``sparsify''
+stage are roughly identical.
+% a table for mean comparison against C and compression-performance?
+%
+% fft: $2\real$ convolutional model trade-off overall better than $\real$, dense -- on par.
+% raw: $\cplx$ models trade-off overall better than $\tfrac12\cplx$.
+% fft: any-$\real$ dense model compresses better than $\cplx$
+% $\cplx$-valued networks do not have as much spare capacity as $2 \real$ due to
+%  constraints imposed by multiplication in $\cplx$ numbers
+%
 At the same time, ``fine-tune'' stage almost always improves performance in high compression
 regime ($\times50+$ high $C$ in \eqref{eq:elbo_with_coef}), likely due to regularization from
 high sparsity.
@@ -1261,21 +1282,9 @@ rates $\times100+$ only for the \emph{TwoLayerDenseModel}.
 %
 Comparison of $\real$ and $\cplx$ networks with matching architecture, i.e. same effective
 layer widths in $2\real$ vs. $\cplx$ and $\real$ vs. $\tfrac12\cplx$, shows that doubled
-$\real$ networks perform and compress better than $\cplx$, due higher intrinsic redundancy
+$\real$ networks perform and compress better than $\cplx$, due to higher intrinsic redundancy
 unchecked by $\cplx$-arithmetic constraint.
 % Convolutional network compress worse because they have less redundant parameters
-
-The overarching conclusion from the conducted experiments is that both $\cplx$-ARD and
-$\cplx$-VD methods compress similarly to each other, but for the same value of $C$ in
-\eqref{eq:elbo_with_coef} ARD yields marginally lower compression and slightly
-higher performance post fine-tuning.
-% a table for mean comparison against C and compression-performance?
-%
-% fft: $2\real$ convolutional model trade-off overall better than $\real$, dense -- on par.
-% raw: $\cplx$ models trade-off overall better than $\tfrac12\cplx$.
-% fft: any-$\real$ dense model compresses better than $\cplx$
-% $\cplx$-valued networks do not have as much spare capacity as $2 \real$ due to
-%  constraints imposed by multiplication in $\cplx$ numbers
 
 % subsection mnist_like_datasets (end)
 
@@ -1297,7 +1306,7 @@ convolutional network.
 % differences with mnist
 Unlike experiment in sec.~\ref{sub:mnist_like_datasets}, we consider the raw features
 only, use full training split and allocate $20$, $40$, and $20$ epochs to each stage.
-During training the mini-batch of $128$ samples is augmented by random horizontal flipping
+During training every mini-batch of $128$ samples is augmented by random horizontal flipping
 and random cropping, which is done by zero-padding the image with four pixels and extracting
 a $32\times 32$ patch from the $40\times 40$ intermediate image.
 %
@@ -1341,8 +1350,8 @@ slightly less compression with marginally better accuracy.
 
 % Prior experiments demonstrated that the $\cplx$-valued variational sparsification
 % what can be expected from prior research.
-MusicNet is a corpus of $330$ classical music recordings with note annotations used for
-learning feature representations for music transcription tasks \citep{thickstun_learning_2017}.
+MusicNet is a corpus of $330$ annotated classical music recordings used for learning
+feature representations for music transcription tasks \citep{thickstun_learning_2017}.
 \citet{trabelsi_deep_2018} have proposed a $1d$ VGG-like $\cplx$-valued network that
 surpassed a similar $\real$-valued network and achieved $72.9\%$ pooled \emph{Average
 Precision} on this dataset. Recently \citet{yang_complex_2019} have reported $74.2\%$
@@ -1400,11 +1409,13 @@ significant superiority of one method over another.  % it should've been ARD
 
 The performance-compression frontier in figure~\ref{fig:musicnet__trade-off} shows that
 VD and ARD deliver similar compression rates, but ARD slightly outperforms in terms of
-the average precision. At $\times100$ compression level the $k_3$ model outperforms its
+the average precision at the cost of marginally lower compression.
+%
+At $\times100$ compression level the $k_3$ model outperforms its
 uncompressed baseline, but yields lower AP score than the full model. In conjunction with
 post-pruning fine-tuning, both $\cplx$-valued variational sparsification methods achieve
 average precision level comparable to the result of \citet{trabelsi_deep_2018} with a
-network compressed $\times50$-$\times200$.
+network having $50$-$200$ times less parameters.
 % any conclusions related to k_3???
 
 % testing the fx of the threshold
@@ -1425,7 +1436,7 @@ the fine-tuning stage for various pruning thresholds $
   \tau \in \{\tfrac{k}2\colon k=-8\cdots+8\}
 $. The performance-compression curves depicted in figure~\ref{fig:hist__and__threshold__tradeoff}
 are parameterized by decreasing $\tau$ from left to right, since models are not re-compressed
-and making $\tau$ monotonically influence the compression rate. From \eqref{eq:elbo_with_coef}
+which makes $\tau$ monotonically affect the compression rate. From \eqref{eq:elbo_with_coef}
 and the relative positions of the curves it can be concluded that $C$ has a much more
 substantial impact on the compression profile of each method, than the choice of the
 pruning threshold.
@@ -1451,7 +1462,7 @@ inducing prior from pulling the posterior sufficiently away from the likelihood-
 parameters inherited from the ``pre-train'' stage. It is reasonable, therefore, to expect
 that for undercompressed models the fine-tuning stage acts essentially as a continuation
 of pre-training. And, since we have observed that longer training invariably deteriorates
-the validation performance, the ``fine-tune'' stage should leads to overfitting for small
+the validation performance, the ``fine-tune'' stage should lead to overfitting for small
 $C$.
 %
 Figure~\ref{fig:musicnet__early_stopping} shows that the models, which have been
@@ -1494,9 +1505,9 @@ counterparts.
 % ranked behind L0 on Transformer, and was bested by magnitude pruning for sparsity
 % levels of 80\% and up. Variational dropout consistently produces models on-par or better
 % than magnitude pruning on ResNet-50, and l0 fails to produce sparse models at all.
-We expect the overall conclusion of \citet{gale_state_2019} to carry over to $\cplx$VNN,
-since there is nothing fundamentally different in the proposed $\cplx$-valued variational
-sparsification methods.
+Therefore, we expect the overall conclusion of \citet{gale_state_2019} to carry over to
+$\cplx$VNN, since there is nothing fundamentally different in the proposed $\cplx$-valued
+variational sparsification methods.
 
 The results of this study have direct implications for real-time signal processing with
 embedded deep learning applications both in terms of lower storage requirements and higher
@@ -2256,7 +2267,7 @@ $, and regards $
 $ as an algebraically equivalent function $F\colon \real^2 \to \cplx$ defined $
   f(z) = f(u + \iu v) = F(u, v)
 $. It enables general treatment of functions of vector $\cplx$-argument that possess partial
-derivatives with respect to real and imaginary parts, yet do are not required to satisfy
+derivatives with respect to real and imaginary parts, yet are not required to satisfy
 Cauchy-Riemann conditions. In $\cplx\real$ calculus the complex argument $z$ and its
 conjugate $\conj{z}$ act as independent variables and $f(z)$ is treated as $f(z, \conj{z})$
 by way of geometric transformations $z = u + \iu v$ and $\conj{z} = u - \iu v$.
@@ -2411,13 +2422,12 @@ $, whence
       \bigr)
     \,.
 \end{equation*}
-Therefore the gradient the direction of greatest ascent of $f$ at $z$ is given by $
+Therefore the gradient of $f$ at $z$ is given by $
   \nabla_{\conj{z}} f(z)
     = \conj{\tfrac{\partial f}{\partial z}}
     = \tfrac{\partial F}{\partial u}
     + \iu \tfrac{\partial F}{\partial v}
-$.
-Natural identification $\cplx \simeq \real^2$, backed by Wirtinger calculus, and emulation
+$. The identification $\cplx \simeq \real^2$, backed by Wirtinger calculus, and emulation
 of $\cplx$-arithmetic in computational graphs with $\real$-valued operations makes it
 possible to reuse $\real$ back-propagation and existing auto-differentiation frameworks.
 
