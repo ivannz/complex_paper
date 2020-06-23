@@ -1487,32 +1487,32 @@ less training epochs before early stopping terminates the process.
 \section{Conclusion} % (fold)
 \label{sec:conclusion}
 
-In this study we have presented $\cplx$-valued Variational sparsification methods to
+In this study we have presented $\cplx$-valued variational sparsification methods to
 the ever growing set of tools for learning deep $\cplx$-valued neural networks. To
-validate the proposed $\cplx$-valued extensions of the Variational Dropout methods
-\citep{molchanov_variational_2017,kharitonov_variational_2018} we have conducted a
-large numerical study of $\cplx$VNN with simple architectures to assess the feasible
-performance-compression trade-off. At the cost of marginally lower performance, we have
-achieved $\times50$-$\times100$ compression of the deep $\cplx$VNN of \citet{trabelsi_deep_2018}
-on the MusicNet.
+validate these methods we have carried out a large numerical study of $\cplx$VNN with
+simple architectures to assess the feasible performance-compression trade-off, and
+studied compression of two deep convolutional $\cplx$VNN. At the cost of marginally
+lower performance, we have achieved $\times50$-$\times100$ compression of the deep
+$\cplx$VNN of \citet{trabelsi_deep_2018} on the MusicNet.
+% CVNN capacity grows by \sqrt{2}, compute grows by 2 % RVNN caption by 2 compute by 2. 
 
-Analysis of experimental findings has shown that $\cplx$-VD, sec.~\ref{ssub:vd_prior},
-and $\cplx$-ARD, sec.~\ref{ssub:ard_prior} offer adequate compression with controllable
-performance degradation in $\cplx$VNN and have trade-off profile similar to their $\real$
-counterparts.
+Experimental results show that $\cplx$-VD (sec.~\ref{ssub:vd_prior}) and $\cplx$-ARD
+(sec.~\ref{ssub:ard_prior}) exhibit trade-off profiles matching their $\real$-valued
+counterparts. This makes us confident that the overall conclusion of \citet{gale_state_2019}
+is applicable to $\cplx$VNN and the proposed $\cplx$-valued variational sparsification
+methods.
 % L0 and dropout work in the low-to-mid sparsity range, variational dropout consistently
 % ranked behind L0 on Transformer, and was bested by magnitude pruning for sparsity
 % levels of 80\% and up. Variational dropout consistently produces models on-par or better
 % than magnitude pruning on ResNet-50, and l0 fails to produce sparse models at all.
-Therefore, we expect the overall conclusion of \citet{gale_state_2019} to carry over to
-$\cplx$VNN, since there is nothing fundamentally different in the proposed $\cplx$-valued
-variational sparsification methods.
+Furthermore our findings indicate that between each other under similar circumstances
+the methods yield comparable compression and performance results, which echoes earlier
+results by \citet{kharitonov_variational_2018}.
 
-The results of this study have direct implications for real-time signal processing with
-embedded deep learning applications both in terms of lower storage requirements and higher
-throughput stemming from fewer floating-point multiplications, despite higher arithmetic
+The results of this study have direct implications for embedded deep learning applications
+both in terms of lower storage requirements and higher throughput stemming from fewer
+floating point multiplications due to sparsity, despite somewhat higher arithmetic
 complexity of $\cplx$-valued networks.
-% CVNN capacity grows by \sqrt{2}, compute grows by 2 % RVNN caption by 2 compute by 2. 
 
 % section conclusion (end)
 
