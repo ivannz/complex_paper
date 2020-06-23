@@ -330,7 +330,7 @@ Variational Inference can be used as model regularization and sparsification tec
 Dropout, proposed by \citet{hinton_improving_2012}, prevents overfitting by injecting
 multiplicative binary noise into layer's weights, which breaks up co-adaptations that
 could occur during training. \citet{wang_fast_2013} argued that the overall effect of
-binary dropout on the intermediate outputs can be approximated by a Gaussian with weight-input
+binary Dropout on the intermediate outputs can be approximated by a Gaussian with weight-input
 dependent mean and variance via the Central Limit Theorem. \citet{srivastava_dropout:_2014}
 proposed using independent $\mathcal{N}(1, 1)$ multiplicative noise, arguing that higher
 entropy of a Gaussian has better regularizing effect. \citet{gal_dropout_2016} showed
@@ -349,9 +349,9 @@ superposition method, utilizing the learning capacity of the network better.
 % by \citet{kingma_variational_2015} and repurposed for sparsification by \citet{molchanov_variational_2017}.
 %
 \citet{kingma_variational_2015} provided a unifying perspective on Dropout, DropConnect
-\citep{wan_regularization_2013}, and Gaussian dropout \citep{wang_fast_2013} through
-the lens of Variational Inference and propose \emph{Variational Dropout}. They
-argued that the multiplicative noise introduced by Dropout methods induces a distribution
+\citep{wan_regularization_2013}, and Gaussian Dropout \citep{wang_fast_2013} through
+the lens of Variational Inference and propose \emph{Variational Dropout}. They argued
+that the multiplicative noise introduced by Dropout methods induces a distribution
 equivalent to a fully factorized variational posterior of the form $
   q_\theta(\omega) = \prod_j q_{\theta}(\omega_j)
 $, where $q_{\theta}(\omega_j)$ is $\omega_j = \mu_j \eta_j$ with $
@@ -386,9 +386,9 @@ whole enabled pruning entire input features in each layer.
 % They also proposed to estiamte bit precision for quantization based on parameter's
 % estimated uncertainty (variance or entropy).
 
-Simultaneously \citet{molchanov_variational_2017} proposed to use \emph{Additive Noise
-Parameterization} in the factorized Gaussian $q_\theta(\omega)$ in conjunction with the
-Local Reparameterization Trick. They reverted the $(\mu, \alpha)$ parameterization in
+Simultaneously \citet{molchanov_variational_2017} proposed to use \emph{additive noise
+parameterization} in the factorized Gaussian $q_\theta(\omega)$ in conjunction with the
+local reparameterization trick. They reverted the $(\mu, \alpha)$ parameterization in
 $q_\theta(\omega)$ back to $(\mu, \sigma^2)$, arguing that it reduces the variance of the
 SGVB \eqref{eq:sgvb_estimator}, by rendering the gradient with respect to $\mu$ independent
 from the local noise, injected by \eqref{eq:r-gauss-trick}. This modification is important
@@ -579,8 +579,8 @@ them.
 \label{sec:c_variational_dropout}
 
 Below we develop Sparse Variational Dropout for $\cplx$VNN by using fully factorized
-complex Gaussian posterior approximation, outline the $\cplx$ variant of the Local
-Reparameterization Trick and derive the divergence penalties in \eqref{eq:sgvb_estimator}.
+complex Gaussian posterior approximation, outline the $\cplx$ version of the local
+reparameterization trick and derive the divergence penalties in \eqref{eq:sgvb_estimator}.
 The proposed $\cplx$-valued extension can readily be a part of a hierarchical variational
 approximation for structured sparsity \citep{louizos_bayesian_2017}.
 
@@ -777,7 +777,7 @@ is independent univariate $\cplx$-Gaussian
       \Bigr)
     \,.
 \end{equation}
-This is the $\cplx$-gaussian version of the Local Reparameterization Trick \eqref{eq:r-gauss-trick}.
+This is the $\cplx$-Gaussian version of the local reparameterization trick \eqref{eq:r-gauss-trick}.
 It requires three operations $b + \mu x$, $\Sigma \lvert x \rvert^2$ and $C x^2$ for
 $C_{ij} = \Sigma_{ij} \xi_{ij}$ with the complex modulus and square applied elementwise,
 and can be applied to any layer, the output of which depends linearly on its parameters,
@@ -794,7 +794,7 @@ and variance kernels with elementwise complex squares $x^2$ and amplitudes $\lve
 % flattened intput $x$
 
 For $\cplx$-Sparse Variational Dropout we propose to use fully factorized $\cplx$-Gaussian
-approximation \eqref{eq:c-gauss-vi-general} with Additive Noise Parameterization $
+approximation \eqref{eq:c-gauss-vi-general} with additive noise parameterization $
   \alpha_{ij} = \tfrac{\Sigma_{ij}}{\lvert \mu_{ij} \rvert^2}
 $ and $\xi_{ij} = 0$ for weights in dense linear, convolutional and other effectively
 parameter-affine layers. Point estimates are used for biases.
@@ -819,7 +819,7 @@ $, the divergence term in ELBO \eqref{eq:sgvb_estimator} is
         + \mathbb{E}_{q(\omega_{ij})} \log{\pi(\omega_{ij})}
     \,.
 \end{equation}
-We consider two fully factorized priors: an improper VD prior and $\cplx$-Gaussian
+We consider two fully factorized priors: an improper prior resembling VD and $\cplx$-Gaussian
 ARD prior. We omit subscripts ${ij}$ for brevity in this section.
 
 \subsubsection{VD prior} % (fold)
@@ -1001,7 +1001,7 @@ $ with $\tau > 0$. The per element divergence term in \eqref{eq:elbo-general-kl-
 %   \,. $$
 %
 In Empirical Bayes the prior adapts to the observed data, i.e. \eqref{eq:sgvb_estimator}
-is optimized w.r.t. $\tau$ of each weight's prior. The Maximimum Likelihood estimator
+is optimized w.r.t. $\tau$ of each weight's prior. The Maximum Likelihood estimator
 of $\tau$ is given by the minimizer \eqref{eq:emp-bayes-kl-div}, i.e. $
   \tau^\ast = (\sigma^2 + \lvert \mu \rvert^2)^{-1}
 $, thereby giving
@@ -1058,8 +1058,8 @@ The source code for the experiments and the figures in this study is available a
 \url{https://github.com/ivannz/complex_paper/tree/v2020.6}.
 %
 The source code for a package based on PyTorch \citep{paszke_pytorch_2019}, which
-implements $\cplx$-valued Sparse Variational Dropout and ARD layers, and provides
-other basic layers for $\cplx$VNN, including maskable sparsified layers, is available at
+implements $\cplx$-valued Sparse Variational Dropout and ARD layers and provides other
+basic layers for $\cplx$VNN is available at
 \url{https://github.com/ivannz/cplxmodule}.
 \smallskip
 
@@ -1164,13 +1164,13 @@ masks.
 \label{sub:mnist_like_datasets}
 
 We conduct a moderately sized experiment on MNIST-like datasets of $28\times 28$ greyscale
-images to study the performance-compression trade-off of the proposed $\cplx$-variational
-dropout: MNIST \citep{lecun_gradient-based_1998}, KMNIST \citep{clanuwat_deep_2018},
+images to study the performance-compression trade-off of the proposed $\cplx$-valued Sparse
+Variational Dropout: MNIST \citep{lecun_gradient-based_1998}, KMNIST \citep{clanuwat_deep_2018},
 EMNIST \citep{cohen_emnist_2017} and Fashion-MNIST \citep{xiao_fashion-mnist_2017}.
 %
 % dataset size
-We deliberately use a \emph{fixed} random subset of $10k$ images from the train split
-of each dataset to fit the networks and measure the performance with classification
+We deliberately use a \emph{fixed} random subset of $10$ thousand images from the train
+split of each dataset to fit the networks and measure the performance with classification
 \emph{accuracy} score on the usual test split.
 % Limiting the size was done primarily to test the regularization strength of compression
 % and to facilitate quicker experiments.
@@ -1188,16 +1188,16 @@ $800 \to 500 \to n_\mathtt{out}$.
 %
 For each dataset we experiment with all combinations of model kinds ($\real$ or $\cplx$)
 and sparsification methods (VD or ARD). To take into account potential differences in
-capacity we consider halving or doubling the number of features in the intermediate layers
-\citep{monning_evaluation_2018}. Halved $\cplx$VNN are tagged $\tfrac12\cplx$, and
-doubled $\real$-valued networks are labelled $2\real$. For \texttt{fft} we compare
-$\{\real, \cplx, 2\real\}$ and for \texttt{raw} -- $\{\tfrac12\cplx, \real, \cplx\}$.
+the capacity of $\cplx$VNN we consider halving or doubling the number of features in
+the intermediate layers \citep{monning_evaluation_2018}. Halved $\cplx$VNN are tagged
+$\tfrac12\cplx$, and doubled $\real$-valued networks are labelled $2\real$. For \texttt{fft}
+we compare $\{\real, \cplx, 2\real\}$ and for \texttt{raw} -- $\{\tfrac12\cplx, \real, \cplx\}$.
 
 % experiment setup
 Stages (sec.~\ref{sub:staging}) last for $40$, $75$ and $40$ epochs, respectively, in each
 experiment. The sparsification threshold $\tau$ is fixed at $-\tfrac12$, the training batch
-size is set to $128$ and the base learning rate ${10}^{-3}$ is reduced after the $10$-th epoch
-to ${10}^{-4}$ at every stage.
+size is set to $128$ and the base learning rate ${10}^{-3}$ is reduced after the $10$-th
+epoch to ${10}^{-4}$ at every stage.
 %
 % grid specs
 We vary $
@@ -1347,20 +1347,19 @@ slightly less compression with marginally better accuracy.
 % Inspired by this we set out to investigate its effects on in the domain where it has
 % been shown that CVNN outperform rvnn.
 
-MusicNet is a dataset of $330$ classical music recordings with note annotations
-\citep{thickstun_learning_2017}.
-% too abrupt
-\citet{trabelsi_deep_2018} proposed a $1d$ VGG-like
-$\cplx$-valued network that surpassed a similar $\real$-valued network and achieved
-$72.9\%$ pooled \emph{Average Precision} on the music transcription task.
-%
-Recently \citet{thickstun_invariances_2018} have achieved $77.3\%$ with a four-layer
-$\real$-valued network on $\log$-spaced STFT features, and \citet{draguns_residual_2020}
-are reporting $78.0\%$ with a residual-shuffle-exchange network.
-
 % Prior experiments demonstrated that the $\cplx$-valued variational sparsification
 % what can be expected from prior research.
+MusicNet is a corpus of $330$ classical music recordings with note annotations used for
+learning feature representations for music transcription tasks \citep{thickstun_learning_2017}.
+\citet{trabelsi_deep_2018} have proposed a $1d$ VGG-like $\cplx$-valued network that
+surpassed a similar $\real$-valued network and achieved $72.9\%$ pooled \emph{Average
+Precision} on this dataset. Recently \citet{yang_complex_2019} have reported $74.2\%$
+AP with a $\cplx$-valued transformer, \citet{thickstun_invariances_2018} have achieved
+$77.3\%$ with a four-layer $\real$-valued network on $\log$-spaced spectrogram, and
+\citet{draguns_residual_2020} report $78.0\%$ with a residual-shuffle-exchange network.
+
 In this experiment we seek to compress of the $\cplx$VNN proposed by \citet{trabelsi_deep_2018}.
+%
 The dataset is split into the same validation and test samples and handled identically
 to their study. The input features are $\cplx$-valued Fourier transforms of $4096$-sample
 windows from each waveform, and the label vectors are taken from annotations at the middle
@@ -1414,7 +1413,7 @@ uncompressed baseline, but yields lower AP score than the full model. In conjunc
 post-pruning fine-tuning, both $\cplx$-valued variational sparsification methods achieve
 average precision level comparable to the result of \citet{trabelsi_deep_2018} with a
 network compressed $\times50$-$\times200$.
-% any coclusions related to k_3???
+% any conclusions related to k_3???
 
 % testing the fx of the threshold
 \begin{figure}[!t]
@@ -1489,11 +1488,11 @@ considerably less training epochs before early stopping terminates the process.
 In this study we have presented $\cplx$-valued Variational sparsification methods to
 the ever growing set of tools for learning deep $\cplx$-valued neural networks. To
 validate the proposed $\cplx$-valued extensions of the Variational Dropout methods
-of \citet{molchanov_variational_2017} and \citet{kharitonov_variational_2018} we have
-conducted a large numerical study of $\cplx$VNN with simple architectures to assess
-the feasible performance-compression trade-off. At the cost of marginally lower performance,
-we have achieved $\times50$-$\times100$ compression of the state-of-the-art deep
-$\cplx$VNN of \citet{trabelsi_deep_2018} on the MusicNet.
+\citep{molchanov_variational_2017,kharitonov_variational_2018} we have conducted a
+large numerical study of $\cplx$VNN with simple architectures to assess the feasible
+performance-compression trade-off. At the cost of marginally lower performance, we have
+achieved $\times50$-$\times100$ compression of the deep $\cplx$VNN of \citet{trabelsi_deep_2018}
+on the MusicNet.
 
 Analysis of experimental findings has shown that $\cplx$-VD, sec.~\ref{ssub:vd_prior},
 and $\cplx$-ARD, sec.~\ref{ssub:ard_prior} offer adequate compression with controllable
@@ -1504,9 +1503,8 @@ counterparts.
 % levels of 80\% and up. Variational dropout consistently produces models on-par or better
 % than magnitude pruning on ResNet-50, and l0 fails to produce sparse models at all.
 We expect the overall conclusion of \citet{gale_state_2019} to carry over to $\cplx$VNN,
-since there is nothing fundamentally different in $\cplx$-valued versions of the methods
-they study.
-%
+since there is nothing fundamentally different in the proposed $\cplx$-valued variational
+sparsification methods.
 
 The results of this study have direct implications for real-time signal processing with
 embedded deep learning applications both in terms of lower storage requirements and higher
@@ -1850,9 +1848,6 @@ Figures \ref{fig:appendix__mnist-like__trade-off__ARD__fft}, \ref{fig:appendix__
 \ref{fig:appendix__mnist-like__trade-off__ARD__raw}, and \ref{fig:appendix__mnist-like__trade-off__VD__raw}
 present $\real$ and $\cplx$ models with \emph{the same intermediate feature sizes}.
 
-We also report the trade-off comparison, when the argument by \citet{monning_evaluation_2018}
-for higher intrinsic capacity of $\cplx$-valued networks has been taken into account.
-%
 We compare $\real$ networks against $\tfrac12 \cplx$ with half the number of parameters
 for raw input features on figures \ref{fig:appendix__cmp__mnist-like__trade-off__ARD__raw},
 and \ref{fig:appendix__cmp__mnist-like__trade-off__VD__raw}, and $2 \real$ with
