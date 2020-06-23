@@ -72,7 +72,7 @@ applications can be found in embedded systems. Common embedded applications incl
 on-device image recognition and signal processing. Despite recent advances in generalization
 and optimization theory specific to deep networks, deploying in actual embedded hardware
 remains a challenge due to storage, real-time throughput, and arithmetic complexity
-restrictions \citep{he_amc:_2018}. Therefore, compression methods for achieving high
+restrictions \citep{han_learning_2015}. Therefore, compression methods for achieving high
 model sparsity and numerical efficiency without losing much in performance are especially
 relevant.
 % Solving the storage and artihmetic constraints encourages development of model compression
@@ -158,9 +158,9 @@ outcomes.
 \label{sub:variational_inference}
 
 % overview
-In broad terms Bayesian Inference is a principled framework of reasoning about uncertainty
-and a tool to update prior beliefs about model's parameters in accordance with evidence
-or empirical data into a posterior distribution. The posterior is useful for inference
+In broad terms Bayesian Inference is a principled framework for reasoning about uncertainty
+and updating prior beliefs about model's parameters in accordance with evidence or
+empirical data into a posterior distribution. The posterior is useful for inference
 regarding unobserved data, predictive statistics, parameter confidence regions, and
 model's uncertainty.
 % intuitive definition of  of model given data is the same as probability of data under hypothesis (model)
@@ -224,13 +224,13 @@ To make VI able to handle large-scale datasets \citet{hoffman_stochastic_2013} p
 \emph{Stochastic Variational Inference}, which uses stochastic gradient optimization of
 \eqref{eq:elbo_general} based on noisy unbiased gradient estimates of ELBO
 computed on random mini-batches from the dataset. \citet{titsias_doubly_2014} translated
-dependence on $\theta$ from $q_{\theta}$ to the functions inside the expectations of ELBO
-and propose \emph{Doubly Stochastic Variational Inference}, which computes unbiased gradient
-estimator based on both dataset subsampling and random draws from variational distribution
-$q_{\theta}$. Note, that the KL divergence term can replaced by its unbiased differentiable
-finite-sample estimator without forfeiting convergence of (doubly) SVI.
+the dependence on location–scale parameters of $q_{\theta}$ to the function inside its
+expectation and proposed \emph{Doubly Stochastic Variational Inference}. DSVI constructs
+an unbiased finite-sample estimator of the gradient of \eqref{eq:elbo_general} by both
+subsampling the dataset and sampling from $q_{\theta}$, without forfeiting convergence
+of SVI.
 
-% The variance of the stochastic gradient directly affects convergence of SVI. 
+% The variance of the stochastic gradient directly affects convergence of SVI.
 Independently, \citet{kingma_auto-encoding_2014} proposed \emph{Stochastic Gradient
 Variational Bayes}, which is an alternative efficient doubly stochastic estimator
 applicable to models with parameters $\omega$ that are continuous random variables
@@ -355,7 +355,7 @@ superposition method, utilizing the learning capacity of the network better.
 \citep{wan_regularization_2013}, and Gaussian Dropout \citep{wang_fast_2013} through
 the lens of Variational Inference and propose \emph{Variational Dropout}. They argued
 that the multiplicative noise introduced by Dropout methods induces a distribution
-equivalent to a fully factorized variational posterior of the form $
+equivalent to a fully factorized variational posterior $
   q_\theta(\omega) = \prod_j q_{\theta}(\omega_j)
 $, where $q_{\theta}(\omega_j)$ is $\omega_j = \mu_j \eta_j$ with $
   \eta_j \sim p_\theta(\eta_j)
@@ -415,9 +415,9 @@ polynomial with a logarithmic term, and later \citet{molchanov_variational_2017}
 the approximation of \eqref{eq:improper-kl-div-real} by weighted sum of a sigmoid and a
 soft-plus term.
 % see p.6 sec 3.4 of kingma_variational_2015
-In appendix~\ref{sec:real-chisq-grad} we verify the value and the derivative of their
-approximation against a Monte-Carlo estimate for $\alpha$ varying over a fine logarithmic
-grid and the exact expression for gradient of \eqref{eq:improper-kl-div-real}.
+In appendix~\ref{sec:real-chisq-grad} we verify the derivative of their approximation
+against a Monte-Carlo estimate for $\alpha$ varying over a fine $\log$-scale grid and
+the exact expression for gradient of \eqref{eq:improper-kl-div-real}.
 % (!) good for SGVB: gradient-based methods require unbiased gradient estimates
 % (in) it is in poor taste to brag about this beign the first time anyone has derived a
 % derivative of an intractable function.
@@ -813,7 +813,7 @@ layers. Point estimates are used for biases.
 
 For a fully factorized approximation $q(\omega)$ and factorized prior $
   \pi(\omega) = \prod_{ij} \pi(\omega_{ij})
-$, the divergence term in ELBO \eqref{eq:sgvb_estimator} is
+$, the divergence term \eqref{eq:sgvb_estimator} is
 \begin{equation}  \label{eq:elbo-general-kl-div}
   KL(q \| \pi)
     % = \mathbb{E}_{\oemga \sim q(\oemga)} \log \tfrac{q(\oemga)}{\pi(\oemga)}
@@ -1105,10 +1105,10 @@ and $\cplx$-valued batch normalization layers.
 \label{sub:staging}
 
 % The training consists of three successive stages: ``pre-train'' $\to$ ``sparsify'' $\to$ ``fine-tune''.
-At the \emph{``pre-train''} stage every network is fit ``as-is'', retaining its original
-deterministic architecture and using only the likelihood term from \eqref{eq:sgvb_estimator}.
+At the \emph{``pre-train''} stage every network is fit ``as-is'' using deterministic layers
+and only the likelihood term from \eqref{eq:sgvb_estimator}.
 
-During the \emph{``sparsify''} stage we make every layer Bayesian and apply $\cplx$-valued
+During the \emph{``sparsify''} stage we make every layer stochastic and apply $\cplx$-valued
 variational sparsification (sec.~\ref{ssub:vd_prior}, ~\ref{ssub:ard_prior}) or its $\real$
 counterpart. We inject a coefficient $
   C \in (0, 1]
@@ -1150,10 +1150,9 @@ at the same time being aware that $q_\theta$ is merely an approximation. In comp
 $\tau = 3$ is commonly used as the threshold
 \citep{molchanov_variational_2017,kingma_variational_2015}.
 
-The \emph{``fine-tune''} stage reverts the network back to deterministic layers,
-initializes the parameters to the mode of $q_\theta(\omega)$ and proceeds as the
-``pre-train'' stage, except for training only those parameters, which are specified
-by sparsity masks.
+At the \emph{``fine-tune''} stage the network reverts back to deterministic architecture
+and proceeds the same way as the ``pre-train'' stage, except for training only those
+parameters, which are specified by sparsity masks.
 
 % subsection fitting_and_sparsification (end)
 
@@ -1312,7 +1311,7 @@ a $32\times 32$ patch from the $40\times 40$ intermediate image.
 %
 We vary $C$ in \eqref{eq:elbo_with_coef} over $
   \{\tfrac32 2^{-\tfrac{k}2} \colon k=7, \cdots, 15\}
-$, compare $\real / \cplx$ VD and ARD methods and measure accuracy on CIFAR10 test split.
+$, compare $\real / \cplx$ VD and ARD methods and measure accuracy on the usual test split.
 
 % compare compressed cplx-vgg against real-vgg
 \begin{figure}[!t]
@@ -1431,8 +1430,8 @@ network having $50$-$200$ times less parameters.
 \end{figure}
 
 % effects of extra training epochs and the impact of tau
-We take the models compressed with $C \in \{\tfrac1{20}, \frac1{200}\}$ and re-run only
-the fine-tuning stage for various pruning thresholds $
+We take the full models compressed with $C \in \{\tfrac1{20}, \frac1{200}\}$ and re-run
+only the fine-tuning stage for various pruning thresholds $
   \tau \in \{\tfrac{k}2\colon k=-8\cdots+8\}
 $. The performance-compression curves depicted in figure~\ref{fig:hist__and__threshold__tradeoff}
 are parameterized by decreasing $\tau$ from left to right, since models are not re-compressed
@@ -1465,15 +1464,15 @@ of pre-training. And, since we have observed that longer training invariably det
 the validation performance, the ``fine-tune'' stage should lead to overfitting for small
 $C$.
 %
-Figure~\ref{fig:musicnet__early_stopping} shows that the models, which have been
-sparsified with $C$ less than $\tfrac1{400}$ and have $50\times$ compression, need
-considerably less training epochs before early stopping terminates the process.
+Figure~\ref{fig:musicnet__early_stopping} shows that the models, which have been sparsified
+with $C$ less than $\tfrac1{400}$, have less than $50\times$ compression and need considerably
+less training epochs before early stopping terminates the process.
 
 \begin{figure}[!t]
   \centering
   \begin{subfigure}[b]{1.\columnwidth}  % imcl2019-style swears at this
     \centering
-    \includegraphics[width=\columnwidth]{figure__fine-tune_fx__early__compression.pdf}
+    \includegraphics[width=\columnwidth]{figure__fine-tune_fx__early.pdf}
   \end{subfigure}
   \caption{%
     Early stopping epoch at fine-tuning stage.
@@ -1513,6 +1512,7 @@ The results of this study have direct implications for real-time signal processi
 embedded deep learning applications both in terms of lower storage requirements and higher
 throughput stemming from fewer floating-point multiplications, despite higher arithmetic
 complexity of $\cplx$-valued networks.
+% CVNN capacity grows by \sqrt{2}, compute grows by 2 % RVNN caption by 2 compute by 2. 
 
 % section conclusion (end)
 
