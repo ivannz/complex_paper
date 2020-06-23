@@ -1054,15 +1054,6 @@ be disentangled from the local output noise by additive reparameterization.
 \section{Experiments} % (fold)
 \label{sec:experiments}
 
-The source code for the experiments and the figures in this study is available at
-\url{https://github.com/ivannz/complex_paper/tree/v2020.6}.
-%
-The source code for a package based on PyTorch \citep{paszke_pytorch_2019}, which
-implements $\cplx$-valued Sparse Variational Dropout and ARD layers and provides other
-basic layers for $\cplx$VNN is available at
-\url{https://github.com/ivannz/cplxmodule}.
-\smallskip
-
 To verify the proposed $\cplx$-valued variational sparsification methods presented
 above and explore their compression-performance trade-off we carry out a numerical
 study of $\cplx$VNN for image classification and music transcription.
@@ -1512,6 +1503,42 @@ throughput stemming from fewer floating-point multiplications, despite higher ar
 complexity of $\cplx$-valued networks.
 
 % section conclusion (end)
+
+\section*{Software and Data} % (fold)
+\label{sec:software_and_data}
+
+% we strongly encourage the publication of software and data with the camera-ready version
+% of the paper whenever appropriate. This can be done by including a URL in the copy.
+% do not include URLs that reveal your institution or identity in your submission for review
+% * provide an anonymous URL or upload the material as ``Supplementary Material'' into the CMT
+
+The source code for a package based on PyTorch \citep{paszke_pytorch_2019}, which
+implements $\cplx$-valued Sparse Variational Dropout and ARD layers and provides other
+basic layers for $\cplx$VNN is available at
+\url{https://github.com/ivannz/cplxmodule}.
+%
+The source code for the experiments and the figures in this study is available at
+\url{https://github.com/ivannz/complex_paper/tree/v2020.6}.
+
+% section* software_and_data (end)
+
+% Acknowledgements should only appear in the accepted version.
+\section*{Acknowledgements} % (fold)
+\label{sec:acknowledgements}
+
+% Do not include acknowledgements in the initial version of the paper submitted for blind review.
+
+% the final camera-ready version can (and probably should) include acknowledgements
+% Typically, this will include thanks to reviewers who gave useful comments, to colleagues
+% who contributed to the ideas, and to funding agencies and corporate sponsors that provided
+% financial support.
+We would like to thank the anonymous reviewers for their useful comments, and Evgenii
+Egorov, Ruslan Kostoev (ADASE) and Danila Doroshin (Huawei) for fruitfull discussions.
+% We thank Skoltech CDISE HPC Zhores cluster staff for providing computational infrastructure.
+The authors acknowledge the use of the Skoltech CDISE HPC cluster ``Zhores'' for obtaining
+the results presented in this paper.
+
+% section* acknowledgements (end)
 
 % \clearpage
 
