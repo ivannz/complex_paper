@@ -388,7 +388,7 @@ whole enabled pruning entire input features in each layer.
 % {louizos_bayesian_2017} eq. (11) variance -> gaussian entropy -> informative bits
 % They also proposed to estiamte bit precision for quantization based on parameter's
 % estimated uncertainty (variance or entropy).
-%
+
 Due to factorization assumption, the term $KL(q_\theta \| \pi)$ in \eqref{eq:sgvb_estimator}
 for Sparse VD unravels into $
   \sum_j K(\tfrac{\sigma^2_{j}}{\mu_{j}^2})
@@ -521,7 +521,7 @@ of functions of complex argument, by regarding $z$ and its \emph{complex conjuga
 $\conj{z}$ as independent variables and defining derivative operators with respect to
 them through partial derivatives with respect to real and imaginary parts. These definitions
 simplify manual analysis of $\cplx$ derivatives and satisfy the product and chain rules, respect
-complex conjugation and linearity for $\cplx \to \cplx$ maps, and such were used to define
+complex conjugation and linearity for $\cplx \to \cplx$ maps, and as such were used to define
 $\cplx$ version of back-propagation, \citep{benvenuto_complex_1992,guberman_complex_2016}.
 However, since auto-differentiation frameworks can algorithmically handle computational
 graphs of arbitrary complexity, explicit use of Wirtinger derivatives is not required,
