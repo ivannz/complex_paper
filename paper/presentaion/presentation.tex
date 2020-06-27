@@ -233,16 +233,12 @@
 
   \bigskip
   % \item nonlinearities: trigonometric, real-imaginary ReLU etc.
-  Activations
-  \begin{itemize}
-    \item split $
-      z \mapsto g(\Re{z}) + \iu g(\Im{z}) % split
-    $ or $
-      z \mapsto g(\lvert z\rvert) e^{\iu \arg{\!(z)}}
-    $ % \citep{trabelsi_deep_2018,hirose_generalization_2012,reichert_neuronal_2014} % relu, tanh, sigmoid
-
-    \item full: trigonometric, holomorphic
-  \end{itemize}
+  Activations $z \mapsto \sigma(z)$, e.g $
+    r e^{\iu \phi} \mapsto \sigma(r, \phi)
+  $ or $
+    z \mapsto \sigma(\Re{z}) + \iu \sigma(\Im{z}) % split
+  $.
+  % \citep{trabelsi_deep_2018,hirose_generalization_2012,reichert_neuronal_2014} % relu, tanh, sigmoid
   % \citep{hirose_complex-valued_2009}  argues that holomorphy and nondifferentiability are non-issues
 
   % A BLOCK ON COMPLEX BACKPROP -- just say it out loud
@@ -714,19 +710,9 @@
 \begin{frame}[c]{MusicNet: Effects of pruning threshold}
   \begin{figure}[t]
     \centering
-    \includegraphics[width=\linewidth]{figure__musicnet__threshold.pdf}
+    \includegraphics[width=0.7\linewidth]{figure__musicnet__threshold__C__DeepConvNet.pdf}
     \\
-    {Before `fine-tune' of the $\cplx$VNN of \citet{trabelsi_deep_2018}}
-  \end{figure}
-
-\end{frame}
-
-\begin{frame}[c]{MusicNet: Effects of pruning threshold}
-  \begin{figure}[t]
-    \centering
-    \includegraphics[width=\linewidth]{figure__musicnet__threshold__fine-tune.pdf}
-    \\
-    {After `fine-tune' of the $\cplx$VNN of \citet{trabelsi_deep_2018}}
+    {Effect of trheshold on the $\cplx$VNN of \citet{trabelsi_deep_2018}}
   \end{figure}
 
 \end{frame}
