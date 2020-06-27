@@ -543,7 +543,7 @@
 \section{Experiments} % (fold)
 \label{sec:experiments}
 
-\subsection{Goals} % (fold)
+\subsection{Goals and Setup} % (fold)
 \label{sub:goals}
 
 \begin{frame}[c]{\insertsection: \insertsubsection}
@@ -553,6 +553,27 @@
     \item explore the compression-performance profiles
     \item compare to the $\real$-valued Sparse Variational Dropout
   \end{itemize}
+
+  \pause
+  \bigskip
+  % methodological contrib
+  `pre-train' $\to$ `compress' $\to$ `fine-tune'
+  \begin{itemize}
+    \item `compress' with $\real$/$\cplx$-Variational Dropout layers
+    \item `fine-tune' pruned network ($
+      \log{{\color{red} \alpha_{ij}}} \leq -\tfrac12
+    $)
+  \end{itemize}
+
+  \pause
+  \bigskip
+  \begin{equation}  \label{eq:beta_elbo}
+    \max_q
+    \mathbb{E}_{w \sim {\color{orange} q}}
+      \log p(D \mid w)  % ; {\color{teal} \theta})
+      - \beta \mathop{KL}({\color{orange} q}\|{\color{blue} \pi})
+    \tag{$\beta$-ELBO}
+  \end{equation}
 
 \end{frame}
 
@@ -592,57 +613,6 @@
 \end{frame}
 
 % subsection datasets (end)
-
-\subsection{Set-up} % (fold)
-\label{sub:details}
-
-\begin{frame}[c]{\insertsection: \insertsubsection}
-  % methodological contrib
-  $\beta$-VAE \ref{eq:elbo} objective {\tiny \citep{higgins_beta-vae_2017}}
-  \begin{equation}
-  \label{eq:beta_elbo}
-    \max_q
-    \mathbb{E}_{w \sim {\color{orange} q}}
-      \log p(D \mid w)  % ; {\color{teal} \theta})
-      - \beta \mathop{KL}({\color{orange} q}\|{\color{blue} \pi})
-    \tag{$\beta$-ELBO}
-  \end{equation}
-  \vspace{-1em}
-  \begin{itemize}
-    \item balance the likelihood and prior-matching terms' feedback
-    \item explore performance-compression frontier by varying $\beta$
-    % \item KL-div annealing of \citet{molchanov_variational_2017} does not allow
-    % to explore the performance-compression trade-off
-  \end{itemize}
-
-  \pause
-  \medskip
-  Pruning based on estimated ${\color{red} \alpha_{ij}}$ and threshold
-  \begin{itemize}
-    \item $
-      \log{{\color{red} \alpha_{ij}}} \leq -\tfrac12
-    $ ensures that $
-      w_{ij} \sim {\color{orange} q}(w_{ij})
-    $ concentrates around ${\color{teal} \mu_{ij}}$
-    % \item Relevant $w_{ij}$ are concentrated around ${\color{teal} \mu_{ij}}$ w.h.p according ${\color{orange} q}$
-    % \item \citet{molchanov_variational_2017} use $\tau=3$, tied to Bernoulli Dropout with rate $95\%$
-  \end{itemize}
-  % A picture of the typical $\log \alpha$ distribution? bimodal
-
-  \pause
-  \medskip
-  % methodological contrib
-  Three-stage training:
-  \begin{enumerate}
-    \item `pre-train' the network as-is with deterministic layers
-    \item `compress' with $\real$/$\cplx$-Variational Dropout layers
-    \item `fine-tune' pruned network (relevant parameters only)
-    % sparse layers are sloooow
-  \end{enumerate}
-
-\end{frame}
-
-% subsection details (end)
 
 % section experiments (end)
 
