@@ -558,6 +558,41 @@
 
 % subsection goals (end)
 
+\subsection{Datasets} % (fold)
+\label{sub:datasets}
+
+\begin{frame}[t]{\insertsection: \insertsubsection}
+  Four MNIST-like datasets
+  % MNIST, Fashion-MNIST, KMNIST, EMNIST-Letters
+  \begin{itemize}
+    % \item channel features ($\real \hookrightarrow \cplx$ with $\Im z = 0$) or $2$d Fourier features
+    \item channel features ($\real \hookrightarrow \cplx$) or $2$d Fourier features
+    \item fixed random subset of $10k$ train samples
+    \item simple dense and convolutional nets
+  \end{itemize}
+  % do not train to convergence, just show that the methods give comparable results under similar conditions
+
+  \pause
+  \medskip
+  CIFAR10 dataset ($\real^3 \hookrightarrow \cplx^3$)
+  \begin{itemize}
+    \item random cropping and horizontal flipping
+    \item $\cplx$-valued variant of VGG16 {\tiny \citep{simonyan_very_2015}}
+  \end{itemize}
+
+  \pause
+  \medskip
+  Music transcription on MusicNet {\tiny \citep{thickstun_learning_2017}}
+  \begin{itemize}
+    \item audio dataset of $330$ annotated musical compositions
+    \item use power spectrum to tell which piano keys are pressed
+    \item compress deep $\cplx$VNN proposed by \citep{trabelsi_deep_2018}
+  \end{itemize}
+
+\end{frame}
+
+% subsection datasets (end)
+
 \subsection{Set-up} % (fold)
 \label{sub:details}
 
@@ -608,41 +643,6 @@
 \end{frame}
 
 % subsection details (end)
-
-\subsection{Datasets} % (fold)
-\label{sub:datasets}
-
-\begin{frame}[t]{\insertsection: \insertsubsection}
-  Four MNIST-like datasets
-  % MNIST, Fashion-MNIST, KMNIST, EMNIST-Letters
-  \begin{itemize}
-    % \item channel features ($\real \hookrightarrow \cplx$ with $\Im z = 0$) or $2$d Fourier features
-    \item channel features ($\real \hookrightarrow \cplx$) or $2$d Fourier features
-    \item fixed random subset of $10k$ train samples
-    \item simple dense and convolutional nets
-  \end{itemize}
-  % do not train to convergence, just show that the methods give comparable results under similar conditions
-
-  \pause
-  \medskip
-  CIFAR10 dataset ($\real^3 \hookrightarrow \cplx^3$)
-  \begin{itemize}
-    \item random cropping and horizontal flipping
-    \item $\cplx$-valued variant of VGG16 {\tiny \citep{simonyan_very_2015}}
-  \end{itemize}
-
-  \pause
-  \medskip
-  Music transcription on MusicNet {\tiny \citep{thickstun_learning_2017}}
-  \begin{itemize}
-    \item audio dataset of $330$ annotated musical compositions
-    \item use power spectrum to tell which piano keys are pressed
-    \item compress deep $\cplx$VNN proposed by \citep{trabelsi_deep_2018}
-  \end{itemize}
-
-\end{frame}
-
-% subsection datasets (end)
 
 % section experiments (end)
 
@@ -712,7 +712,7 @@
     \centering
     \includegraphics[width=0.7\linewidth]{figure__musicnet__threshold__C__DeepConvNet.pdf}
     \\
-    {Effect of trheshold on the $\cplx$VNN of \citet{trabelsi_deep_2018}}
+    {Effect of threshold on the $\cplx$VNN of \citet{trabelsi_deep_2018}}
   \end{figure}
 
 \end{frame}
