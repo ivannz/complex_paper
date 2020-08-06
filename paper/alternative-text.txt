@@ -1,0 +1,40 @@
+Tools -> Action Wizard
+
+Figures 1 and 2:
+Figures one and two depict compression-accuracy curves for M-Nist. Curves for convolutional networks are similar to each other: accuracy is level for compression rate less than 100, but drops afterwards. Accuracy of dense networks with raw image features exhibits similar profile, but with Fourier features it steadily grows until compression rate 500, then drops. Curves for real and complex networks look alike. Dense networks have lower accuracy than convolutional networks. The VD and ARD methods behave almost indistinguishably.
+
+Figures 3 and 4:
+Figure three depicts compression-accuracy curves for CiFar-Ten. It starts at about 91 percent for compression rate less than 120, then gradually declines to 86 percent. Curves for real and complex networks look alike. Figure four depicts compression-performance curves for MusicNet. Curves have hill-like profile, peaking slightly below the baseline average precision of 72.9 percent between 100 and 200 compression rate. The VD and ARD methods behave almost indistinguishably.
+
+Figure 5:
+Figure five shows that the fine-tuning stage improves the performance on MusicNet for compression rates higher than 100. Pruning threshold tau has weaker effect on compression and performance than the multiplier of the Kulback-Leibler divergence. The VD and ARD methods behave similarly.
+
+Figure 6:
+Figure six illustrates the number of training epochs until early stopping is triggered by deteriorating validation performance on MusicNet. The curve represents the number of epochs for varying values of the multiplier of the Kulback-Leibler divergence. It has S-like shape starting with around 5-10 epochs and finishing at 40-50 epochs. The inflection point is around the value 0.005 of the coefficient.
+
+Figure 7:
+Figure seven shows the compression-accuracy curves for other M-Nist like datasets for the ARD method, R and C networks, and Fourier features. The curve profiles resemble each other across different datasets.
+
+Figure 8:
+Figure eight shows the compression-accuracy curves for other M-Nist like datasets for the VD method, R and C networks, and Fourier features. The curve profiles resemble each other across different datasets.
+
+Figure 9:
+Figure nine shows the compression-accuracy curves for other M-Nist like datasets for the ARD method, Raw image features, and R and C networks. The curve profiles resemble each other across different datasets.
+
+Figure 10:
+Figure ten shows the compression-accuracy curves for other M-Nist like datasets for the VD method, Raw image features, and R and C networks. The curve profiles resemble each other across different datasets.
+
+Figure 11:
+Figure eleven shows the compression-accuracy curves for other M-Nist like datasets for the ARD method, double-real and C networks, and Fourier features. The curve profiles resemble each other across different datasets.
+
+Figure 12:
+Figure twelve shows the compression-accuracy curves for other M-Nist like datasets for the VD method, double-real and C networks, and Fourier features. The curve profiles resemble each other across different datasets.
+
+Figure 13:
+Figure thirteen shows the compression-accuracy curves for other M-Nist like datasets for the ARD method, Raw image features, and R and halved-complex networks. The curve profiles resemble each other across different datasets.
+
+Figure 14:
+Figure fourteen shows the compression-accuracy curves for other M-Nist like datasets for the VD method, Raw image features, and R and halved-complex networks. The curve profiles resemble each other across different datasets.
+
+Figure 15:
+Figure fifteen compares the finite-difference Monte Carlo estimate, the non-linear approximation and the true exact value of the derivative of the Kulback-Leibler divergence against the improper prior with respect to the logarithm of the relevance score alpha in the real and complex Variational Dropout method. The true derivative for the complex-valued case exhibits S-like dependence on the log-alpha, monotonically increasing from -1 up to zero. The true derivative for the real-valued case resembles S-like shape, starting at negative half and ending at zero, but with a shallow valley from -3 to -1 log-alpha. The Monte Carlo and the non-linear estimates are close to the true derivative.
