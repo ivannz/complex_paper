@@ -1,8 +1,8 @@
-from distutils.core import setup, Extension
+from distutils.core import setup
 
 setup(
     name="cplxpaper",
-    version="2020.3",
+    version="2020.6",
     description="""Backend for experiments presented in Bayesian"""
                 """ Sparsification of Deep Complex-valued Networks.""",
     license="MIT License",
@@ -24,7 +24,7 @@ setup(
     ],
     install_requires=[
         "torch>=1.4",
-        "cplxmodule @ https://github.com/ivannz/cplxmodule/archive/v2020.03.tar.gz",
+        "cplxmodule @ https://github.com/ivannz/cplxmodule/archive/v2020.6rc.tar.gz",
         "numpy",
         "pandas",
         "sklearn",
