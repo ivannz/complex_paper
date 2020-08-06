@@ -1,3 +1,4 @@
+acrobat = "/Applications/Adobe Acrobat DC/Adobe Acrobat.app"
 
 .PHONY: clean
 
@@ -11,6 +12,11 @@ appendix.pdf: optimized.pdf
 
 optimized.pdf: output.pdf
 	gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/printer -dNOPAUSE -dQUIET -dBATCH -sOutputFile=optimized.pdf output.pdf
+
+	# open in acrobat pro and wait until it is closed
+	if [ -d ${acrobat} ]; \
+		then open -Wa ${acrobat} optimized.pdf; \
+	fi
 
 output.pdf:
 	pdflatex -jobname=output paper.tex
