@@ -20,7 +20,8 @@ $(supplement).zip: code paper experiments
 	cp -r ./experiments/manifests.tar.gz "${target}/experiments"
 
 	# put a sdist of the package into it
-	cp -p "`ls -dtr1 ./dist/*.tar.gz | tail -1`" "${target}"/
+	cp ./dist/*.tar.gz "${target}"/
+	# cp -p "`ls -dtr1 ./dist/*.tar.gz | tail -1`" "${target}"/
 
 	# copy generated figures and notebooks for the experiments
 	cp -r ./assets "${target}"/
