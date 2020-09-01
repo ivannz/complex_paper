@@ -785,9 +785,12 @@
 \label{sub:polarized_ard_dropout}
 
 \begin{frame}[c]{\insertsection: \insertsubsection}
+  Modelling correlation between weight and its conjugate
+
+  \bigskip
   Use allow learnable relation $
     \xi = {\color{teal} \eta} e^{\iu {\color{teal} \phi}}
-  $ in ${\color{orange} q}$
+  $ in factorized ${\color{orange} q}$
   \begin{itemize}
     \item $w_{ij}$ are \emph{independent} $
       \mathcal{CN}(
@@ -836,25 +839,28 @@
 \end{frame}
 
 \begin{frame}[c]{\insertsection: \insertsubsection}
-  For $y = w^\top x + b$, with $w \in \cplx^{n \times m}$, $w \sim {\color{orange} q}$
+  For $y = w^\top x + b$ with $w \in \cplx^{n \times m}$, $w \sim {\color{orange} q}$ implies
   \begin{equation*}
     y_i \sim \mathcal{CN}\biggl(
-        b_i + \sum_j \mu_{i j} x_j,
-        \sum_j \sigma^2_{ij} \lvert x_{i j} \rvert^2,
-        \sum_j \sigma^2_{ij} x_{i j}^2 \xi_{i j}
+        b_i + \sum_j {\color{teal} \mu_{i j}} x_j,
+        \sum_j \lvert x_{i j} \rvert^2 \sigma^2_{i j},
+        \sum_j x_{i j}^2 \sigma^2_{i j}
+        {\color{teal} \eta_{i j}} e^{\iu {\color{teal} \phi_{i j}}}
     \biggr)
     \,.
   \end{equation*}
 
   \pause
   \bigskip
-  For $\xi \in \cplx$, $\lvert \xi \rvert \leq 1$, $
+  For $
+    \xi \in \cplx
+  $, $\lvert \xi \rvert \leq 1$, $
     \rho = \sqrt{1 - \lvert \xi \rvert^2}
   $,
   $$
     R = \frac\sigma{2 \sqrt{1 + \rho}} \begin{pmatrix}
-        1 + \rho + \Re \xi & \Im \xi \\
-        \Im \xi & 1 + \rho - \Re \xi
+        (1 + \rho) + \Re \xi & \Im \xi \\
+        \Im \xi & (1 + \rho) - \Re \xi
       \end{pmatrix}
     \,, $$
   and $\varepsilon \sim \mathcal{N}_2(0, I_2)$ we have 
@@ -865,7 +871,7 @@
     (R_{11} \varepsilon_1 + R_{12} \varepsilon_2)
     + \iu (R_{21} \varepsilon_1 + R_{22} \varepsilon_2)
     \overset{\mathcal{D}}{\sim}
-    \mathcal{CN}(\mu, \sigma^2, \sigma^2 \xi)
+    \mathcal{CN}(0, \sigma^2, \sigma^2 \xi)
   \,. $$
   % proof: explicit root of $2 \times 2$ matrix
 \end{frame}
@@ -875,10 +881,18 @@
 \subsection{Questions} % (fold)
 \label{sub:questions}
 
-\begin{frame}[c]\frametitle{title}
-  How to select the relevance threshold for polarized ARD dropout?
+\begin{frame}[t]{\insertsection: \insertsubsection}
+  How to pick the relevance threshold for polarized ARD dropout?
+  \begin{itemize}
+    \item in $\cplx$VD we could use $\chi^2_2$ quantile to determine relevance:
+    it used a relative error of approximating $w$ by $\mu$.
+    \item general question: when $x\approx 0$ is a ``reasonable'' approximation of $
+      x \sim \mathcal{N}_n(\mu, \Sigma)
+    $? see notes.
+  \end{itemize}
 
-  What hyperprior should be set on ${\color{teal} \eta}$?
+  \bigskip
+  What prior should be set on ${\color{teal} \eta}$ if any?
 \end{frame}
 
 % subsection questions (end)
