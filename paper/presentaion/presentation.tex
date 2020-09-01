@@ -487,7 +487,7 @@
         \includegraphics[width=1.2\linewidth]{figure__cplx_gaussian.pdf}
         \quad\mbox{
           \scriptsize
-          $\mathcal{CN}(0, 1, \eta e^{\jmath \phi})$, $\lvert \eta \rvert \leq 1$
+          $\mathcal{CN}(0, 1, \eta e^{\iu \phi})$, $\lvert \eta \rvert \leq 1$
         }
       \end{figure}
     \end{column}
@@ -777,6 +777,113 @@
 % subsection limitations (end)
 
 % section summary (end)
+
+\section{Extensions} % (fold)
+\label{sec:extensions}
+
+\subsection{PolARD dropout} % (fold)
+\label{sub:polarized_ard_dropout}
+
+\begin{frame}[c]{\insertsection: \insertsubsection}
+  Use allow learnable relation $
+    \xi = {\color{teal} \eta} e^{\iu {\color{teal} \phi}}
+  $ in ${\color{orange} q}$
+  \begin{itemize}
+    \item $w_{ij}$ are \emph{independent} $
+      \mathcal{CN}(
+        w\,\big\vert\,
+        {\color{teal} \mu},
+        \sigma^2,
+        \sigma^2 \xi
+      )
+    $, $
+      \sigma^2
+        = {\color{red} \alpha} \lvert {\color{teal} \mu} \rvert^2
+    $
+    \item $
+      \lvert {\color{teal} \eta} \rvert \leq 1
+    $, $
+      {\color{teal} \phi} \in [-\tfrac\pi2, +\tfrac\pi2]
+    $, and $
+      {\color{red} \alpha} = \tfrac{\sigma^2}{\lvert {\color{teal} \mu} \rvert^2}
+    $
+  \end{itemize}
+
+  \pause
+  \bigskip
+  $\cplx$-ARD Prior $
+    {\color{blue} \pi}
+      = \mathcal{CN}(w\,\big\vert\, 0, {\color{blue} \tau}^{-1}, 0)
+  $
+  \begin{eqnarray*}
+      \mathop{KL}({\color{orange} q} \| {\color{blue} \pi})
+      &=& -1
+        - \log \sigma^2 {\color{blue} \tau}
+        + {\color{blue} \tau} (\sigma^2 + \lvert {\color{teal} \mu} \rvert^2)
+        -\frac12 \log \bigl(
+          1 - \lvert {\color{teal} \eta} \rvert^2
+        \bigr)
+      \,, \\
+      \min_{{\color{blue} \tau}} KL
+      &=& \log \Bigl(
+          1 + \frac1{{\color{red} \alpha}}
+        \Bigr)
+        - \frac12 \log \bigl(
+          1 - \lvert {\color{teal} \eta} \rvert^2
+        \bigr)
+      \,. \\
+  \end{eqnarray*}
+\end{frame}
+
+\begin{frame}[c]{\insertsection: \insertsubsection}
+  For $y = w^\top x + b$, with $w \in \cplx^{n \times m}$, $w \sim {\color{orange} q}$
+  \begin{equation*}
+    y_i \sim \mathcal{CN}\biggl(
+        b_i + \sum_j \mu_{i j} x_j,
+        \sum_j \sigma^2_{ij} \lvert x_{i j} \rvert^2,
+        \sum_j \sigma^2_{ij} x_{i j}^2 \xi_{i j}
+    \biggr)
+    \,.
+  \end{equation*}
+
+  \pause
+  \bigskip
+  For $\xi \in \cplx$, $\lvert \xi \rvert \leq 1$, $
+    \rho = \sqrt{1 - \lvert \xi \rvert^2}
+  $,
+  $$
+    R = \frac\sigma{2 \sqrt{1 + \rho}} \begin{pmatrix}
+        1 + \rho + \Re \xi & \Im \xi \\
+        \Im \xi & 1 + \rho - \Re \xi
+      \end{pmatrix}
+    \,, $$
+  and $\varepsilon \sim \mathcal{N}_2(0, I_2)$ we have 
+  $$
+    % \begin{pmatrix}
+    %   1 & \iu
+    % \end{pmatrix} R \varepsilon
+    (R_{11} \varepsilon_1 + R_{12} \varepsilon_2)
+    + \iu (R_{21} \varepsilon_1 + R_{22} \varepsilon_2)
+    \overset{\mathcal{D}}{\sim}
+    \mathcal{CN}(\mu, \sigma^2, \sigma^2 \xi)
+  \,. $$
+  % proof: explicit root of $2 \times 2$ matrix
+\end{frame}
+
+% subsection polarized_ard_dropout (end)
+
+\subsection{Questions} % (fold)
+\label{sub:questions}
+
+\begin{frame}[c]\frametitle{title}
+  How to select the relevance threshold for polarized ARD dropout?
+
+  What hyperprior should be set on ${\color{teal} \eta}$?
+\end{frame}
+
+% subsection questions (end)
+
+% section extensions (end)
 
 \section{References} % (fold)
 \label{sec:references}
