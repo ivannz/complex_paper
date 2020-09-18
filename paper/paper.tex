@@ -293,9 +293,9 @@ $\omega$ down to local intermediate states of computation.
 The class of models that allow this include non-recurrent computational graphs,
 exemplified by neural networks with parameters $\omega \sim q_\theta$. In their case,
 \eqref{eq:sgvb_estimator} would require that the \emph{entire} set of network's parameters
-$\omega$ be independently drawn for each element in the mini-batch. Since that the
-parameters in a network naturally split into subsets with non-overlapping layer-wise
-effects, it is standard to assume that the approximation $
+$\omega$ be independently drawn for each element in the mini-batch. Since the parameters
+in a network naturally split into subsets with non-overlapping layer-wise effects, it is
+standard to assume that the approximation $
   q_\theta(\omega)
 $ is factorized over layers. Furthermore, if $
   % \omega =
@@ -783,7 +783,7 @@ It requires three matrix-vector operations: $\cplx$-valued $b + \mu x$ and $C x^
 and $\real$-valued $
   \Sigma \lvert x \rvert^2
 $, where $C_{ij} = \Sigma_{ij} \xi_{ij}$ and the complex modulus and square are applied
-elementwise. \eqref{sub:c_gauss_and_local_rep} can be applied to any layer, the output
+elementwise. Equation \eqref{eq:cplx-gauss-trick} can be applied to any layer, the output
 of which depends linearly on its parameters, such as convolutional, affine, and bilinear
 transformations ($
   (x, z) \mapsto b_j + x^\top W^{(j)} z
