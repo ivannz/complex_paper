@@ -353,7 +353,7 @@ superposition method, utilizing the learning capacity of the network better.
 %
 \citet{kingma_variational_2015} provided a unifying perspective on Dropout, DropConnect
 \citep{wan_regularization_2013}, and Gaussian Dropout \citep{wang_fast_2013} through
-the lens of Variational Inference and propose \emph{Variational Dropout}. They argued
+the lens of Variational Inference and proposed \emph{Variational Dropout}. They argued
 that the multiplicative noise introduced by Dropout methods induces a distribution
 equivalent to a fully factorized variational posterior $
   q_\theta(\omega) = \prod_j q_{\theta}(\omega_j)
@@ -1454,7 +1454,7 @@ regimes in figure~\ref{fig:musicnet__trade-off}, also observed in sec.~\ref{sub:
 % * performance peaks at 10-15 epoch and then gradually declines
 The value of $C$ in \eqref{eq:elbo_with_coef} is a good proxy for the ranking of the
 final compression rate since it directly affects the feedback from sparsifying prior.
-So, during the $50$ epoch allotted for ``sparsify'' stage, low $C$ prevents the sparsity
+So, during the $50$ epochs allotted for ``sparsify'' stage, low $C$ prevents the sparsity
 inducing prior from pulling the posterior sufficiently away from the likelihood-maximizing
 parameters inherited from the ``pre-train'' stage. It is reasonable, therefore, to expect
 that for undercompressed models the fine-tuning stage acts essentially as a continuation
