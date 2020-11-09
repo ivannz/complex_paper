@@ -56,38 +56,38 @@
 
 \end{frame}
 
-\section{Synopsis} % (fold)
-\label{sec:synopsis}
+% \section{Synopsis} % (fold)
+% \label{sec:synopsis}
 
-\begin{frame}[c]{\insertsection}
-  Motivation for $\cplx$-valued neural networks
-  \begin{itemize}
-    \item perform better for naturally $\cplx$-valued data
-    \item use half as much storage, but the same number of flops
-    % \item So inducing sparsity becomes important for lower arithmetic complexity
-  \end{itemize}
+% \begin{frame}[c]{\insertsection}
+%   Motivation for $\cplx$-valued neural networks
+%   \begin{itemize}
+%     \item perform better for naturally $\cplx$-valued data
+%     \item use half as much storage, but the same number of flops
+%     % \item So inducing sparsity becomes important for lower arithmetic complexity
+%   \end{itemize}
 
-  \pause
-  \medskip
-  Propose \emph{Sparse Variational Dropout} for $\cplx$-valued neural networks
-  \begin{itemize}
-    \item Bayesian sparsification method with $\cplx$-valued distributions 
-    % \item $\cplx$-Gaussian variational posterior, $\cplx$-valued priors
-    \item empirically explore the compression-performance trade-off
-  \end{itemize}
+%   \pause
+%   \medskip
+%   Propose \emph{Sparse Variational Dropout} for $\cplx$-valued neural networks
+%   \begin{itemize}
+%     \item Bayesian sparsification method with $\cplx$-valued distributions 
+%     % \item $\cplx$-Gaussian variational posterior, $\cplx$-valued priors
+%     \item empirically explore the compression-performance trade-off
+%   \end{itemize}
 
-  \pause
-  \medskip
-  Conclusions
-  \begin{itemize}
-    \item $\cplx$-valued methods compress similarly to $\real$-valued predecessors
-    \item final performance benefits from fine-tuning sparsified network
-    \item compress a SOTA $\cplx$VNN on MusicNet by $50-100\times$ at a moderate performance penalty
-  \end{itemize}
+%   \pause
+%   \medskip
+%   Conclusions
+%   \begin{itemize}
+%     \item $\cplx$-valued methods compress similarly to $\real$-valued predecessors
+%     \item final performance benefits from fine-tuning sparsified network
+%     \item compress a SOTA $\cplx$VNN on MusicNet by $50-100\times$ at a moderate performance penalty
+%   \end{itemize}
 
-\end{frame}
+% \end{frame}
 
-% section synopsis (end)
+% % section synopsis (end)
 
 \section{$\cplx$-valued neural networks} % (fold)
 \label{sec:complex_valued_networks}
@@ -108,25 +108,24 @@
   \bigskip
   Benefits of using complex numbers $\cplx$ in neural networks
   \begin{itemize}
-    \item Richer representation via phase and amplitude $
+    \item Richer representation via phase and amplitude\textsuperscript{
+        \citep{reichert_neuronal_2014}}
+      $
         r e^{\,\iu \phi} \in \cplx
       $,
-      {\tiny \\ \quad
-        \citep{reichert_neuronal_2014}}
 
     \smallskip
-    \item Non-degenerate combined phase-amplitude transformations,
-      {\tiny \\ \quad
-        \citep{hirose_generalization_2012}}
+    \item Non-degenerate combined phase-amplitude
+        transformations\textsuperscript{\citep{hirose_generalization_2012}}
     % \item ability to compute multiscale windowed spectra
     %   {\tiny \\ \quad
     %     \citep{bruna_mathematical_2015}}
     % \smallskip
 
     \smallskip
-    \item Stable BPTT in RNN via unitary transition matrices,
-      {\tiny \\ \quad
-        \citep{arjovsky_unitary_2016,wisdom_full-capacity_2016}}
+    \item Stable BPTT in RNN via unitary transition
+        matrices\textsuperscript{
+          \citep{arjovsky_unitary_2016,wisdom_full-capacity_2016}}
   \end{itemize}
 
 \end{frame}
@@ -173,6 +172,8 @@
   \begin{itemize}
     \item sequence modelling, dynamical system identification\textsuperscript{
         \citep{danihelka_associative_2016,wisdom_full-capacity_2016}}
+    % {danihelka_associative_2016} $\cplx$ RNN with holographic associative memory
+    % sequence prediction, XML modelling, neural arithmetic, sequence replication
 
     \smallskip
     \item image classification, road~/~lane segmentation\textsuperscript{  % KITTI Road Estimation
@@ -181,6 +182,9 @@
     \smallskip
     \item unitary transition matrices in recurrent networks\textsuperscript{
         \citep{arjovsky_unitary_2016,wisdom_full-capacity_2016}}
+    % {wisdom_full-capacity_2016} unitary transition matrices
+    % pixel-MNIST, spectral speech modelling (one-step-ahead stft prediction),
+    % dynamical system identification, sequence replication
   \end{itemize}
 
 \end{frame}
@@ -270,18 +274,33 @@
   \begin{itemize}
     \item Knowledge distillation\textsuperscript{
         \citep{hinton_distilling_2015,balasubramanian_deep_2016}}
+        % {hinton} replicate a heavy teacher with light-weight students
+        % logit perturbation to simulate the effect of mutliple teachers when training a student
 
     \smallskip
     \item Network pruning\textsuperscript{
         \citep{lecun_optimal_1990,seide_conversational_2011,zhu_prune_2018}}
+        % {lecun} pruninig based on second order information of the loss
+        % saliency [p.~602 OBD recipe~4) is very similar to \tfrac1\alpha in VarDropout
+        %   HYPOTHESIS: relevance \propto \tfrac1\alpha = \tfrac{\mu^2}{\sigma^2} and \sigma^2 \approx \tfrac1{\partial^2_{ww} loss} at optimum
+        % {siede} \tau threshold-based magnitude pruning (hard (\ell_0) or soft
+        % (\ell_1) thresholding) with safeguard against reappearance of very weak weights at half the \tau
+        % {zhu-gupta} magnitude ranking and adaptive sparsity targeting
 
     \smallskip
-    \item Low-rank matrix~/~tensor decomposition\textsuperscript{
+    \item Low-rank matrix~/~tensor-train decomposition\textsuperscript{
         \citep{denton_exploiting_2014,novikov_tensorizing_2015}}
 
     \smallskip
     \item Quantization and fixed point arithmetic\textsuperscript{
         \citep{courbariaux_training_2015,han_deep_2016,chen_fxpnet_2017}}
+        % {courbariaux} post-train fixed point arithmetic conversion, binary quantizaton during forward and backward
+        % {chen} weight-agnostic hashing into groups sharing the same value within a layer: hash->bin->shared weight. Hashing allows NOT to store bin indices
+        % {han} [11] prune-qunatize(-zip) to reduce storage and energy requirements to nets in inference mode
+        % (1) threshold-based magnitude pruning (train->prune->fine-tune)
+        % (2) quantize with k-means and fix cluster affinity
+        % (3) further fine-tune shared centroids using SGD (shared-scatter on forward, grad-sums on backward)
+        % * show that P+Q is much better than P alone
   \end{itemize}
 % Making them smaller or using faster ops:
 % * Knowledge distillation -- creating a smaller replica
@@ -847,7 +866,8 @@
   \bigskip
   \emph{Factorized} ${\color{orange} q}$ implies parameter independence % in ${\color{orange} q}$ does not hold in practice
   \begin{itemize}
-    \item structured sparsity is desirable for fast computations and hardware implementations
+    \item structured sparsity is desirable for fast computations and efficient
+      hardware implementations
     % \item structured sparsity is desirable for SIMD-processing
     % \item parameter coupling may give higher compression, \citep{citation_needed}
   \end{itemize}
