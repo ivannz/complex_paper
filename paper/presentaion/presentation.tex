@@ -293,9 +293,10 @@
 
     \smallskip
     \item Quantization and fixed point arithmetic\textsuperscript{
-        \citep{courbariaux_training_2015,han_deep_2016,chen_fxpnet_2017}}
+        \citep{courbariaux_training_2015,han_deep_2016,chen_fxpnet_2017,chen_compressing_2015}}
         % {courbariaux} post-train fixed point arithmetic conversion, binary quantizaton during forward and backward
-        % {chen} weight-agnostic hashing into groups sharing the same value within a layer: hash->bin->shared weight. Hashing allows NOT to store bin indices
+        % {chen_fxpnet_2017} full fixed-point training with fxp batch normalization, ADAM, forward and backprop, adaptive fxp exponent based on the overlfow rate
+        % {chen_compressing_2015} weight-agnostic hashing into groups sharing the same value within a layer: hash->bin->shared weight. Hashing allows NOT to store bin indices
         % {han} [11] prune-qunatize(-zip) to reduce storage and energy requirements to nets in inference mode
         % (1) threshold-based magnitude pruning (train->prune->fine-tune)
         % (2) quantize with k-means and fix cluster affinity

@@ -50,6 +50,10 @@ for computing the mat-vec in TT format
 Post-train fixed point arithmetic conversion or binary quantization during forward and backward
 
 #### chen_fxpnet_2017
+Full fixed-point training: adaptive fxp exponent selected based on the overlfow rate, fxp batch
+normalization, fxp ADAM updates, and forward and backprop in fxp.
+
+#### chen_compressing_2015
 Weight-agnostic hashing into groups sharing the same value within a layer: hash->bin->shared
 weight. Hashing allows NOT to store indices of the bins
 
